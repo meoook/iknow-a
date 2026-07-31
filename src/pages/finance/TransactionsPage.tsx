@@ -31,18 +31,6 @@ export const TransactionsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 glass-panel">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <ArrowLeftRight className="w-6 h-6 text-emerald-400" />
-            <span>Транзакции на ввод и вывод средств</span>
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            История всех финансовых операций ввода (депозитов) и вывода средств пользователей.
-          </p>
-        </div>
-      </div>
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">

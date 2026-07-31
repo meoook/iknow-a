@@ -9,7 +9,6 @@ import {
   Activity,
   ArrowUpRight,
   ShieldCheck,
-  CheckCircle2,
 } from 'lucide-react';
 import { useAppSelector } from '../store';
 
@@ -24,31 +23,19 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Welcome Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            Панель управления IKNOW <Sparkles className="w-5 h-5 text-cyan-400" />
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Обзор метрик платформы, состояния банка, предсказаний и денежных потоков
-          </p>
-        </div>
-        <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-full text-xs font-semibold">
-          <ShieldCheck className="w-4 h-4" />
-          <span>Система работает нормально</span>
-        </div>
-      </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Cards Grid - Each card is a full clickable NavLink */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Card 1: Bank Balance */}
-        <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel glass-panel-hover relative overflow-hidden">
+        <NavLink
+          to="/finances/info"
+          className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel transition-all hover:border-emerald-500/50 hover:bg-slate-800/60 group relative overflow-hidden block"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-200 transition-colors">
               Баланс банка
             </span>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
               <Wallet className="w-5 h-5" />
             </div>
           </div>
@@ -57,19 +44,20 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
             <span>Резерв: {bankInfo.reserveRatio}%</span>
-            <NavLink to="/finances/info" className="text-emerald-400 hover:underline flex items-center gap-0.5">
-              Инфо <ArrowUpRight className="w-3 h-3" />
-            </NavLink>
+            <ArrowUpRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
-        </div>
+        </NavLink>
 
         {/* Card 2: Active Predictions Volume */}
-        <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel glass-panel-hover relative overflow-hidden">
+        <NavLink
+          to="/predictions/active"
+          className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel transition-all hover:border-cyan-500/50 hover:bg-slate-800/60 group relative overflow-hidden block"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-200 transition-colors">
               Объем предсказаний
             </span>
-            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition-transform">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
@@ -78,19 +66,20 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
             <span>Активных: {activePredictions.length}</span>
-            <NavLink to="/predictions/active" className="text-cyan-400 hover:underline flex items-center gap-0.5">
-              Смотреть <ArrowUpRight className="w-3 h-3" />
-            </NavLink>
+            <ArrowUpRight className="w-4 h-4 text-cyan-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
-        </div>
+        </NavLink>
 
         {/* Card 3: Pending Requests */}
-        <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel glass-panel-hover relative overflow-hidden">
+        <NavLink
+          to="/predictions/new"
+          className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel transition-all hover:border-amber-500/50 hover:bg-slate-800/60 group relative overflow-hidden block"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-200 transition-colors">
               Новые заявки
             </span>
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 relative">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 relative group-hover:scale-110 transition-transform">
               <Sparkles className="w-5 h-5" />
               {requests.some((r) => r.hasUnreadWsEvent) && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 red-dot-pulse" />
@@ -102,19 +91,20 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
             <span>Ожидают проверки</span>
-            <NavLink to="/predictions/new" className="text-amber-400 hover:underline flex items-center gap-0.5">
-              Модерация <ArrowUpRight className="w-3 h-3" />
-            </NavLink>
+            <ArrowUpRight className="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
-        </div>
+        </NavLink>
 
         {/* Card 4: Pending Withdrawals */}
-        <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel glass-panel-hover relative overflow-hidden">
+        <NavLink
+          to="/finances/withdrawals"
+          className="bg-slate-900/80 border border-slate-800 p-5 rounded-xl glass-panel transition-all hover:border-rose-500/50 hover:bg-slate-800/60 group relative overflow-hidden block"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-200 transition-colors">
               Ручной вывод
             </span>
-            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 relative">
+            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 relative group-hover:scale-110 transition-transform">
               <Send className="w-5 h-5" />
               {withdrawals.some((w) => w.hasUnreadWsEvent) && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 red-dot-pulse" />
@@ -126,11 +116,9 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
             <span>Запросов в очереди</span>
-            <NavLink to="/finances/withdrawals" className="text-rose-400 hover:underline flex items-center gap-0.5">
-              Обработать <ArrowUpRight className="w-3 h-3" />
-            </NavLink>
+            <ArrowUpRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
-        </div>
+        </NavLink>
       </div>
 
       {/* Main Section Grid */}

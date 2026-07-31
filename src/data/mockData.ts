@@ -22,7 +22,7 @@ export const initialPredictionRequests: IPredictionRequestItem[] = [
     amount: 1500,
     endDate: '2026-09-30',
     betDate: '2026-09-25',
-    created: '2026-07-29 12:15',
+    created: '2026-07-29',
     hasUnreadWsEvent: true,
   },
   {
@@ -39,7 +39,7 @@ export const initialPredictionRequests: IPredictionRequestItem[] = [
     amount: 500,
     endDate: '2026-10-01',
     betDate: '2026-09-28',
-    created: '2026-07-29 13:40',
+    created: '2026-07-29',
     hasUnreadWsEvent: true,
   },
   {
@@ -56,7 +56,7 @@ export const initialPredictionRequests: IPredictionRequestItem[] = [
     amount: 800,
     endDate: '2026-11-15',
     betDate: '2026-11-01',
-    created: '2026-07-29 14:02',
+    created: '2026-07-29',
     hasUnreadWsEvent: false,
   },
   {
@@ -73,7 +73,7 @@ export const initialPredictionRequests: IPredictionRequestItem[] = [
     amount: 300,
     endDate: '2026-08-31',
     betDate: '2026-08-25',
-    created: '2026-07-29 14:30',
+    created: '2026-07-29',
     hasUnreadWsEvent: false,
   },
 ];
@@ -168,7 +168,7 @@ export const initialArchivePredictions: IPredictionItem[] = [
     volume: 64200,
     endDate: '2026-07-25',
     betDate: '2026-07-20',
-    closed: '2026-07-26 10:00',
+    closed: '2026-07-26',
     created: '2026-06-01',
     choices: [
       { id: 501, title: 'Да', volume: 48000, multiplier: 1.33, win: true },
@@ -187,7 +187,7 @@ export const initialArchivePredictions: IPredictionItem[] = [
     volume: 310000,
     endDate: '2026-07-14',
     betDate: '2026-07-14',
-    closed: '2026-07-15 01:30',
+    closed: '2026-07-15',
     created: '2026-06-15',
     choices: [
       { id: 511, title: 'Команда А', volume: 160000, multiplier: 1.93, win: true },
@@ -254,7 +254,7 @@ export const initialTransactions: ITransactionItem[] = [
     chain: 'Ethereum',
     txHash: '0x9a8f7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a',
     status: 'COMPLETED',
-    timestamp: '2026-07-29 13:50',
+    timestamp: '2026-07-29',
   },
   {
     id: 'tx-902',
@@ -266,7 +266,7 @@ export const initialTransactions: ITransactionItem[] = [
     chain: 'TON',
     txHash: 'a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0',
     status: 'COMPLETED',
-    timestamp: '2026-07-29 13:10',
+    timestamp: '2026-07-29',
   },
   {
     id: 'tx-903',
@@ -278,7 +278,7 @@ export const initialTransactions: ITransactionItem[] = [
     chain: 'Solana',
     txHash: '5K2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z',
     status: 'COMPLETED',
-    timestamp: '2026-07-29 11:22',
+    timestamp: '2026-07-29',
   },
   {
     id: 'tx-904',
@@ -290,7 +290,7 @@ export const initialTransactions: ITransactionItem[] = [
     chain: 'Ethereum',
     txHash: '0x11223344556677889900aabbccddeeff00112233445566778899aabbccddeeff',
     status: 'PENDING',
-    timestamp: '2026-07-29 14:15',
+    timestamp: '2026-07-29',
   },
   {
     id: 'tx-905',
@@ -302,7 +302,7 @@ export const initialTransactions: ITransactionItem[] = [
     chain: 'TON',
     txHash: 'f0e9d8c7b6a54321f0e9d8c7b6a54321f0e9d8c7b6a54321',
     status: 'COMPLETED',
-    timestamp: '2026-07-28 18:40',
+    timestamp: '2026-07-28',
   },
 ];
 
@@ -314,7 +314,7 @@ export const initialWithdrawalRequests: IWithdrawalRequestItem[] = [
     token: 'USDT',
     chain: 'Ethereum',
     address: '0x32Be343B94f860124dC4fEe278FDCBD38C102D88',
-    created: '2026-07-29 14:10',
+    created: '2026-07-29',
     autoApproveReason: 'Превышен лимит авто-вывода ($5,000 max auto-approve limit)',
     status: 'PENDING_MANUAL',
     hasUnreadWsEvent: true,
@@ -326,7 +326,7 @@ export const initialWithdrawalRequests: IWithdrawalRequestItem[] = [
     token: 'USDT',
     chain: 'TON',
     address: 'EQA4vW8Z5huBkMJYdnF68-F9w07XkWZ-2c0Q1aBC89xyzMAN',
-    created: '2026-07-29 13:25',
+    created: '2026-07-29',
     autoApproveReason: 'Флаг безопасности: редкий IP-адрес пользователя',
     status: 'PENDING_MANUAL',
     hasUnreadWsEvent: true,
@@ -338,7 +338,7 @@ export const initialWithdrawalRequests: IWithdrawalRequestItem[] = [
     token: 'USDC',
     chain: 'Solana',
     address: 'SolUserAddr1111111111111111111111111111111111',
-    created: '2026-07-29 10:05',
+    created: '2026-07-29',
     autoApproveReason: 'Превышен суточный лимит аккаунта ($10,000 / day)',
     status: 'PENDING_MANUAL',
     hasUnreadWsEvent: false,
@@ -362,7 +362,7 @@ export const initialUsers: IUserItem[] = [
     balanceUsd: 145000.5,
     isActive: true,
     withdrawBlocked: false,
-    createdAt: '2026-01-10 12:00',
+    createdAt: '2026-01-10',
     telegramId: 9812441,
   },
   {
@@ -372,7 +372,7 @@ export const initialUsers: IUserItem[] = [
     balanceUsd: 8420.0,
     isActive: true,
     withdrawBlocked: false,
-    createdAt: '2026-02-15 14:30',
+    createdAt: '2026-02-15',
     telegramId: 4410294,
   },
   {
@@ -382,7 +382,7 @@ export const initialUsers: IUserItem[] = [
     balanceUsd: 52100.0,
     isActive: true,
     withdrawBlocked: true,
-    createdAt: '2026-03-01 09:15',
+    createdAt: '2026-03-01',
     telegramId: 8871239,
   },
   {
@@ -392,7 +392,7 @@ export const initialUsers: IUserItem[] = [
     balanceUsd: 350.75,
     isActive: false,
     withdrawBlocked: true,
-    createdAt: '2026-04-20 16:20',
+    createdAt: '2026-04-20',
     telegramId: 1209384,
   },
   {
@@ -402,7 +402,7 @@ export const initialUsers: IUserItem[] = [
     balanceUsd: 18900.0,
     isActive: true,
     withdrawBlocked: false,
-    createdAt: '2026-05-11 18:45',
+    createdAt: '2026-05-11',
     telegramId: 901231,
   },
   {
@@ -412,7 +412,7 @@ export const initialUsers: IUserItem[] = [
     balanceUsd: 2400.0,
     isActive: true,
     withdrawBlocked: true,
-    createdAt: '2026-06-02 21:10',
+    createdAt: '2026-06-02',
     telegramId: 881290,
   },
 ];

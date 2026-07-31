@@ -25,18 +25,6 @@ export const FinanceInfoPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 glass-panel">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Coins className="w-6 h-6 text-emerald-400" />
-            <span>Финансовое состояние банка</span>
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Агрегированный баланс банка, распределение по блокчейн-кошелькам и показатели ликвидности.
-          </p>
-        </div>
-      </div>
 
       {/* Main KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
