@@ -77,7 +77,7 @@ export const NewPredictionDetailPage: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 font-sans">
       {/* Sticky Action Navigation Bar */}
-      <div className="sticky top-16 z-20 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-6 py-3 flex flex-wrap items-center justify-between gap-4 -mx-6 -mt-6 mb-6 shadow-xl">
+      <div className="sticky top-16 z-20 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-9 py-3 flex flex-wrap items-center justify-between gap-4 -mx-8 -mt-8 mb-4 shadow-xl">
         <Link
           to="/predictions/new"
           className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold"
@@ -109,7 +109,7 @@ export const NewPredictionDetailPage: React.FC = () => {
           ) : (
             <button
               onClick={() => setIsRejecting(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer hover:bg-slate-700 transition-colors"
+              className="px-4 py-2 border border-slate-800/50 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer hover:bg-slate-700 transition-colors"
             >
               Отменить отклонение
             </button>
