@@ -52,6 +52,7 @@ export interface IPredictionRequestItem {
   icon: string;
   title: string;
   choices: string[];
+  choiceIcons?: Record<number, string>;
   rules: string;
   link: string;
   vote: string;

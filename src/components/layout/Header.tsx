@@ -67,11 +67,18 @@ export const Header: React.FC = () => {
     navigate('/login');
   };
 
-  const currentRoute = routeConfig[location.pathname] || {
-    title: 'Панель управления',
-    icon: Sparkles,
-    color: 'text-cyan-400',
+  const getRouteInfo = (pathname: string) => {
+    if (pathname.startsWith('/predictions/new/')) {
+      return { title: 'Модерация предсказания', icon: Sparkles, color: 'text-cyan-400' };
+    }
+    return routeConfig[pathname] || {
+      title: 'Панель управления',
+      icon: Sparkles,
+      color: 'text-cyan-400',
+    };
   };
+
+  const currentRoute = getRouteInfo(location.pathname);
   const RouteIcon = currentRoute.icon;
 
   return (
@@ -90,7 +97,7 @@ export const Header: React.FC = () => {
         <div className="relative" ref={simMenuRef}>
           <button
             onClick={() => setShowSimMenu(!showSimMenu)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-semibold transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-semibold transition-colors cursor-pointer"
           >
             <Zap size={14} className="text-cyan-400" />
             <span className="hidden sm:inline">Симулятор WS</span>
@@ -106,7 +113,7 @@ export const Header: React.FC = () => {
                   simulateNewPredictionWsEvent();
                   setShowSimMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors"
+                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
               >
                 <Sparkles size={14} className="text-cyan-400" />
                 <span>+ Заявка на предсказание</span>
@@ -116,7 +123,7 @@ export const Header: React.FC = () => {
                   simulateNewWithdrawalWsEvent();
                   setShowSimMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors"
+                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
               >
                 <Send size={14} className="text-rose-400" />
                 <span>+ Запрос на вывод средств</span>
@@ -129,7 +136,7 @@ export const Header: React.FC = () => {
         <div className="relative" ref={eventsLogRef}>
           <button
             onClick={() => setShowEventsLog(!showEventsLog)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors relative"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors relative cursor-pointer"
             title="Лог событий WebSocket"
           >
             <Bell size={18} />
@@ -167,7 +174,7 @@ export const Header: React.FC = () => {
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-800/80 transition-colors"
+            className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-800/80 transition-colors cursor-pointer"
           >
             <img
               src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=128&auto=format&fit=crop&q=80'}
@@ -195,7 +202,7 @@ export const Header: React.FC = () => {
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-xl flex items-center gap-2 transition-colors mt-1"
+                className="w-full text-left px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-xl flex items-center gap-2 transition-colors mt-1 cursor-pointer"
               >
                 <LogOut size={14} />
                 <span>Выйти</span>

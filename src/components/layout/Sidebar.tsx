@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Sparkles,
@@ -8,8 +8,6 @@ import {
   Wallet,
   ArrowLeftRight,
   Send,
-  ChevronDown,
-  ChevronRight,
   Flame,
   Coins,
   Users,
@@ -20,33 +18,21 @@ interface NavGroupProps {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
-  defaultOpen?: boolean;
 }
 
-const NavGroup: React.FC<NavGroupProps> = ({ title, icon, children, defaultOpen = true }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
+const NavGroup: React.FC<NavGroupProps> = ({ title, icon, children }) => {
   return (
     <div className="mb-3">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:text-slate-200 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          {icon}
-          <span>{title}</span>
-        </div>
-        {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-      </button>
-
-      {isOpen && <div className="mt-1 space-y-1 pl-2">{children}</div>}
+      <div className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider select-none">
+        {icon}
+        <span>{title}</span>
+      </div>
+      <div className="mt-1 space-y-1 pl-2">{children}</div>
     </div>
   );
 };
 
 export const Sidebar: React.FC = () => {
-  const location = useLocation();
-
   const hasUnreadNewRequests = useAppSelector(
     (state) => state.predictions.hasUnreadNewRequests
   );
@@ -65,7 +51,7 @@ export const Sidebar: React.FC = () => {
     <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col h-screen sticky top-0 z-40 select-none glass-panel">
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-        <NavLink to="/" className="flex items-center gap-3 group">
+        <NavLink to="/" className="flex items-center gap-3 group cursor-pointer">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
             <Flame className="w-6 h-6 text-white" />
           </div>
@@ -84,7 +70,7 @@ export const Sidebar: React.FC = () => {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all ${
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all cursor-pointer ${
               isActive
                 ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border-l-4 border-cyan-400 font-semibold'
                 : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
@@ -99,7 +85,7 @@ export const Sidebar: React.FC = () => {
         <NavLink
           to="/users"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all ${
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all cursor-pointer ${
               isActive
                 ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border-l-4 border-cyan-400 font-semibold'
                 : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
@@ -110,7 +96,7 @@ export const Sidebar: React.FC = () => {
           <span>Пользователи</span>
         </NavLink>
 
-        {/* Group 1: Предсказания */}
+        {/* Group 1: Предсказания (Static Category Header) */}
         <NavGroup
           title="Предсказания"
           icon={<Sparkles size={14} className="text-cyan-400" />}
@@ -119,7 +105,7 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/predictions/new"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-cyan-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
@@ -145,7 +131,7 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/predictions/active"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-cyan-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
@@ -162,7 +148,7 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/predictions/archive"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-cyan-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
@@ -176,7 +162,7 @@ export const Sidebar: React.FC = () => {
           </NavLink>
         </NavGroup>
 
-        {/* Group 2: Финансы */}
+        {/* Group 2: Финансы (Static Category Header) */}
         <NavGroup
           title="Финансы"
           icon={<Coins size={14} className="text-emerald-400" />}
@@ -185,7 +171,7 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/finances/info"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-emerald-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
@@ -202,7 +188,7 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/finances/transactions"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-emerald-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
@@ -219,7 +205,7 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/finances/withdrawals"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-emerald-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'

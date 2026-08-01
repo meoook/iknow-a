@@ -6,12 +6,13 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UsersPage } from './pages/UsersPage';
 import { NewPredictionsPage } from './pages/predictions/NewPredictionsPage';
+import { NewPredictionDetailPage } from './pages/predictions/NewPredictionDetailPage';
 import { ActivePredictionsPage } from './pages/predictions/ActivePredictionsPage';
 import { ArchivePredictionsPage } from './pages/predictions/ArchivePredictionsPage';
 import { FinanceInfoPage } from './pages/finance/FinanceInfoPage';
 import { TransactionsPage } from './pages/finance/TransactionsPage';
 import { WithdrawalsPage } from './pages/finance/WithdrawalsPage';
-import { useAppDispatch, useAppSelector } from './store';
+import { useAppSelector } from './store';
 import { initWebSocket } from './services/websocketSimulator';
 import { Loader2 } from 'lucide-react';
 
@@ -44,6 +45,7 @@ const ProtectedLayout: React.FC = () => {
 
             {/* Predictions Group */}
             <Route path="/predictions/new" element={<NewPredictionsPage />} />
+            <Route path="/predictions/new/:id" element={<NewPredictionDetailPage />} />
             <Route path="/predictions/active" element={<ActivePredictionsPage />} />
             <Route path="/predictions/archive" element={<ArchivePredictionsPage />} />
 

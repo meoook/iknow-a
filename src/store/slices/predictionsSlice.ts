@@ -94,6 +94,28 @@ export const predictionsSlice = createSlice({
       }
     },
 
+    regenerateChoiceIcon: (
+      state,
+      action: PayloadAction<{ requestId: number; choiceIndex: number }>
+    ) => {
+      const { requestId, choiceIndex } = action.payload;
+      const req = state.requests.find((r) => r.id === requestId);
+      if (req) {
+        if (!req.choiceIcons) req.choiceIcons = {};
+        req.choiceIcons[choiceIndex] = ICON_POOL[Math.floor(Math.random() * ICON_POOL.length)];
+      }
+    },
+
+    regenerateAllChoiceIcons: (state, action: PayloadAction<number>) => {
+      const req = state.requests.find((r) => r.id === action.payload);
+      if (req) {
+        if (!req.choiceIcons) req.choiceIcons = {};
+        req.choices.forEach((_, idx) => {
+          req.choiceIcons![idx] = ICON_POOL[Math.floor(Math.random() * ICON_POOL.length)];
+        });
+      }
+    },
+
     clearNewRequestsBadge: (state) => {
       state.requests.forEach((r) => {
         r.hasUnreadWsEvent = false;
@@ -111,7 +133,7 @@ export const predictionsSlice = createSlice({
       if (predIndex !== -1) {
         const target = state.active[predIndex];
         target.state = 'ENDED';
-        target.closed = new Date().toISOString().replace('T', ' ').substring(0, 16);
+        target.closed = new Date().toISOString().split('T')[0];
         target.choices.forEach((ch) => {
           ch.win = ch.id === winningChoiceId;
         });
@@ -136,6 +158,8 @@ export const {
   approveRequest,
   rejectRequest,
   regenerateIcon,
+  regenerateChoiceIcon,
+  regenerateAllChoiceIcons,
   clearNewRequestsBadge,
   resolveActivePrediction,
   addWsPredictionRequest,
