@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getCookie } from '../utils/cookies';
-import { IAdminUser } from '../types';
+import { IAdminUser, IPredictionRequestItem } from '../types';
 
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost/api',
+    baseUrl: import.meta.env.VITE_API_URL || '/api',
     credentials: 'include',
     prepareHeaders: (headers) => {
       const csrf = getCookie('csrftoken');
@@ -15,7 +15,7 @@ export const adminApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['AdminUser'],
+  tagTypes: ['AdminUser', 'PredictionRequests'],
   endpoints: (builder) => ({
     getAdminUser: builder.query<IAdminUser, void>({
       query: () => 'auth/user',
@@ -35,6 +35,32 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['AdminUser'],
     }),
+    getPredictionRequests: builder.query<IPredictionRequestItem[], string | void>({
+      query: (state = 'VALIDATE') => `core/admin/requests?state=${state}`,
+      providesTags: ['PredictionRequests'],
+    }),
+    approvePredictionRequest: builder.mutation<{ ok: boolean }, number>({
+      query: (id) => ({
+        url: `core/admin/requests/${id}/approve`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['PredictionRequests'],
+    }),
+    rejectPredictionRequest: builder.mutation<{ ok: boolean }, { id: number; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `core/admin/requests/${id}/reject`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: ['PredictionRequests'],
+    }),
+    changeRequestIcon: builder.mutation<IPredictionRequestItem, number>({
+      query: (id) => ({
+        url: `core/admin/requests/${id}/change-icon`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['PredictionRequests'],
+    }),
   }),
 });
 
@@ -43,4 +69,8 @@ export const {
   useLazyGetAdminUserQuery,
   useAdminLoginMutation,
   useSignOutMutation,
+  useGetPredictionRequestsQuery,
+  useApprovePredictionRequestMutation,
+  useRejectPredictionRequestMutation,
+  useChangeRequestIconMutation,
 } = adminApi;

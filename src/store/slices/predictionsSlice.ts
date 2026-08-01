@@ -36,6 +36,14 @@ export const predictionsSlice = createSlice({
   name: 'predictions',
   initialState,
   reducers: {
+    setPredictionRequests: (state, action: PayloadAction<IPredictionRequestItem[]>) => {
+      const existingUnreads = new Set(state.requests.filter((r) => r.hasUnreadWsEvent).map((r) => r.id));
+      state.requests = action.payload.map((r) => ({
+        ...r,
+        hasUnreadWsEvent: existingUnreads.has(r.id),
+      }));
+      state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
+    },
     approveRequest: (state, action: PayloadAction<number>) => {
       const reqId = action.payload;
       const req = state.requests.find((r) => r.id === reqId);
@@ -54,8 +62,8 @@ export const predictionsSlice = createSlice({
           rules: req.rules,
           link: req.link,
           volume: req.amount,
-          endDate: req.endDate,
-          betDate: req.betDate,
+          endDate: String(req.end_date || req.endDate || ''),
+          betDate: String(req.bet_date || req.betDate || ''),
           created: new Date().toISOString().split('T')[0],
           choices: req.choices.map((c, idx) => ({
             id: Date.now() + idx,
@@ -155,6 +163,7 @@ export const predictionsSlice = createSlice({
 });
 
 export const {
+  setPredictionRequests,
   approveRequest,
   rejectRequest,
   regenerateIcon,

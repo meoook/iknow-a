@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Zap,
   LogOut,
   Bell,
   Sparkles,
@@ -15,10 +14,6 @@ import {
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { logout } from '../../store/slices/authSlice';
-import {
-  simulateNewPredictionWsEvent,
-  simulateNewWithdrawalWsEvent,
-} from '../../services/websocketSimulator';
 import { useSignOutMutation } from '../../services/adminApi';
 import { useClickOutside } from '../../hooks/useClickOutside';
 
@@ -39,21 +34,17 @@ export const Header: React.FC = () => {
   const location = useLocation();
 
   const user = useAppSelector((state) => state.auth.user);
-  const isConnected = useAppSelector((state) => state.websocket.isConnected);
   const history = useAppSelector((state) => state.websocket.history);
 
-  const [showSimMenu, setShowSimMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showEventsLog, setShowEventsLog] = useState(false);
 
   const [signOut] = useSignOutMutation();
 
   // Refs for click outside detection
-  const simMenuRef = useRef<HTMLDivElement>(null);
   const eventsLogRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(simMenuRef, () => setShowSimMenu(false), showSimMenu);
   useClickOutside(eventsLogRef, () => setShowEventsLog(false), showEventsLog);
   useClickOutside(userMenuRef, () => setShowUserMenu(false), showUserMenu);
 
@@ -91,47 +82,8 @@ export const Header: React.FC = () => {
         </h1>
       </div>
 
-      {/* Right Action Icons: WS Simulator, Notifications, User Menu */}
+      {/* Right Action Icons: Realtime Log, User Profile Menu */}
       <div className="flex items-center gap-3">
-        {/* WebSocket Event Simulator Button */}
-        <div className="relative" ref={simMenuRef}>
-          <button
-            onClick={() => setShowSimMenu(!showSimMenu)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-semibold transition-colors cursor-pointer"
-          >
-            <Zap size={14} className="text-cyan-400" />
-            <span className="hidden sm:inline">Симулятор WS</span>
-          </button>
-
-          {showSimMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95">
-              <div className="text-[11px] font-bold text-slate-400 px-3 py-1.5 uppercase tracking-wider">
-                Симуляция WS событий
-              </div>
-              <button
-                onClick={() => {
-                  simulateNewPredictionWsEvent();
-                  setShowSimMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
-              >
-                <Sparkles size={14} className="text-cyan-400" />
-                <span>+ Заявка на предсказание</span>
-              </button>
-              <button
-                onClick={() => {
-                  simulateNewWithdrawalWsEvent();
-                  setShowSimMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
-              >
-                <Send size={14} className="text-rose-400" />
-                <span>+ Запрос на вывод средств</span>
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Real-time WS Events Drawer Button */}
         <div className="relative" ref={eventsLogRef}>
           <button

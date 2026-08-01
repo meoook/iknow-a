@@ -40,6 +40,8 @@ export const Sidebar: React.FC = () => {
     (state) => state.predictions.requests.filter((r) => r.hasUnreadWsEvent).length
   );
 
+  const isConnected = useAppSelector((state) => state.websocket.isConnected);
+
   const hasUnreadWithdrawals = useAppSelector(
     (state) => state.finance.hasUnreadWithdrawals
   );
@@ -232,10 +234,17 @@ export const Sidebar: React.FC = () => {
       {/* Footer System Status */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400 flex items-center justify-between">
         <span className="font-mono text-[11px]">v1.0.4-admin</span>
-        <span className="inline-flex items-center gap-1 text-emerald-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Online
-        </span>
+        {isConnected ? (
+          <span className="inline-flex items-center gap-1.5 text-emerald-400 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Online
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-rose-400 font-medium">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            Offline
+          </span>
+        )}
       </div>
     </aside>
   );

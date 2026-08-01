@@ -25,7 +25,13 @@ import {
   regenerateChoiceIcon,
   regenerateAllChoiceIcons,
 } from '../../store/slices/predictionsSlice';
+import {
+  useApprovePredictionRequestMutation,
+  useRejectPredictionRequestMutation,
+  useChangeRequestIconMutation,
+} from '../../services/adminApi';
 import { REJECTION_TEMPLATES } from '../../data/mockData';
+import { formatDisplayDate } from '../../utils/dates';
 
 const DEFAULT_CHOICE_ICON =
   'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=128&auto=format&fit=crop&q=80';
@@ -39,6 +45,10 @@ export const NewPredictionDetailPage: React.FC = () => {
   const req = useAppSelector((state) =>
     state.predictions.requests.find((r) => r.id === requestId)
   );
+
+  const [approveApi] = useApprovePredictionRequestMutation();
+  const [rejectApi] = useRejectPredictionRequestMutation();
+  const [changeIconApi] = useChangeRequestIconMutation();
 
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
@@ -63,15 +73,38 @@ export const NewPredictionDetailPage: React.FC = () => {
     );
   }
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
+    try {
+      await approveApi(req.id).unwrap();
+    } catch (e) {
+      console.warn('API approve call error, applying local store update', e);
+    }
     dispatch(approveRequest(req.id));
     navigate('/predictions/new');
   };
 
-  const handleConfirmReject = () => {
+  const handleConfirmReject = async () => {
     const finalReason = customReason.trim() || selectedTemplate || 'Отклонено модератором';
+    try {
+      await rejectApi({ id: req.id, reason: finalReason }).unwrap();
+    } catch (e) {
+      console.warn('API reject call error, applying local store update', e);
+    }
     dispatch(rejectRequest({ id: req.id, reason: finalReason }));
     navigate('/predictions/new');
+  };
+
+  const handleChangeIcon = async () => {
+    try {
+      const updated = await changeIconApi(req.id).unwrap();
+      if (updated?.icon) {
+        // Redux store will be updated by RTK Query invalidation
+        return;
+      }
+    } catch (e) {
+      console.warn('API change-icon error, applying local icon fallback', e);
+    }
+    dispatch(regenerateIcon(req.id));
   };
 
   return (
@@ -189,7 +222,7 @@ export const NewPredictionDetailPage: React.FC = () => {
               className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl"
             />
             <button
-              onClick={() => dispatch(regenerateIcon(req.id))}
+              onClick={handleChangeIcon}
               className="absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-transform hover:scale-110 cursor-pointer"
               title="Сгенерировать другую главную иконку"
             >
@@ -259,7 +292,7 @@ export const NewPredictionDetailPage: React.FC = () => {
                 <Clock size={13} className="text-slate-500" />
                 <span>Создано:</span>
               </span>
-              <span className="font-mono text-slate-200 font-bold">{req.created}</span>
+              <span className="font-mono text-slate-200 font-bold">{formatDisplayDate(req.created)}</span>
             </div>
 
             <div className="flex items-center justify-between text-xs">
@@ -267,7 +300,7 @@ export const NewPredictionDetailPage: React.FC = () => {
                 <Calendar size={13} className="text-amber-400" />
                 <span>Ставки до:</span>
               </span>
-              <span className="font-mono text-amber-400 font-bold">{req.betDate}</span>
+              <span className="font-mono text-amber-400 font-bold">{formatDisplayDate(req.bet_date || req.betDate)}</span>
             </div>
 
             <div className="flex items-center justify-between text-xs">
@@ -275,7 +308,7 @@ export const NewPredictionDetailPage: React.FC = () => {
                 <CheckCircle2 size={13} className="text-cyan-400" />
                 <span>Финал:</span>
               </span>
-              <span className="font-mono text-cyan-400 font-bold">{req.endDate}</span>
+              <span className="font-mono text-cyan-400 font-bold">{formatDisplayDate(req.end_date || req.endDate)}</span>
             </div>
           </div>
         </div>

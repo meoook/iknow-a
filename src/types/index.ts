@@ -45,8 +45,10 @@ export interface IUserItem {
 export interface IPredictionRequestItem {
   id: number;
   user: IUserRef;
+  moderator?: number | null;
   moderatorId?: number;
   state: RequestState;
+  reject_reason?: string;
   rejectReason?: string;
   groups: GroupTag[];
   icon: string;
@@ -57,9 +59,11 @@ export interface IPredictionRequestItem {
   link: string;
   vote: string;
   amount: number;
-  endDate: string;
-  betDate: string;
-  created: string;
+  end_date?: string;
+  endDate?: string;
+  bet_date?: string;
+  betDate?: string;
+  created: number | string;
   hasUnreadWsEvent?: boolean;
 }
 
