@@ -19,7 +19,7 @@ export const NewPredictionsPage: React.FC = () => {
   const hasUnread = useAppSelector((state) => state.predictions.hasUnreadNewRequests);
 
   // Fetch real prediction requests from backend API
-  const { data: apiRequests, isLoading } = useGetPredictionRequestsQuery('VALIDATE');
+  const { data: apiRequests, isLoading } = useGetPredictionRequestsQuery();
 
   useEffect(() => {
     if (apiRequests && Array.isArray(apiRequests)) {

@@ -96,11 +96,7 @@ export const NewPredictionDetailPage: React.FC = () => {
 
   const handleChangeIcon = async () => {
     try {
-      const updated = await changeIconApi(req.id).unwrap();
-      if (updated?.icon) {
-        // Redux store will be updated by RTK Query invalidation
-        return;
-      }
+      await changeIconApi(req.id).unwrap();
     } catch (e) {
       console.warn('API change-icon error, applying local icon fallback', e);
     }

@@ -35,18 +35,18 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['AdminUser'],
     }),
-    getPredictionRequests: builder.query<IPredictionRequestItem[], string | void>({
-      query: (state = 'VALIDATE') => `core/admin/requests?state=${state}`,
+    getPredictionRequests: builder.query<IPredictionRequestItem[], void>({
+      query: () => 'core/admin/requests',
       providesTags: ['PredictionRequests'],
     }),
-    approvePredictionRequest: builder.mutation<{ ok: boolean }, number>({
+    approvePredictionRequest: builder.mutation<void, number>({
       query: (id) => ({
         url: `core/admin/requests/${id}/approve`,
         method: 'POST',
       }),
       invalidatesTags: ['PredictionRequests'],
     }),
-    rejectPredictionRequest: builder.mutation<{ ok: boolean }, { id: number; reason: string }>({
+    rejectPredictionRequest: builder.mutation<void, { id: number; reason: string }>({
       query: ({ id, reason }) => ({
         url: `core/admin/requests/${id}/reject`,
         method: 'POST',
@@ -54,10 +54,11 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['PredictionRequests'],
     }),
-    changeRequestIcon: builder.mutation<IPredictionRequestItem, number>({
+    changeRequestIcon: builder.mutation<void, number>({
       query: (id) => ({
-        url: `core/admin/requests/${id}/change-icon`,
-        method: 'POST',
+        url: `core/admin/requests/${id}`,
+        method: 'PUT',
+        body: { icon: true },
       }),
       invalidatesTags: ['PredictionRequests'],
     }),
