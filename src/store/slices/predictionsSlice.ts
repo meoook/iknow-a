@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   IPredictionRequestItem,
   IPredictionItem,
+  RequestState,
 } from '../../types';
 import {
   initialPredictionRequests,
@@ -26,10 +27,10 @@ const ICON_POOL = [
 ];
 
 const initialState: IPredictionsState = {
-  requests: initialPredictionRequests,
+  requests: [],
   active: initialActivePredictions,
   archive: initialArchivePredictions,
-  hasUnreadNewRequests: initialPredictionRequests.some((r) => r.hasUnreadWsEvent),
+  hasUnreadNewRequests: false,
 };
 
 export const predictionsSlice = createSlice({
@@ -98,7 +99,7 @@ export const predictionsSlice = createSlice({
       const req = state.requests.find((r) => r.id === action.payload);
       if (req) {
         const nextIcon = ICON_POOL[Math.floor(Math.random() * ICON_POOL.length)];
-        req.icon = nextIcon;
+        req.icon = req.icon || nextIcon;
       }
     },
 
@@ -159,6 +160,35 @@ export const predictionsSlice = createSlice({
       state.requests.unshift(newItem);
       state.hasUnreadNewRequests = true;
     },
+
+    updateWsPredictionRequest: (
+      state,
+      action: PayloadAction<Partial<IPredictionRequestItem> & { params?: Partial<IPredictionRequestItem> }>
+    ) => {
+      const { id, params, ...directProps } = action.payload;
+      const req = state.requests.find((r) => r.id === id);
+      if (req) {
+        Object.assign(req, directProps, params);
+        if (req.state === 'APPROVED' || req.state === 'REJECTED') {
+          state.requests = state.requests.filter((r) => r.id !== id);
+        }
+      }
+    },
+    setRequestModerator: (
+      state,
+      action: PayloadAction<{ id: number; moderator: string }>
+    ) => {
+      const { id, moderator } = action.payload;
+      const req = state.requests.find((r) => r.id === id);
+      if (req && moderator) {
+        if (!req.moderators) {
+          req.moderators = [];
+        }
+        if (!req.moderators.includes(moderator)) {
+          req.moderators.push(moderator);
+        }
+      }
+    },
   },
 });
 
@@ -172,6 +202,8 @@ export const {
   clearNewRequestsBadge,
   resolveActivePrediction,
   addWsPredictionRequest,
+  updateWsPredictionRequest,
+  setRequestModerator,
 } = predictionsSlice.actions;
 
 export default predictionsSlice.reducer;

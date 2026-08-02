@@ -6,11 +6,13 @@ import {
   Calendar,
   Clock,
   Loader2,
+  UserCheck,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { clearNewRequestsBadge, setPredictionRequests } from '../../store/slices/predictionsSlice';
 import { useGetPredictionRequestsQuery } from '../../services/adminApi';
 import { formatDisplayDate } from '../../utils/dates';
+import { formatIconUrl } from '../../utils/images';
 
 export const NewPredictionsPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -92,7 +94,7 @@ export const NewPredictionsPage: React.FC = () => {
                 {/* Left & Middle Content: Icon, Title, Tags, User, Bet */}
                 <div className="flex items-start gap-4 flex-1 min-w-0 w-full">
                   <img
-                    src={req.icon || 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=128&auto=format&fit=crop&q=80'}
+                    src={formatIconUrl(req.icon)}
                     alt="Icon"
                     className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover border border-slate-700 shrink-0 shadow-lg group-hover:border-cyan-500/60 transition-colors"
                   />
@@ -120,6 +122,15 @@ export const NewPredictionsPage: React.FC = () => {
                       <span className="font-mono text-emerald-400 font-bold text-sm">
                         ${req.amount.toLocaleString()} bet
                       </span>
+                      {req.moderators && req.moderators.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span className="bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1">
+                            <UserCheck className="w-3 h-3 text-amber-400" />
+                            Взято в работу: @{req.moderators.join(', @')}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

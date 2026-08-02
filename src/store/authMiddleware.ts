@@ -2,6 +2,7 @@ import type { Middleware } from '@reduxjs/toolkit';
 import { adminApi } from '../services/adminApi';
 import { getCookie } from '../utils/cookies';
 import { setAuthUser, setAuthFailed, logout } from './slices/authSlice';
+import { initWebSocket, closeWebSocket } from '../services/websocket';
 import type { RootState } from './index';
 
 /**
@@ -9,6 +10,7 @@ import type { RootState } from './index';
  * 1. Initial user load on app start ONLY if cookie 'authed' === '1'.
  * 2. Reaction to login/logout endpoints.
  * 3. Polling for 'authed' cookie expiration.
+ * 4. WebSocket connection lifecycle management.
  */
 export const authMiddleware: Middleware = (store) => {
   let pollingInterval: ReturnType<typeof setInterval> | null = null;
@@ -46,7 +48,10 @@ export const authMiddleware: Middleware = (store) => {
       store.dispatch(adminApi.endpoints.getAdminUser.initiate(undefined, { forceRefetch: true }));
     } else {
       store.dispatch(setAuthFailed());
-      if (state.auth.user) startPolling();
+      if (state.auth.user) {
+        startPolling();
+        initWebSocket();
+      }
     }
   }, 0);
 
@@ -65,18 +70,20 @@ export const authMiddleware: Middleware = (store) => {
       if (userData) {
         store.dispatch(setAuthUser(userData));
         startPolling();
+        initWebSocket();
       }
     }
 
     // If getAdminUser was rejected (401 / 403)
-    if (adminApi.endpoints.getAdminUser.matchRejected(action)) {
-      store.dispatch(setAuthFailed());
+    if (adminApi.endpoints.getAdminUser.matchRejected(action) || setAuthFailed.match(action)) {
+      closeWebSocket();
       stopPolling();
     }
 
-    // Sign out mutation
-    if (adminApi.endpoints.signOut.matchFulfilled(action)) {
-      store.dispatch(logout());
+    // Sign out mutation or logout action
+    if (adminApi.endpoints.signOut.matchFulfilled(action) || logout.match(action)) {
+      closeWebSocket();
+      store.dispatch(adminApi.util.resetApiState());
       stopPolling();
     }
 

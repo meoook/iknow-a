@@ -74,7 +74,7 @@ export const LoginPage: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-xl shadow-cyan-500/20 mb-4">
             <Flame className="w-9 h-9 text-white" />
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">IKNOW ADMIN</h1>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">IVANGA ADMIN</h1>
           <p className="text-sm text-slate-400 mt-1">Вход в панель администратора</p>
         </div>
 
@@ -90,7 +90,7 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Логин администратора
+              Логин
             </label>
             <div className="relative">
               <User className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
@@ -100,7 +100,7 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="admin_iknow"
+                placeholder="username"
               />
             </div>
           </div>
@@ -117,7 +117,7 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="••••••••••••"
+                placeholder="password"
               />
             </div>
           </div>
@@ -125,10 +125,13 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all hover:shadow-cyan-500/40 active:scale-[0.98] disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all hover:shadow-cyan-500/40 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <>
+                <span>Проверка</span>
+                <Loader2 className="w-5 h-5 animate-spin" />
+              </>
             ) : (
               <>
                 <span>Войти в систему</span>

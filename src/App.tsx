@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -13,18 +13,11 @@ import { FinanceInfoPage } from './pages/finance/FinanceInfoPage';
 import { TransactionsPage } from './pages/finance/TransactionsPage';
 import { WithdrawalsPage } from './pages/finance/WithdrawalsPage';
 import { useAppSelector } from './store';
-import { initWebSocket } from './services/websocketSimulator';
 import { Loader2 } from 'lucide-react';
 
 const ProtectedLayout: React.FC = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const location = useLocation();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      initWebSocket();
-    }
-  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;

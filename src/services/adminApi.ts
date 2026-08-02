@@ -33,22 +33,25 @@ export const adminApi = createApi({
         url: 'auth/user',
         method: 'DELETE',
       }),
-      invalidatesTags: ['AdminUser'],
     }),
     getPredictionRequests: builder.query<IPredictionRequestItem[], void>({
-      query: () => 'core/admin/requests',
+      query: () => 'admin/requests',
       providesTags: ['PredictionRequests'],
+    }),
+    getPredictionRequestById: builder.query<IPredictionRequestItem, number>({
+      query: (id) => `admin/requests/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'PredictionRequests', id }],
     }),
     approvePredictionRequest: builder.mutation<void, number>({
       query: (id) => ({
-        url: `core/admin/requests/${id}/approve`,
+        url: `admin/requests/${id}/approve`,
         method: 'POST',
       }),
       invalidatesTags: ['PredictionRequests'],
     }),
     rejectPredictionRequest: builder.mutation<void, { id: number; reason: string }>({
       query: ({ id, reason }) => ({
-        url: `core/admin/requests/${id}/reject`,
+        url: `admin/requests/${id}/reject`,
         method: 'POST',
         body: { reason },
       }),
@@ -56,7 +59,7 @@ export const adminApi = createApi({
     }),
     changeRequestIcon: builder.mutation<void, number>({
       query: (id) => ({
-        url: `core/admin/requests/${id}`,
+        url: `admin/requests/${id}`,
         method: 'PUT',
         body: { icon: true },
       }),
@@ -71,6 +74,7 @@ export const {
   useAdminLoginMutation,
   useSignOutMutation,
   useGetPredictionRequestsQuery,
+  useGetPredictionRequestByIdQuery,
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,

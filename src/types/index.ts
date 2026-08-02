@@ -45,8 +45,7 @@ export interface IUserItem {
 export interface IPredictionRequestItem {
   id: number;
   user: IUserRef;
-  moderator?: number | null;
-  moderatorId?: number;
+  moderators?: string[];
   state: RequestState;
   reject_reason?: string;
   rejectReason?: string;

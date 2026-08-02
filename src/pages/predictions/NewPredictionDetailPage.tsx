@@ -16,8 +16,11 @@ import {
   Image as ImageIcon,
   Tag,
   DollarSign,
+  UserCheck,
+  Loader2,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
+import { sendWsMessage } from '../../services/websocket';
 import {
   approveRequest,
   rejectRequest,
@@ -26,15 +29,16 @@ import {
   regenerateAllChoiceIcons,
 } from '../../store/slices/predictionsSlice';
 import {
+  useGetPredictionRequestByIdQuery,
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,
 } from '../../services/adminApi';
 import { REJECTION_TEMPLATES } from '../../data/mockData';
 import { formatDisplayDate } from '../../utils/dates';
+import { formatIconUrl } from '../../utils/images';
 
-const DEFAULT_CHOICE_ICON =
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=128&auto=format&fit=crop&q=80';
+const DEFAULT_CHOICE_ICON = 'http://localhost/static/tmp/no_icon.png';
 
 export const NewPredictionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,9 +46,16 @@ export const NewPredictionDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const requestId = Number(id);
-  const req = useAppSelector((state) =>
+  const reduxReq = useAppSelector((state) =>
     state.predictions.requests.find((r) => r.id === requestId)
   );
+
+  const { data: apiReq, isLoading: isApiLoading } = useGetPredictionRequestByIdQuery(
+    requestId,
+    { skip: !requestId }
+  );
+
+  const req = reduxReq || apiReq;
 
   const [approveApi] = useApprovePredictionRequestMutation();
   const [rejectApi] = useRejectPredictionRequestMutation();
@@ -53,6 +64,21 @@ export const NewPredictionDetailPage: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
   const [isRejecting, setIsRejecting] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (requestId) {
+      sendWsMessage({ type: 'request.join', value: requestId });
+    }
+  }, [requestId]);
+
+  if (isApiLoading && !req) {
+    return (
+      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto" />
+        <p className="text-sm font-semibold text-slate-300">Загрузка информации о заявке...</p>
+      </div>
+    );
+  }
 
   if (!req) {
     return (
@@ -107,13 +133,22 @@ export const NewPredictionDetailPage: React.FC = () => {
     <div className="flex flex-col gap-6 font-sans">
       {/* Sticky Action Navigation Bar */}
       <div className="sticky top-16 z-20 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-9 py-3 flex flex-wrap items-center justify-between gap-4 -mx-8 -mt-8 mb-4 shadow-xl">
-        <Link
-          to="/predictions/new"
-          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold"
-        >
-          <ArrowLeft size={16} />
-          <span>Назад к списку</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/predictions/new"
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold"
+          >
+            <ArrowLeft size={16} />
+            <span>Назад к списку</span>
+          </Link>
+
+          {req.moderators && req.moderators.length > 0 && (
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0">
+              <UserCheck size={14} className="text-amber-400" />
+              <span>Взято в работу: @{req.moderators.join(', @')}</span>
+            </div>
+          )}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
@@ -213,7 +248,7 @@ export const NewPredictionDetailPage: React.FC = () => {
           {/* Main Prediction Icon with Regenerate Button on Image */}
           <div className="relative group shrink-0">
             <img
-              src={req.icon}
+              src={formatIconUrl(req.icon)}
               alt="Main Icon"
               className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl"
             />
