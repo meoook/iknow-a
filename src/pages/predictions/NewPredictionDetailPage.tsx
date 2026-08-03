@@ -99,25 +99,23 @@ export const NewPredictionDetailPage: React.FC = () => {
     );
   }
 
-  const handleApprove = async () => {
-    try {
-      await approveApi(req.id).unwrap();
-    } catch (e) {
-      console.warn('API approve call error, applying local store update', e);
-    }
-    dispatch(approveRequest(req.id));
+  const handleApprove = () => {
+    const targetId = req.id;
+    dispatch(approveRequest(targetId));
     navigate('/predictions/new');
+    approveApi(targetId).catch((e) => {
+      console.warn('API approve call error', e);
+    });
   };
 
-  const handleConfirmReject = async () => {
+  const handleConfirmReject = () => {
+    const targetId = req.id;
     const finalReason = customReason.trim() || selectedTemplate || 'Отклонено модератором';
-    try {
-      await rejectApi({ id: req.id, reason: finalReason }).unwrap();
-    } catch (e) {
-      console.warn('API reject call error, applying local store update', e);
-    }
-    dispatch(rejectRequest({ id: req.id, reason: finalReason }));
+    dispatch(rejectRequest({ id: targetId, reason: finalReason }));
     navigate('/predictions/new');
+    rejectApi({ id: targetId, reason: finalReason }).catch((e) => {
+      console.warn('API reject call error', e);
+    });
   };
 
   const handleChangeIcon = async () => {

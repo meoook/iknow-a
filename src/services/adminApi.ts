@@ -47,7 +47,6 @@ export const adminApi = createApi({
         url: `admin/requests/${id}/approve`,
         method: 'POST',
       }),
-      invalidatesTags: ['PredictionRequests'],
     }),
     rejectPredictionRequest: builder.mutation<void, { id: number; reason: string }>({
       query: ({ id, reason }) => ({
@@ -55,7 +54,6 @@ export const adminApi = createApi({
         method: 'POST',
         body: { reason },
       }),
-      invalidatesTags: ['PredictionRequests'],
     }),
     changeRequestIcon: builder.mutation<void, number>({
       query: (id) => ({

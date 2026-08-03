@@ -39,10 +39,16 @@ export const predictionsSlice = createSlice({
   reducers: {
     setPredictionRequests: (state, action: PayloadAction<IPredictionRequestItem[]>) => {
       const existingUnreads = new Set(state.requests.filter((r) => r.hasUnreadWsEvent).map((r) => r.id));
-      state.requests = action.payload.map((r) => ({
-        ...r,
-        hasUnreadWsEvent: existingUnreads.has(r.id),
-      }));
+      const existingModerators = new Map(state.requests.map((r) => [r.id, r.moderators]));
+
+      state.requests = action.payload
+        .filter((r) => r.state === 'VALIDATE')
+        .map((r) => ({
+          ...r,
+          hasUnreadWsEvent: existingUnreads.has(r.id),
+          moderators: existingModerators.get(r.id) || r.moderators,
+        }));
+
       state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
     },
     approveRequest: (state, action: PayloadAction<number>) => {
@@ -166,11 +172,13 @@ export const predictionsSlice = createSlice({
       action: PayloadAction<Partial<IPredictionRequestItem> & { params?: Partial<IPredictionRequestItem> }>
     ) => {
       const { id, params, ...directProps } = action.payload;
-      const req = state.requests.find((r) => r.id === id);
-      if (req) {
-        Object.assign(req, directProps, params);
-        if (req.state === 'APPROVED' || req.state === 'REJECTED') {
-          state.requests = state.requests.filter((r) => r.id !== id);
+      const targetState = params?.state || directProps.state;
+      if (id !== undefined && (targetState === 'APPROVED' || targetState === 'REJECTED')) {
+        state.requests = state.requests.filter((r) => r.id !== id);
+      } else if (id !== undefined) {
+        const req = state.requests.find((r) => r.id === id);
+        if (req) {
+          Object.assign(req, directProps, params);
         }
       }
     },
