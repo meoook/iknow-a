@@ -28,6 +28,20 @@ export const usersSlice = createSlice({
       }
     },
 
+    toggleUserStaff: (state, action: PayloadAction<number>) => {
+      const user = state.users.find((u) => u.id === action.payload);
+      if (user) {
+        user.isStaff = !user.isStaff;
+      }
+    },
+
+    toggleUserSuperuser: (state, action: PayloadAction<number>) => {
+      const user = state.users.find((u) => u.id === action.payload);
+      if (user) {
+        user.isSuperuser = !user.isSuperuser;
+      }
+    },
+
     changeUserPassword: (
       _state,
       _action: PayloadAction<{ userId: number; newPassword: string }>
@@ -37,7 +51,12 @@ export const usersSlice = createSlice({
   },
 });
 
-export const { toggleUserActive, toggleUserWithdrawBlocked, changeUserPassword } =
-  usersSlice.actions;
+export const {
+  toggleUserActive,
+  toggleUserWithdrawBlocked,
+  toggleUserStaff,
+  toggleUserSuperuser,
+  changeUserPassword,
+} = usersSlice.actions;
 
 export default usersSlice.reducer;

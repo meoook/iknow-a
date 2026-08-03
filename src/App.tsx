@@ -5,6 +5,7 @@ import { Header } from './components/layout/Header';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UsersPage } from './pages/UsersPage';
+import { UserDetailPage } from './pages/UserDetailPage';
 import { NewPredictionsPage } from './pages/predictions/NewPredictionsPage';
 import { NewPredictionDetailPage } from './pages/predictions/NewPredictionDetailPage';
 import { ActivePredictionsPage } from './pages/predictions/ActivePredictionsPage';
@@ -35,6 +36,7 @@ const ProtectedLayout: React.FC = () => {
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/:id" element={<UserDetailPage />} />
 
             {/* Predictions Group */}
             <Route path="/predictions/new" element={<NewPredictionsPage />} />

@@ -30,16 +30,54 @@ export interface IUserRef {
   telegramId?: number;
 }
 
+export interface IUserDepositWallet {
+  chain: string;
+  address: string;
+}
+
+export interface IUserIpActivity {
+  id: string;
+  ip: string;
+  device: string;
+  location: string;
+  timestamp: string;
+}
+
+export interface IUserMessageActivity {
+  id: string;
+  topic: string;
+  message: string;
+  timestamp: string;
+}
+
+export interface IUserBetActivity {
+  id: string;
+  predictionTitle: string;
+  choice: string;
+  amount: number;
+  multiplier: number;
+  status: 'WIN' | 'LOSS' | 'PENDING';
+  timestamp: string;
+}
+
 export interface IUserItem {
   id: number;
   username: string;
-  email: string;
+  email?: string;
+  loginAddress?: string;
   balanceUsd: number;
   isActive: boolean;
   withdrawBlocked: boolean;
+  isStaff: boolean;
+  isSuperuser: boolean;
   createdAt: string;
   telegramId?: number;
   avatarUrl?: string;
+  balanceHistory?: { time: string; value: number }[];
+  depositWallets?: IUserDepositWallet[];
+  recentIps?: IUserIpActivity[];
+  recentMessages?: IUserMessageActivity[];
+  recentBets?: IUserBetActivity[];
 }
 
 export interface IPredictionRequestItem {
