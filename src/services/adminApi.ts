@@ -23,7 +23,7 @@ export const adminApi = createApi({
     }),
     adminLogin: builder.mutation<{ ok: boolean }, { username: string; password: string }>({
       query: (body) => ({
-        url: 'auth/admin/login',
+        url: 'auth/login',
         method: 'POST',
         body,
       }),
