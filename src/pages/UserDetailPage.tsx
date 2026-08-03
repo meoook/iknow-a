@@ -200,217 +200,217 @@ export const UserDetailPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Main User Profile & Info Columns */}
-      <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-6 shadow-xl">
-        {/* Avatar & Header Title */}
-        <div className="flex items-center gap-4 pb-6 border-b border-slate-800">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center font-black text-xl text-cyan-400 shrink-0 shadow-lg">
-            {user.username[0].toUpperCase()}
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-100">@{user.username}</h1>
-              <span className="text-xs text-slate-500 font-mono">ID: #{user.id}</span>
+      {/* Top 2-Column Row: User Info (Left 2/3) + Admin Rights Toggles (Right 1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column (2/3 width): User Profile Header & Vertical Info Fields */}
+        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-6 shadow-xl flex flex-col justify-between">
+          {/* Avatar & Header Title */}
+          <div className="flex items-center gap-4 pb-6 border-b border-slate-800">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center font-black text-xl text-cyan-400 shrink-0 shadow-lg">
+              {user.username[0].toUpperCase()}
             </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-slate-100">@{user.username}</h1>
+                <span className="text-xs text-slate-500 font-mono">ID: #{user.id}</span>
+              </div>
 
-            <div className="flex items-center gap-2 pt-0.5">
-              {user.isSuperuser && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-purple-400 bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded-md uppercase">
-                  <ShieldAlert size={10} />
-                  <span>Superuser</span>
-                </span>
-              )}
-              {user.isStaff && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded-md uppercase">
-                  <span>Staff</span>
-                </span>
-              )}
-              {user.isActive ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                  <CheckCircle2 size={10} />
-                  <span>Активен</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md">
-                  <XCircle size={10} />
-                  <span>Заблокирован</span>
-                </span>
-              )}
+              <div className="flex items-center gap-2 pt-0.5">
+                {user.isSuperuser && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-purple-400 bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded-md uppercase">
+                    <ShieldAlert size={10} />
+                    <span>Superuser</span>
+                  </span>
+                )}
+                {user.isStaff && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded-md uppercase">
+                    <span>Staff</span>
+                  </span>
+                )}
+                {user.isActive ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                    <CheckCircle2 size={10} />
+                    <span>Активен</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md">
+                    <XCircle size={10} />
+                    <span>Заблокирован</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* User Info Fields - Vertical Column (В столбик) */}
+          <div>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              Основная информация аккаунта
+            </h3>
+
+            <div className="divide-y divide-slate-800/80 bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-hidden text-xs">
+              {/* Email Row */}
+              <div className="p-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-slate-400 font-medium">
+                  <Mail size={14} className="text-cyan-400" />
+                  <span>Почта (Email)</span>
+                </div>
+                <div className="font-mono text-slate-200">
+                  {user.email ? (
+                    <span>{user.email}</span>
+                  ) : (
+                    <span className="text-slate-500 italic">Не указана</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Telegram Row */}
+              <div className="p-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-slate-400 font-medium">
+                  <Send size={14} className="text-cyan-400" />
+                  <span>Telegram ID</span>
+                </div>
+                <div className="font-mono text-slate-200">
+                  {user.telegramId ? (
+                    <span>@{user.telegramId}</span>
+                  ) : (
+                    <span className="text-slate-500 italic">Не привязан</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Login Address Row */}
+              <div className="p-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-slate-400 font-medium">
+                  <QrCode size={14} className="text-cyan-400" />
+                  <span>Адрес для входа (Login Wallet)</span>
+                </div>
+                <div className="font-mono text-slate-200">
+                  {user.loginAddress ? (
+                    <div
+                      onClick={() => handleCopy(user.loginAddress!)}
+                      className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 px-3 py-1 rounded-lg cursor-pointer transition-all group"
+                      title="Кликните в любом месте, чтобы скопировать адрес"
+                    >
+                      <span className="truncate max-w-[200px] sm:max-w-xs text-xs">{user.loginAddress}</span>
+                      {copiedText === user.loginAddress ? (
+                        <Check size={14} className="text-emerald-400 shrink-0" />
+                      ) : (
+                        <Copy size={14} className="text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0" />
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-500 italic">Не привязан</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Date Joined Row */}
+              <div className="p-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-slate-400 font-medium">
+                  <Clock size={14} className="text-cyan-400" />
+                  <span>Дата регистрации</span>
+                </div>
+                <div className="font-mono text-slate-200">
+                  {user.createdAt}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* User Info Fields - Vertical Column (В столбик) */}
-        <div>
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-            Основная информация аккаунта
-          </h3>
-
-          <div className="divide-y divide-slate-800/80 bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-hidden text-xs">
-            {/* Email Row */}
-            <div className="p-3.5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-slate-400 font-medium">
-                <Mail size={14} className="text-cyan-400" />
-                <span>Почта (Email)</span>
+        {/* Right Column (1/3 width): Admin Action Controls & Toggles */}
+        <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-4 shadow-xl flex flex-col justify-center">
+          <div>
+            <div className="space-y-3">
+              {/* Active Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div>
+                  <span className="font-bold text-slate-200 text-xs block">Активен (isActive)</span>
+                  <span className="text-[10px] text-slate-400">
+                    {user.isActive ? 'Разрешен вход' : 'Заблокирован'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleToggleActive}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                    user.isActive ? 'bg-emerald-500' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      user.isActive ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
-              <div className="font-mono text-slate-200">
-                {user.email ? (
-                  <span>{user.email}</span>
-                ) : (
-                  <span className="text-slate-500 italic">Не указана</span>
-                )}
+
+              {/* Withdraw Blocked Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div>
+                  <span className="font-bold text-slate-200 text-xs block">Запрет вывода</span>
+                  <span className="text-[10px] text-slate-400">
+                    {user.withdrawBlocked ? 'Вывод заблокирован' : 'Вывод разрешен'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleToggleWithdrawBlocked}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                    user.withdrawBlocked ? 'bg-rose-500' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      user.withdrawBlocked ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Staff Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div>
+                  <span className="font-bold text-slate-200 text-xs block">Персонал (is_staff)</span>
+                  <span className="text-[10px] text-slate-400">
+                    {user.isStaff ? 'Доступ к админке' : 'Обычный юзер'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleToggleStaff}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                    user.isStaff ? 'bg-cyan-500' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      user.isStaff ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Superuser Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div>
+                  <span className="font-bold text-slate-200 text-xs block">Суперпользователь</span>
+                  <span className="text-[10px] text-slate-400">
+                    {user.isSuperuser ? 'Полные права' : 'Ограничен'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleToggleSuperuser}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                    user.isSuperuser ? 'bg-purple-500' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      user.isSuperuser ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
-
-            {/* Telegram Row */}
-            <div className="p-3.5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-slate-400 font-medium">
-                <Send size={14} className="text-cyan-400" />
-                <span>Telegram ID</span>
-              </div>
-              <div className="font-mono text-slate-200">
-                {user.telegramId ? (
-                  <span>@{user.telegramId}</span>
-                ) : (
-                  <span className="text-slate-500 italic">Не привязан</span>
-                )}
-              </div>
-            </div>
-
-            {/* Login Address Row */}
-            <div className="p-3.5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-slate-400 font-medium">
-                <QrCode size={14} className="text-cyan-400" />
-                <span>Адрес для входа (Login Wallet)</span>
-              </div>
-              <div className="font-mono text-slate-200">
-                {user.loginAddress ? (
-                  <div
-                    onClick={() => handleCopy(user.loginAddress!)}
-                    className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 px-3 py-1.5 rounded-lg cursor-pointer transition-all group"
-                    title="Кликните в любом месте, чтобы скопировать адрес"
-                  >
-                    <span className="truncate max-w-[240px] sm:max-w-md text-xs">{user.loginAddress}</span>
-                    {copiedText === user.loginAddress ? (
-                      <Check size={14} className="text-emerald-400 shrink-0" />
-                    ) : (
-                      <Copy size={14} className="text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0" />
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-500 italic">Не привязан</span>
-                )}
-              </div>
-            </div>
-
-            {/* Date Joined Row */}
-            <div className="p-3.5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-slate-400 font-medium">
-                <Clock size={14} className="text-cyan-400" />
-                <span>Дата регистрации</span>
-              </div>
-              <div className="font-mono text-slate-200">
-                {user.createdAt}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Admin Action Controls & Toggles (Moved above Balance Chart) */}
-      <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-4 shadow-xl">
-        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-          <Users className="w-4 h-4 text-cyan-400" />
-          <span>Права и настройки доступа пользователя</span>
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Active Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div>
-              <span className="font-bold text-slate-200 text-xs block">Активен (isActive)</span>
-              <span className="text-[10px] text-slate-400">
-                {user.isActive ? 'Разрешен вход' : 'Заблокирован'}
-              </span>
-            </div>
-            <button
-              onClick={handleToggleActive}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                user.isActive ? 'bg-emerald-500' : 'bg-slate-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  user.isActive ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Withdraw Blocked Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div>
-              <span className="font-bold text-slate-200 text-xs block">Запрет вывода</span>
-              <span className="text-[10px] text-slate-400">
-                {user.withdrawBlocked ? 'Вывод заблокирован' : 'Вывод разрешен'}
-              </span>
-            </div>
-            <button
-              onClick={handleToggleWithdrawBlocked}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                user.withdrawBlocked ? 'bg-rose-500' : 'bg-slate-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  user.withdrawBlocked ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Staff Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div>
-              <span className="font-bold text-slate-200 text-xs block">Персонал (is_staff)</span>
-              <span className="text-[10px] text-slate-400">
-                {user.isStaff ? 'Доступ к админке' : 'Обычный юзер'}
-              </span>
-            </div>
-            <button
-              onClick={handleToggleStaff}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                user.isStaff ? 'bg-cyan-500' : 'bg-slate-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  user.isStaff ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Superuser Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-            <div>
-              <span className="font-bold text-slate-200 text-xs block">Суперпользователь</span>
-              <span className="text-[10px] text-slate-400">
-                {user.isSuperuser ? 'Полные права' : 'Ограничен'}
-              </span>
-            </div>
-            <button
-              onClick={handleToggleSuperuser}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                user.isSuperuser ? 'bg-purple-500' : 'bg-slate-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  user.isSuperuser ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
           </div>
         </div>
       </div>
@@ -419,20 +419,13 @@ export const UserDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left / Main Block (2/3 width): Balance & Static Balance History Chart */}
         <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-4 shadow-xl flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-emerald-400" />
-                <span>Текущий баланс пользователя</span>
-              </div>
-              <div className="text-3xl font-extrabold text-emerald-400 mt-1 font-mono">
-                ${user.balanceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </div>
+          <div className="border-b border-slate-800 pb-4">
+            <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-emerald-400" />
+              <span>Текущий баланс пользователя</span>
             </div>
-
-            <div className="text-right text-xs text-slate-400 font-mono bg-slate-950/80 px-3.5 py-2 rounded-xl border border-slate-800">
-              <div className="text-[10px] text-slate-500 uppercase">Снимки баланса</div>
-              <div className="text-emerald-400 font-bold">История активна</div>
+            <div className="text-3xl font-extrabold text-emerald-400 mt-1 font-mono">
+              ${user.balanceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
           </div>
 

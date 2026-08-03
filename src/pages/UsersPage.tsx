@@ -50,17 +50,6 @@ export const UsersPage: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Top Header */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-          <Users className="w-6 h-6 text-cyan-400" />
-          <span>Дашборд пользователей</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Общий обзор метрик пользователей, поиск и управление аккаунтами платформы.
-        </p>
-      </div>
-
       {/* Top Summary Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Total Users Card */}
