@@ -38,7 +38,7 @@ import { REJECTION_TEMPLATES } from '../../data/mockData';
 import { formatDisplayDate } from '../../utils/dates';
 import { formatIconUrl } from '../../utils/images';
 
-const DEFAULT_CHOICE_ICON = 'http://localhost/static/tmp/no_icon.png';
+const DEFAULT_CHOICE_ICON = `${import.meta.env.VITE_IMG_URL}/tmp/no_icon.png`;
 
 export const NewPredictionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

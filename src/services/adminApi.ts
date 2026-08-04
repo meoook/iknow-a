@@ -15,7 +15,7 @@ import {
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL || '/api',
+    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost/api',
     credentials: 'include',
     prepareHeaders: (headers) => {
       const csrf = getCookie('csrftoken');
