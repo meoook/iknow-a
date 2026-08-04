@@ -17,28 +17,28 @@ export const usersSlice = createSlice({
     toggleUserActive: (state, action: PayloadAction<number>) => {
       const user = state.users.find((u) => u.id === action.payload);
       if (user) {
-        user.isActive = !user.isActive;
+        user.is_active = !user.is_active;
       }
     },
 
     toggleUserWithdrawBlocked: (state, action: PayloadAction<number>) => {
       const user = state.users.find((u) => u.id === action.payload);
       if (user) {
-        user.withdrawBlocked = !user.withdrawBlocked;
+        user.withdraw_blocked = !user.withdraw_blocked;
       }
     },
 
     toggleUserStaff: (state, action: PayloadAction<number>) => {
       const user = state.users.find((u) => u.id === action.payload);
       if (user) {
-        user.isStaff = !user.isStaff;
+        user.is_staff = !user.is_staff;
       }
     },
 
     toggleUserSuperuser: (state, action: PayloadAction<number>) => {
       const user = state.users.find((u) => u.id === action.payload);
       if (user) {
-        user.isSuperuser = !user.isSuperuser;
+        user.is_superuser = !user.is_superuser;
       }
     },
 

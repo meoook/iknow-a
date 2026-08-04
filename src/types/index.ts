@@ -64,20 +64,24 @@ export interface IUserItem {
   id: number;
   username: string;
   email?: string;
-  loginAddress?: string;
-  balanceUsd: number;
-  isActive: boolean;
-  withdrawBlocked: boolean;
-  isStaff: boolean;
-  isSuperuser: boolean;
-  createdAt: string;
-  telegramId?: number;
-  avatarUrl?: string;
-  balanceHistory?: { time: string; value: number }[];
-  depositWallets?: IUserDepositWallet[];
-  recentIps?: IUserIpActivity[];
-  recentMessages?: IUserMessageActivity[];
-  recentBets?: IUserBetActivity[];
+  address?: string;
+  balance: number;
+  is_active: boolean;
+  withdraw_blocked: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
+  created: number | string;
+  telegram_id?: number;
+  avatar?: string | null;
+}
+
+export interface IAdminUserUpdatePayload {
+  id: number;
+  is_active?: boolean;
+  withdraw_blocked?: boolean;
+  is_staff?: boolean;
+  is_superuser?: boolean;
+  password?: string;
 }
 
 export interface IPredictionRequestItem {

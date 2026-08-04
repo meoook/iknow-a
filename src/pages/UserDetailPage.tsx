@@ -22,6 +22,7 @@ import {
   Mail,
   Send,
   QrCode,
+  Loader2,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../store';
 import {
@@ -31,6 +32,19 @@ import {
   toggleUserSuperuser,
   changeUserPassword,
 } from '../store/slices/usersSlice';
+import {
+  useGetAdminUserQuery,
+  useGetAdminUsersListQuery,
+  useGetAdminUserByIdQuery,
+  useGetAdminUserIpsQuery,
+  useGetAdminUserCommentsQuery,
+  useGetAdminUserBetsQuery,
+  useGetAdminUserWalletsQuery,
+  useUpdateAdminUserMutation,
+} from '../services/adminApi';
+
+import { IUserIpActivity, IUserMessageActivity, IUserBetActivity, IUserItem } from '../types';
+import { formatDisplayDate } from '../utils/dates';
 
 // Subcomponent for Lightweight Charts Balance Chart (Static, No Scroll, No Logo)
 const BalanceChart: React.FC<{ data: { time: string; value: number }[] }> = ({ data }) => {
@@ -104,32 +118,129 @@ export const UserDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const userId = Number(id);
 
-  const user = useAppSelector((state) =>
+  const { data: loggedAdminUser } = useGetAdminUserQuery();
+
+  // Search across ALL cached getAdminUsersList queries (including search queries like ?search=alex)
+  const cachedUserFromList = useAppSelector((state) => {
+    const queries = (state as any).adminApi?.queries || {};
+    for (const key in queries) {
+      if (key.startsWith('getAdminUsersList(') && queries[key]?.data) {
+        const data = queries[key].data;
+        const items = Array.isArray(data) ? data : data?.results;
+        const found = items?.find((u: any) => u.id === userId);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  });
+
+  const { data: apiDetailUser, isLoading: isDetailLoading } = useGetAdminUserByIdQuery(userId, {
+    skip: !userId || Boolean(cachedUserFromList),
+  });
+  const { data: apiIps, isLoading: isIpsLoading } = useGetAdminUserIpsQuery(userId, { skip: !userId });
+  const { data: apiComments, isLoading: isCommentsLoading } = useGetAdminUserCommentsQuery(userId, { skip: !userId });
+  const { data: apiBets, isLoading: isBetsLoading } = useGetAdminUserBetsQuery(userId, { skip: !userId });
+  const { data: apiWallets, isLoading: isWalletsLoading } = useGetAdminUserWalletsQuery(userId, { skip: !userId });
+  const [updateAdminUser] = useUpdateAdminUserMutation();
+  const isSuperuserLogged = loggedAdminUser?.is_superuser === true;
+
+  const reduxUser = useAppSelector((state) =>
     state.users.users.find((u) => u.id === userId)
   );
 
-  const [copiedText, setCopiedText] = useState<string | null>(null);
+  const effectiveUser = cachedUserFromList || apiDetailUser;
 
-  // Password Modal state
+  const user: IUserItem | undefined = effectiveUser
+    ? {
+        id: effectiveUser.id,
+        username: effectiveUser.username,
+        email: effectiveUser.email || reduxUser?.email,
+        address: effectiveUser.address || reduxUser?.address,
+        balance: effectiveUser.balance !== undefined ? effectiveUser.balance : (reduxUser?.balance || 0),
+        is_active: effectiveUser.is_active !== undefined ? effectiveUser.is_active : (reduxUser?.is_active ?? true),
+        withdraw_blocked: effectiveUser.withdraw_blocked !== undefined ? effectiveUser.withdraw_blocked : (reduxUser?.withdraw_blocked ?? false),
+        is_staff: effectiveUser.is_staff !== undefined ? effectiveUser.is_staff : (reduxUser?.is_staff ?? false),
+        is_superuser: effectiveUser.is_superuser !== undefined ? effectiveUser.is_superuser : (reduxUser?.is_superuser ?? false),
+        created: effectiveUser.created !== undefined ? effectiveUser.created : (reduxUser?.created || 0),
+        telegram_id: effectiveUser.telegram_id || reduxUser?.telegram_id,
+      }
+    : reduxUser
+    ? {
+        id: reduxUser.id,
+        username: reduxUser.username,
+        email: reduxUser.email,
+        address: reduxUser.address,
+        balance: reduxUser.balance || 0,
+        is_active: reduxUser.is_active ?? true,
+        withdraw_blocked: reduxUser.withdraw_blocked ?? false,
+        is_staff: reduxUser.is_staff ?? false,
+        is_superuser: reduxUser.is_superuser ?? false,
+        created: reduxUser.created || 0,
+        telegram_id: reduxUser.telegram_id,
+      }
+    : undefined;
+
+  // Sub-resource lists from API (with fallback to Redux mock data)
+  const ipLogs = apiIps && apiIps.length > 0
+    ? apiIps
+    : ((reduxUser as any)?.recentIps || []).map((item: any, idx: number) => ({
+        id: idx + 1,
+        ip: item.ip,
+        last_used: item.timestamp,
+      }));
+
+  const commentsList = apiComments && apiComments.length > 0
+    ? apiComments
+    : ((reduxUser as any)?.recentMessages || []).map((item: any, idx: number) => ({
+        id: idx + 1,
+        prediction: item.topic,
+        text: item.message,
+        created: item.timestamp,
+      }));
+
+  const betsList = apiBets && apiBets.length > 0
+    ? apiBets
+    : ((reduxUser as any)?.recentBets || []).map((item: any, idx: number) => ({
+        id: idx + 1,
+        prediction: item.predictionTitle,
+        choice: item.choice,
+        amount: item.amount,
+        multiplier: item.multiplier,
+        payout: item.payout || 0,
+        state: item.status,
+        created: item.timestamp,
+      }));
+
+  const walletsList = apiWallets && apiWallets.length > 0
+    ? apiWallets
+    : ((reduxUser as any)?.depositWallets || []).map((item: any, idx: number) => ({
+        id: idx + 1,
+        address: item.address,
+        chain: item.chain,
+      }));
+
+  const balanceHistory: { time: string; value: number }[] = (reduxUser as any)?.balanceHistory || [];
+  const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const isLoading = isDetailLoading && !user;
+
+  if (isLoading) {
+    return (
+      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-4 min-h-[300px]">
+        <Loader2 className="w-10 h-10 text-cyan-400 animate-spin mx-auto" />
+        <span className="text-sm font-semibold text-slate-400">Загрузка данных пользователя...</span>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center gap-4">
         <XCircle className="w-12 h-12 text-slate-500 mx-auto" />
         <h2 className="text-xl font-bold text-slate-200">Пользователь не найден</h2>
-        <p className="text-sm text-slate-400">
-          Пользователь с ID #{id} не существует или был удален.
-        </p>
-        <Link
-          to="/users"
-          className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-cyan-500/20 transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-          <span>Вернуться к списку пользователей</span>
-        </Link>
       </div>
     );
   }
@@ -142,24 +253,31 @@ export const UserDetailPage: React.FC = () => {
 
   const handleToggleActive = () => {
     dispatch(toggleUserActive(user.id));
+    updateAdminUser({ id: user.id, is_active: !user.is_active }).unwrap().catch(() => {});
   };
 
   const handleToggleWithdrawBlocked = () => {
     dispatch(toggleUserWithdrawBlocked(user.id));
+    updateAdminUser({ id: user.id, withdraw_blocked: !user.withdraw_blocked }).unwrap().catch(() => {});
   };
 
   const handleToggleStaff = () => {
+    if (!isSuperuserLogged) return;
     dispatch(toggleUserStaff(user.id));
+    updateAdminUser({ id: user.id, is_staff: !user.is_staff }).unwrap().catch(() => {});
   };
 
   const handleToggleSuperuser = () => {
+    if (!isSuperuserLogged) return;
     dispatch(toggleUserSuperuser(user.id));
+    updateAdminUser({ id: user.id, is_superuser: !user.is_superuser }).unwrap().catch(() => {});
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.trim()) {
       dispatch(changeUserPassword({ userId: user.id, newPassword }));
+      updateAdminUser({ id: user.id, password: newPassword }).unwrap().catch(() => {});
       setPasswordSuccess(true);
       setNewPassword('');
       setTimeout(() => {
@@ -169,14 +287,13 @@ export const UserDetailPage: React.FC = () => {
     }
   };
 
-  // Default mock balance history if user balanceHistory is absent
-  const chartData = user.balanceHistory && user.balanceHistory.length > 0
-    ? user.balanceHistory
+  const chartData = balanceHistory && balanceHistory.length > 0
+    ? balanceHistory
     : [
-        { time: '2026-07-01', value: user.balanceUsd * 0.6 },
-        { time: '2026-07-10', value: user.balanceUsd * 0.75 },
-        { time: '2026-07-20', value: user.balanceUsd * 0.9 },
-        { time: '2026-08-03', value: user.balanceUsd },
+        { time: '2026-07-01', value: user.balance * 0.6 },
+        { time: '2026-07-10', value: user.balance * 0.75 },
+        { time: '2026-07-20', value: user.balance * 0.9 },
+        { time: '2026-08-03', value: user.balance },
       ];
 
   return (
@@ -188,24 +305,24 @@ export const UserDetailPage: React.FC = () => {
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold"
         >
           <ArrowLeft size={16} />
-          <span>Назад к списку пользователей</span>
+          <span>Назад к списку</span>
         </Link>
 
         <button
           onClick={() => setIsPasswordModalOpen(true)}
-          className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-800 transition-all cursor-pointer shadow-md"
         >
-          <KeyRound size={16} />
+          <KeyRound size={14} />
           <span>Сменить пароль</span>
         </button>
       </div>
 
-      {/* Top 2-Column Row: User Info (Left 2/3) + Admin Rights Toggles (Right 1/3) */}
+      {/* Main Profile Header & Actions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2/3 width): User Profile Header & Vertical Info Fields */}
-        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-6 shadow-xl flex flex-col justify-between">
-          {/* Avatar & Header Title */}
-          <div className="flex items-center gap-4 pb-6 border-b border-slate-800">
+        {/* Left Column (2/3 width): User Avatar & Details Column */}
+        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-6 shadow-xl">
+          {/* Avatar & Username Row */}
+          <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center font-black text-xl text-cyan-400 shrink-0 shadow-lg">
               {user.username[0].toUpperCase()}
             </div>
@@ -216,18 +333,18 @@ export const UserDetailPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 pt-0.5">
-                {user.isSuperuser && (
+                {user.is_superuser && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-purple-400 bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded-md uppercase">
                     <ShieldAlert size={10} />
                     <span>Superuser</span>
                   </span>
                 )}
-                {user.isStaff && (
+                {user.is_staff && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded-md uppercase">
                     <span>Staff</span>
                   </span>
                 )}
-                {user.isActive ? (
+                {user.is_active ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
                     <CheckCircle2 size={10} />
                     <span>Активен</span>
@@ -271,8 +388,8 @@ export const UserDetailPage: React.FC = () => {
                   <span>Telegram ID</span>
                 </div>
                 <div className="font-mono text-slate-200">
-                  {user.telegramId ? (
-                    <span>@{user.telegramId}</span>
+                  {user.telegram_id ? (
+                    <span>@{user.telegram_id}</span>
                   ) : (
                     <span className="text-slate-500 italic">Не привязан</span>
                   )}
@@ -286,14 +403,14 @@ export const UserDetailPage: React.FC = () => {
                   <span>Адрес для входа (Login Wallet)</span>
                 </div>
                 <div className="font-mono text-slate-200">
-                  {user.loginAddress ? (
+                  {user.address ? (
                     <div
-                      onClick={() => handleCopy(user.loginAddress!)}
+                      onClick={() => handleCopy(user.address!)}
                       className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 px-3 py-1 rounded-lg cursor-pointer transition-all group"
                       title="Кликните в любом месте, чтобы скопировать адрес"
                     >
-                      <span className="truncate max-w-[200px] sm:max-w-xs text-xs">{user.loginAddress}</span>
-                      {copiedText === user.loginAddress ? (
+                      <span className="truncate max-w-[200px] sm:max-w-xs text-xs">{user.address}</span>
+                      {copiedText === user.address ? (
                         <Check size={14} className="text-emerald-400 shrink-0" />
                       ) : (
                         <Copy size={14} className="text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0" />
@@ -312,7 +429,7 @@ export const UserDetailPage: React.FC = () => {
                   <span>Дата регистрации</span>
                 </div>
                 <div className="font-mono text-slate-200">
-                  {user.createdAt}
+                  {formatDisplayDate(user.created)}
                 </div>
               </div>
             </div>
@@ -328,18 +445,18 @@ export const UserDetailPage: React.FC = () => {
                 <div>
                   <span className="font-bold text-slate-200 text-xs block">Активен (isActive)</span>
                   <span className="text-[10px] text-slate-400">
-                    {user.isActive ? 'Разрешен вход' : 'Заблокирован'}
+                    {user.is_active ? 'Разрешен вход' : 'Заблокирован'}
                   </span>
                 </div>
                 <button
                   onClick={handleToggleActive}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    user.isActive ? 'bg-emerald-500' : 'bg-slate-700'
+                    user.is_active ? 'bg-emerald-500' : 'bg-slate-700'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.isActive ? 'translate-x-6' : 'translate-x-1'
+                      user.is_active ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -350,62 +467,76 @@ export const UserDetailPage: React.FC = () => {
                 <div>
                   <span className="font-bold text-slate-200 text-xs block">Запрет вывода</span>
                   <span className="text-[10px] text-slate-400">
-                    {user.withdrawBlocked ? 'Вывод заблокирован' : 'Вывод разрешен'}
+                    {user.withdraw_blocked ? 'Вывод заблокирован' : 'Вывод разрешен'}
                   </span>
                 </div>
                 <button
                   onClick={handleToggleWithdrawBlocked}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    user.withdrawBlocked ? 'bg-rose-500' : 'bg-slate-700'
+                    user.withdraw_blocked ? 'bg-rose-500' : 'bg-slate-700'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.withdrawBlocked ? 'translate-x-6' : 'translate-x-1'
+                      user.withdraw_blocked ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
 
               {/* Staff Toggle */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+              <div className={`flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 ${!isSuperuserLogged ? 'opacity-50' : ''}`}>
                 <div>
                   <span className="font-bold text-slate-200 text-xs block">Персонал (is_staff)</span>
                   <span className="text-[10px] text-slate-400">
-                    {user.isStaff ? 'Доступ к админке' : 'Обычный юзер'}
+                    {user.is_staff ? 'Доступ к админке' : 'Обычный юзер'}
+                    {!isSuperuserLogged && ' (Нужен Superuser)'}
                   </span>
                 </div>
                 <button
+                  disabled={!isSuperuserLogged}
                   onClick={handleToggleStaff}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    user.isStaff ? 'bg-cyan-500' : 'bg-slate-700'
+                  title={!isSuperuserLogged ? 'Только суперпользователь может менять роль персонала' : ''}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    !isSuperuserLogged
+                      ? 'cursor-not-allowed bg-slate-800'
+                      : user.is_staff
+                      ? 'bg-cyan-500 cursor-pointer'
+                      : 'bg-slate-700 cursor-pointer'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.isStaff ? 'translate-x-6' : 'translate-x-1'
+                      user.is_staff ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
 
               {/* Superuser Toggle */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
+              <div className={`flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 ${!isSuperuserLogged ? 'opacity-50' : ''}`}>
                 <div>
                   <span className="font-bold text-slate-200 text-xs block">Суперпользователь</span>
                   <span className="text-[10px] text-slate-400">
-                    {user.isSuperuser ? 'Полные права' : 'Ограничен'}
+                    {user.is_superuser ? 'Полные права' : 'Ограничен'}
+                    {!isSuperuserLogged && ' (Нужен Superuser)'}
                   </span>
                 </div>
                 <button
+                  disabled={!isSuperuserLogged}
                   onClick={handleToggleSuperuser}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    user.isSuperuser ? 'bg-purple-500' : 'bg-slate-700'
+                  title={!isSuperuserLogged ? 'Только суперпользователь может менять роль суперпользователя' : ''}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    !isSuperuserLogged
+                      ? 'cursor-not-allowed bg-slate-800'
+                      : user.is_superuser
+                      ? 'bg-purple-500 cursor-pointer'
+                      : 'bg-slate-700 cursor-pointer'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.isSuperuser ? 'translate-x-6' : 'translate-x-1'
+                      user.is_superuser ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -415,7 +546,7 @@ export const UserDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid Row: Balance Block & Chart (Left) + Deposit Wallets Column (Right) */}
+      {/* Middle Block Grid: Balance Chart & Deposit Wallets */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left / Main Block (2/3 width): Balance & Static Balance History Chart */}
         <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-4 shadow-xl flex flex-col justify-between">
@@ -425,7 +556,7 @@ export const UserDetailPage: React.FC = () => {
               <span>Текущий баланс пользователя</span>
             </div>
             <div className="text-3xl font-extrabold text-emerald-400 mt-1 font-mono">
-              ${user.balanceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
           </div>
 
@@ -445,27 +576,33 @@ export const UserDetailPage: React.FC = () => {
 
             {/* Vertical Column List of Deposit Wallets */}
             <div className="space-y-3">
-              {user.depositWallets && user.depositWallets.length > 0 ? (
-                user.depositWallets.map((wallet, idx) => (
-                  <div key={idx} className="bg-slate-950/80 border border-slate-800/80 p-3.5 rounded-xl space-y-1.5">
-                    <div className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">{wallet.chain}</div>
+              {isWalletsLoading ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-2 text-slate-500">
+                  <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                  <span className="text-[11px]">Загрузка адресов...</span>
+                </div>
+              ) : walletsList.length > 0 ? (
+                walletsList.map((w: any) => (
+                  <div key={w.id || w.address} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1.5 font-mono">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-cyan-400">{w.chain}</span>
+                    </div>
                     <div
-                      onClick={() => handleCopy(wallet.address)}
-                      className="flex items-center justify-between gap-2 font-mono text-xs text-slate-200 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 p-2.5 rounded-lg cursor-pointer transition-all group"
-                      title="Кликните в любом месте, чтобы скопировать адрес"
+                      onClick={() => handleCopy(w.address)}
+                      className="flex items-center justify-between bg-slate-900 hover:bg-slate-800/80 border border-slate-800 px-2.5 py-1 rounded-lg cursor-pointer transition-all group"
                     >
-                      <span className="truncate">{wallet.address}</span>
-                      {copiedText === wallet.address ? (
-                        <Check size={14} className="text-emerald-400 shrink-0" />
+                      <span className="truncate max-w-[180px] text-[11px] text-slate-200">{w.address}</span>
+                      {copiedText === w.address ? (
+                        <Check size={12} className="text-emerald-400 shrink-0" />
                       ) : (
-                        <Copy size={14} className="text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0" />
+                        <Copy size={12} className="text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0" />
                       )}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-xs text-slate-500 py-8 text-center border border-dashed border-slate-800 rounded-xl">
-                  Адреса пополнения не сгенерированы
+                  Адреса пополнения пока не сгенерированы
                 </div>
               )}
             </div>
@@ -482,19 +619,24 @@ export const UserDetailPage: React.FC = () => {
               <Laptop className="w-4 h-4 text-cyan-400" />
               <span>Последние IP адреса</span>
             </h3>
-            <span className="text-[10px] font-mono text-slate-500">{user.recentIps?.length || 0} логов</span>
+            <span className="text-[10px] font-mono text-slate-500">{ipLogs.length} логов</span>
           </div>
 
           <div className="space-y-3">
-            {user.recentIps && user.recentIps.length > 0 ? (
-              user.recentIps.map((ipItem) => (
-                <div key={ipItem.id} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1">
+            {isIpsLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2 text-slate-500">
+                <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                <span className="text-[11px]">Загрузка IP логов...</span>
+              </div>
+            ) : ipLogs.length > 0 ? (
+              ipLogs.map((ipItem: any) => (
+                <div key={ipItem.id || ipItem.ip} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-mono font-bold text-cyan-400">{ipItem.ip}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{ipItem.timestamp}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">{formatDisplayDate(ipItem.last_used)}</span>
                   </div>
-                  <div className="text-[11px] text-slate-300">{ipItem.device}</div>
-                  <div className="text-[10px] text-slate-400">{ipItem.location}</div>
+                  {ipItem.device && <div className="text-[11px] text-slate-300">{ipItem.device}</div>}
+                  {ipItem.location && <div className="text-[10px] text-slate-400">{ipItem.location}</div>}
                 </div>
               ))
             ) : (
@@ -503,29 +645,34 @@ export const UserDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Block 2: Message Activity */}
+        {/* Block 2: Comments Activity */}
         <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl glass-panel space-y-4 shadow-xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span>Активность сообщений</span>
+              <span>Последние комментарии</span>
             </h3>
-            <span className="text-[10px] font-mono text-slate-500">{user.recentMessages?.length || 0} сообщ.</span>
+            <span className="text-[10px] font-mono text-slate-500">{commentsList.length} коммент.</span>
           </div>
 
           <div className="space-y-3">
-            {user.recentMessages && user.recentMessages.length > 0 ? (
-              user.recentMessages.map((msg) => (
+            {isCommentsLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2 text-slate-500">
+                <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+                <span className="text-[11px]">Загрузка комментариев...</span>
+              </div>
+            ) : commentsList.length > 0 ? (
+              commentsList.map((msg: any) => (
                 <div key={msg.id} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-emerald-400">{msg.topic}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{msg.timestamp}</span>
+                    <span className="font-bold text-emerald-400 truncate max-w-[180px]">{msg.prediction}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">{formatDisplayDate(msg.created)}</span>
                   </div>
-                  <p className="text-xs text-slate-200 italic">"{msg.message}"</p>
+                  <p className="text-xs text-slate-200 italic">"{msg.text}"</p>
                 </div>
               ))
             ) : (
-              <div className="text-xs text-slate-500 py-6 text-center">Нет сообщений</div>
+              <div className="text-xs text-slate-500 py-6 text-center">Нет комментариев</div>
             )}
           </div>
         </div>
@@ -537,28 +684,33 @@ export const UserDetailPage: React.FC = () => {
               <TrendingUp className="w-4 h-4 text-amber-400" />
               <span>Активность ставок</span>
             </h3>
-            <span className="text-[10px] font-mono text-slate-500">{user.recentBets?.length || 0} ставок</span>
+            <span className="text-[10px] font-mono text-slate-500">{betsList.length} ставок</span>
           </div>
 
           <div className="space-y-3">
-            {user.recentBets && user.recentBets.length > 0 ? (
-              user.recentBets.map((bet) => (
+            {isBetsLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2 text-slate-500">
+                <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+                <span className="text-[11px]">Загрузка ставок...</span>
+              </div>
+            ) : betsList.length > 0 ? (
+              betsList.map((bet: any) => (
                 <div key={bet.id} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-semibold text-slate-200 truncate max-w-[180px]">{bet.predictionTitle}</span>
-                    {bet.status === 'WIN' ? (
+                    <span className="font-semibold text-slate-200 truncate max-w-[180px]">{bet.prediction}</span>
+                    {bet.state === 'WIN' ? (
                       <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">WIN</span>
-                    ) : bet.status === 'LOSS' ? (
+                    ) : bet.state === 'LOSS' ? (
                       <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded">LOSS</span>
                     ) : (
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">PENDING</span>
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">{bet.state || 'ACTIVE'}</span>
                     )}
                   </div>
                   <div className="flex items-center justify-between text-xs font-mono">
                     <span className="text-slate-400">{bet.choice}</span>
-                    <span className="font-bold text-slate-100">${bet.amount} <span className="text-slate-500 text-[10px]">({bet.multiplier}x)</span></span>
+                    <span className="font-bold text-slate-100">${bet.amount} {bet.multiplier && <span className="text-slate-500 text-[10px]">({bet.multiplier}x)</span>}</span>
                   </div>
-                  <div className="text-[10px] text-slate-500 text-right font-mono">{bet.timestamp}</div>
+                  <div className="text-[10px] text-slate-500 text-right font-mono">{formatDisplayDate(bet.created)}</div>
                 </div>
               ))
             ) : (
