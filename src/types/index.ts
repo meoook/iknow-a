@@ -23,6 +23,12 @@ export interface IAdminUser {
   is_superuser: boolean;
 }
 
+export interface IAdminUsersInfo {
+  total_users: number;
+  new_users: number;
+  total_balance: number;
+}
+
 export interface IUserRef {
   id: number;
   username: string;
@@ -41,6 +47,36 @@ export interface IUserIpActivity {
   device: string;
   location: string;
   timestamp: string;
+}
+
+export interface IAdminUserIpLog {
+  id: number;
+  ip: string;
+  last_used: number;
+}
+
+export interface IAdminUserComment {
+  id: number;
+  prediction: string;
+  text: string;
+  created: number;
+}
+
+export interface IAdminUserBet {
+  id: number;
+  prediction: string;
+  choice: string;
+  amount: number;
+  multiplier: number;
+  payout: number;
+  state: string;
+  created: number;
+}
+
+export interface IAdminUserDepositWallet {
+  id: number;
+  address: string;
+  chain: string;
 }
 
 export interface IUserMessageActivity {

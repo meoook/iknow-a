@@ -1,6 +1,16 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getCookie } from '../utils/cookies';
-import { IAdminUser, IPredictionRequestItem, IUserItem, IAdminUserUpdatePayload } from '../types';
+import {
+  IAdminUser,
+  IAdminUsersInfo,
+  IPredictionRequestItem,
+  IUserItem,
+  IAdminUserUpdatePayload,
+  IAdminUserIpLog,
+  IAdminUserComment,
+  IAdminUserBet,
+  IAdminUserDepositWallet,
+} from '../types';
 
 export const adminApi = createApi({
   reducerPath: 'adminApi',
@@ -61,16 +71,17 @@ export const adminApi = createApi({
         method: 'PUT',
         body: { icon: true },
       }),
-      invalidatesTags: ['PredictionRequests'],
     }),
-    getAdminUsersInfo: builder.query<{ total_users: number; new_users: number; total_balance: number }, void>({
+    getAdminUsersInfo: builder.query<IAdminUsersInfo, void>({
       query: () => 'admin/users/info',
       providesTags: ['Users'],
     }),
     getAdminUsersList: builder.query<IUserItem[], { search?: string } | void>({
       query: (params) => {
-        const search = params && params.search ? params.search : '';
-        return search ? `admin/users?search=${encodeURIComponent(search)}` : 'admin/users';
+        if (params && typeof params === 'object' && params.search) {
+          return `admin/users?search=${encodeURIComponent(params.search)}`;
+        }
+        return 'admin/users';
       },
       providesTags: ['Users'],
     }),
@@ -78,25 +89,19 @@ export const adminApi = createApi({
       query: (id) => `admin/users/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
-    getAdminUserIps: builder.query<{ id: number; ip: string; last_used: number }[], number>({
+    getAdminUserIps: builder.query<IAdminUserIpLog[], number>({
       query: (id) => `admin/users/${id}/ips`,
       providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
-    getAdminUserComments: builder.query<{ id: number; prediction: string; text: string; created: number }[], number>({
+    getAdminUserComments: builder.query<IAdminUserComment[], number>({
       query: (id) => `admin/users/${id}/comments`,
       providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
-    getAdminUserBets: builder.query<
-      { id: number; prediction: string; choice: string; amount: number; multiplier: number; payout: number; state: string; created: number }[],
-      number
-    >({
+    getAdminUserBets: builder.query<IAdminUserBet[], number>({
       query: (id) => `admin/users/${id}/bets`,
       providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
-    getAdminUserWallets: builder.query<
-      { id: number; address: string; chain: string }[],
-      number
-    >({
+    getAdminUserWallets: builder.query<IAdminUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
       providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),

@@ -17,11 +17,14 @@ export const formatIconUrl = (
     fullUrl = `http://localhost/static/${cleanPath}`;
   }
 
-  let finalQuery = queryPart || '';
-  if (cacheBuster && !finalQuery.includes('v=')) {
-    const ts = typeof cacheBuster === 'number' || typeof cacheBuster === 'string' ? cacheBuster : Date.now();
-    finalQuery = finalQuery ? `${finalQuery}&v=${ts}` : `v=${ts}`;
+  const params = new URLSearchParams(queryPart || '');
+
+  if (typeof cacheBuster === 'number' || typeof cacheBuster === 'string') {
+    params.set('v', String(cacheBuster));
+  } else if (cacheBuster && !params.has('v')) {
+    params.set('v', String(Date.now()));
   }
 
-  return finalQuery ? `${fullUrl}?${finalQuery}` : fullUrl;
+  const queryString = params.toString();
+  return queryString ? `${fullUrl}?${queryString}` : fullUrl;
 };

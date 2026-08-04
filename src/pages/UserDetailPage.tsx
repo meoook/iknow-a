@@ -3,11 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { createChart, ColorType, AreaSeries } from 'lightweight-charts';
 import {
   ArrowLeft,
-  Users,
   CheckCircle2,
   XCircle,
-  Ban,
-  ShieldCheck,
   ShieldAlert,
   KeyRound,
   Copy,
@@ -34,7 +31,6 @@ import {
 } from '../store/slices/usersSlice';
 import {
   useGetAdminUserQuery,
-  useGetAdminUsersListQuery,
   useGetAdminUserByIdQuery,
   useGetAdminUserIpsQuery,
   useGetAdminUserCommentsQuery,
@@ -43,7 +39,7 @@ import {
   useUpdateAdminUserMutation,
 } from '../services/adminApi';
 
-import { IUserIpActivity, IUserMessageActivity, IUserBetActivity, IUserItem } from '../types';
+import { IUserItem } from '../types';
 import { formatDisplayDate } from '../utils/dates';
 
 // Subcomponent for Lightweight Charts Balance Chart (Static, No Scroll, No Logo)
@@ -152,20 +148,20 @@ export const UserDetailPage: React.FC = () => {
 
   const user: IUserItem | undefined = effectiveUser
     ? {
-        id: effectiveUser.id,
-        username: effectiveUser.username,
-        email: effectiveUser.email || reduxUser?.email,
-        address: effectiveUser.address || reduxUser?.address,
-        balance: effectiveUser.balance !== undefined ? effectiveUser.balance : (reduxUser?.balance || 0),
-        is_active: effectiveUser.is_active !== undefined ? effectiveUser.is_active : (reduxUser?.is_active ?? true),
-        withdraw_blocked: effectiveUser.withdraw_blocked !== undefined ? effectiveUser.withdraw_blocked : (reduxUser?.withdraw_blocked ?? false),
-        is_staff: effectiveUser.is_staff !== undefined ? effectiveUser.is_staff : (reduxUser?.is_staff ?? false),
-        is_superuser: effectiveUser.is_superuser !== undefined ? effectiveUser.is_superuser : (reduxUser?.is_superuser ?? false),
-        created: effectiveUser.created !== undefined ? effectiveUser.created : (reduxUser?.created || 0),
-        telegram_id: effectiveUser.telegram_id || reduxUser?.telegram_id,
-      }
+      id: effectiveUser.id,
+      username: effectiveUser.username,
+      email: effectiveUser.email || reduxUser?.email,
+      address: effectiveUser.address || reduxUser?.address,
+      balance: effectiveUser.balance !== undefined ? effectiveUser.balance : (reduxUser?.balance || 0),
+      is_active: effectiveUser.is_active !== undefined ? effectiveUser.is_active : (reduxUser?.is_active ?? true),
+      withdraw_blocked: effectiveUser.withdraw_blocked !== undefined ? effectiveUser.withdraw_blocked : (reduxUser?.withdraw_blocked ?? false),
+      is_staff: effectiveUser.is_staff !== undefined ? effectiveUser.is_staff : (reduxUser?.is_staff ?? false),
+      is_superuser: effectiveUser.is_superuser !== undefined ? effectiveUser.is_superuser : (reduxUser?.is_superuser ?? false),
+      created: effectiveUser.created !== undefined ? effectiveUser.created : (reduxUser?.created || 0),
+      telegram_id: effectiveUser.telegram_id || reduxUser?.telegram_id,
+    }
     : reduxUser
-    ? {
+      ? {
         id: reduxUser.id,
         username: reduxUser.username,
         email: reduxUser.email,
@@ -178,46 +174,46 @@ export const UserDetailPage: React.FC = () => {
         created: reduxUser.created || 0,
         telegram_id: reduxUser.telegram_id,
       }
-    : undefined;
+      : undefined;
 
   // Sub-resource lists from API (with fallback to Redux mock data)
   const ipLogs = apiIps && apiIps.length > 0
     ? apiIps
     : ((reduxUser as any)?.recentIps || []).map((item: any, idx: number) => ({
-        id: idx + 1,
-        ip: item.ip,
-        last_used: item.timestamp,
-      }));
+      id: idx + 1,
+      ip: item.ip,
+      last_used: item.timestamp,
+    }));
 
   const commentsList = apiComments && apiComments.length > 0
     ? apiComments
     : ((reduxUser as any)?.recentMessages || []).map((item: any, idx: number) => ({
-        id: idx + 1,
-        prediction: item.topic,
-        text: item.message,
-        created: item.timestamp,
-      }));
+      id: idx + 1,
+      prediction: item.topic,
+      text: item.message,
+      created: item.timestamp,
+    }));
 
   const betsList = apiBets && apiBets.length > 0
     ? apiBets
     : ((reduxUser as any)?.recentBets || []).map((item: any, idx: number) => ({
-        id: idx + 1,
-        prediction: item.predictionTitle,
-        choice: item.choice,
-        amount: item.amount,
-        multiplier: item.multiplier,
-        payout: item.payout || 0,
-        state: item.status,
-        created: item.timestamp,
-      }));
+      id: idx + 1,
+      prediction: item.predictionTitle,
+      choice: item.choice,
+      amount: item.amount,
+      multiplier: item.multiplier,
+      payout: item.payout || 0,
+      state: item.status,
+      created: item.timestamp,
+    }));
 
   const walletsList = apiWallets && apiWallets.length > 0
     ? apiWallets
     : ((reduxUser as any)?.depositWallets || []).map((item: any, idx: number) => ({
-        id: idx + 1,
-        address: item.address,
-        chain: item.chain,
-      }));
+      id: idx + 1,
+      address: item.address,
+      chain: item.chain,
+    }));
 
   const balanceHistory: { time: string; value: number }[] = (reduxUser as any)?.balanceHistory || [];
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -253,31 +249,31 @@ export const UserDetailPage: React.FC = () => {
 
   const handleToggleActive = () => {
     dispatch(toggleUserActive(user.id));
-    updateAdminUser({ id: user.id, is_active: !user.is_active }).unwrap().catch(() => {});
+    updateAdminUser({ id: user.id, is_active: !user.is_active }).unwrap().catch(() => { });
   };
 
   const handleToggleWithdrawBlocked = () => {
     dispatch(toggleUserWithdrawBlocked(user.id));
-    updateAdminUser({ id: user.id, withdraw_blocked: !user.withdraw_blocked }).unwrap().catch(() => {});
+    updateAdminUser({ id: user.id, withdraw_blocked: !user.withdraw_blocked }).unwrap().catch(() => { });
   };
 
   const handleToggleStaff = () => {
     if (!isSuperuserLogged) return;
     dispatch(toggleUserStaff(user.id));
-    updateAdminUser({ id: user.id, is_staff: !user.is_staff }).unwrap().catch(() => {});
+    updateAdminUser({ id: user.id, is_staff: !user.is_staff }).unwrap().catch(() => { });
   };
 
   const handleToggleSuperuser = () => {
     if (!isSuperuserLogged) return;
     dispatch(toggleUserSuperuser(user.id));
-    updateAdminUser({ id: user.id, is_superuser: !user.is_superuser }).unwrap().catch(() => {});
+    updateAdminUser({ id: user.id, is_superuser: !user.is_superuser }).unwrap().catch(() => { });
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.trim()) {
       dispatch(changeUserPassword({ userId: user.id, newPassword }));
-      updateAdminUser({ id: user.id, password: newPassword }).unwrap().catch(() => {});
+      updateAdminUser({ id: user.id, password: newPassword }).unwrap().catch(() => { });
       setPasswordSuccess(true);
       setNewPassword('');
       setTimeout(() => {
@@ -290,11 +286,11 @@ export const UserDetailPage: React.FC = () => {
   const chartData = balanceHistory && balanceHistory.length > 0
     ? balanceHistory
     : [
-        { time: '2026-07-01', value: user.balance * 0.6 },
-        { time: '2026-07-10', value: user.balance * 0.75 },
-        { time: '2026-07-20', value: user.balance * 0.9 },
-        { time: '2026-08-03', value: user.balance },
-      ];
+      { time: '2026-07-01', value: user.balance * 0.6 },
+      { time: '2026-07-10', value: user.balance * 0.75 },
+      { time: '2026-07-20', value: user.balance * 0.9 },
+      { time: '2026-08-03', value: user.balance },
+    ];
 
   return (
     <div className="flex flex-col gap-6 font-sans">
@@ -450,14 +446,12 @@ export const UserDetailPage: React.FC = () => {
                 </div>
                 <button
                   onClick={handleToggleActive}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    user.is_active ? 'bg-emerald-500' : 'bg-slate-700'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${user.is_active ? 'bg-emerald-500' : 'bg-slate-700'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.is_active ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.is_active ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
@@ -472,14 +466,12 @@ export const UserDetailPage: React.FC = () => {
                 </div>
                 <button
                   onClick={handleToggleWithdrawBlocked}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    user.withdraw_blocked ? 'bg-rose-500' : 'bg-slate-700'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${user.withdraw_blocked ? 'bg-rose-500' : 'bg-slate-700'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.withdraw_blocked ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.withdraw_blocked ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
@@ -497,18 +489,16 @@ export const UserDetailPage: React.FC = () => {
                   disabled={!isSuperuserLogged}
                   onClick={handleToggleStaff}
                   title={!isSuperuserLogged ? 'Только суперпользователь может менять роль персонала' : ''}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    !isSuperuserLogged
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${!isSuperuserLogged
                       ? 'cursor-not-allowed bg-slate-800'
                       : user.is_staff
-                      ? 'bg-cyan-500 cursor-pointer'
-                      : 'bg-slate-700 cursor-pointer'
-                  }`}
+                        ? 'bg-cyan-500 cursor-pointer'
+                        : 'bg-slate-700 cursor-pointer'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.is_staff ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.is_staff ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
@@ -526,18 +516,16 @@ export const UserDetailPage: React.FC = () => {
                   disabled={!isSuperuserLogged}
                   onClick={handleToggleSuperuser}
                   title={!isSuperuserLogged ? 'Только суперпользователь может менять роль суперпользователя' : ''}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    !isSuperuserLogged
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${!isSuperuserLogged
                       ? 'cursor-not-allowed bg-slate-800'
                       : user.is_superuser
-                      ? 'bg-purple-500 cursor-pointer'
-                      : 'bg-slate-700 cursor-pointer'
-                  }`}
+                        ? 'bg-purple-500 cursor-pointer'
+                        : 'bg-slate-700 cursor-pointer'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      user.is_superuser ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.is_superuser ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
