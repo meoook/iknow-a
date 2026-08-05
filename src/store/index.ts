@@ -4,7 +4,6 @@ import authReducer from './slices/authSlice';
 import predictionsReducer from './slices/predictionsSlice';
 import financeReducer from './slices/financeSlice';
 import websocketReducer from './slices/websocketSlice';
-import usersReducer from './slices/usersSlice';
 import { adminApi } from '../services/adminApi';
 import { authMiddleware } from './authMiddleware';
 
@@ -14,7 +13,6 @@ export const store = configureStore({
     predictions: predictionsReducer,
     finance: financeReducer,
     websocket: websocketReducer,
-    users: usersReducer,
     [adminApi.reducerPath]: adminApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

@@ -11,6 +11,7 @@ import {
   IAdminUserBet,
   IAdminUserDepositWallet,
 } from '../types';
+import { setPredictionRequests, upsertPredictionRequest } from '../store/slices/predictionsSlice';
 
 export const adminApi = createApi({
   reducerPath: 'adminApi',
@@ -25,11 +26,10 @@ export const adminApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['AdminUser', 'PredictionRequests', 'Users'],
+  tagTypes: ['UsersList'],
   endpoints: (builder) => ({
     getAdminUser: builder.query<IAdminUser, void>({
       query: () => 'auth/user',
-      providesTags: ['AdminUser'],
     }),
     adminLogin: builder.mutation<{ ok: boolean }, { username: string; password: string }>({
       query: (body) => ({
@@ -44,13 +44,28 @@ export const adminApi = createApi({
         method: 'DELETE',
       }),
     }),
+
     getPredictionRequests: builder.query<IPredictionRequestItem[], void>({
       query: () => 'admin/requests',
-      providesTags: ['PredictionRequests'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data && Array.isArray(data)) {
+            dispatch(setPredictionRequests(data));
+          }
+        } catch {}
+      },
     }),
     getPredictionRequestById: builder.query<IPredictionRequestItem, number>({
       query: (id) => `admin/requests/${id}`,
-      providesTags: (_result, _error, id) => [{ type: 'PredictionRequests', id }],
+      async onQueryStarted(_id, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data) {
+            dispatch(upsertPredictionRequest(data));
+          }
+        } catch {}
+      },
     }),
     approvePredictionRequest: builder.mutation<void, number>({
       query: (id) => ({
@@ -74,7 +89,6 @@ export const adminApi = createApi({
     }),
     getAdminUsersInfo: builder.query<IAdminUsersInfo, void>({
       query: () => 'admin/users/info',
-      providesTags: ['Users'],
     }),
     getAdminUsersList: builder.query<IUserItem[], { search?: string } | void>({
       query: (params) => {
@@ -83,27 +97,22 @@ export const adminApi = createApi({
         }
         return 'admin/users';
       },
-      providesTags: ['Users'],
+      providesTags: ['UsersList'],
     }),
     getAdminUserById: builder.query<IUserItem, number>({
       query: (id) => `admin/users/${id}`,
-      providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
     getAdminUserIps: builder.query<IAdminUserIpLog[], number>({
       query: (id) => `admin/users/${id}/ips`,
-      providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
     getAdminUserComments: builder.query<IAdminUserComment[], number>({
       query: (id) => `admin/users/${id}/comments`,
-      providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
     getAdminUserBets: builder.query<IAdminUserBet[], number>({
       query: (id) => `admin/users/${id}/bets`,
-      providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
     getAdminUserWallets: builder.query<IAdminUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
-      providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
     updateAdminUser: builder.mutation<IUserItem, IAdminUserUpdatePayload>({
       query: ({ id, ...body }) => ({
@@ -111,7 +120,40 @@ export const adminApi = createApi({
         method: 'PATCH',
         body,
       }),
-      invalidatesTags: (_result, _error, { id }) => [{ type: 'Users', id }, 'Users'],
+      invalidatesTags: (_result, _error, arg) => {
+        const hasStatusChange =
+          arg.is_active !== undefined ||
+          arg.withdraw_blocked !== undefined ||
+          arg.is_staff !== undefined ||
+          arg.is_superuser !== undefined;
+
+        return hasStatusChange ? ['UsersList'] : [];
+      },
+      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+        // Optimistically update single user detail cache
+        const patchResultDetail = dispatch(
+          adminApi.util.updateQueryData('getAdminUserById', id, (draft) => {
+            if (draft) {
+              Object.assign(draft, patch);
+            }
+          })
+        );
+
+        try {
+          const { data: updatedUser } = await queryFulfilled;
+          if (updatedUser) {
+            dispatch(
+              adminApi.util.updateQueryData('getAdminUserById', id, (draft) => {
+                if (draft) {
+                  Object.assign(draft, updatedUser);
+                }
+              })
+            );
+          }
+        } catch {
+          patchResultDetail.undo();
+        }
+      },
     }),
   }),
 });

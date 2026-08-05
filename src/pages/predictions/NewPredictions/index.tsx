@@ -16,12 +16,6 @@ export const NewPredictionsPage: React.FC = () => {
   const { data: apiRequests, isLoading } = useGetPredictionRequestsQuery();
 
   useEffect(() => {
-    if (apiRequests && Array.isArray(apiRequests)) {
-      dispatch(setPredictionRequests(apiRequests));
-    }
-  }, [apiRequests, dispatch]);
-
-  useEffect(() => {
     if (hasUnread) {
       dispatch(clearNewRequestsBadge());
     }

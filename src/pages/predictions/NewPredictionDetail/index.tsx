@@ -6,9 +6,6 @@ import { sendWsMessage } from '../../../services/websocket';
 import {
   approveRequest,
   rejectRequest,
-  regenerateIcon,
-  regenerateChoiceIcon,
-  regenerateAllChoiceIcons,
 } from '../../../store/slices/predictionsSlice';
 import {
   useGetPredictionRequestByIdQuery,
@@ -32,7 +29,7 @@ export const NewPredictionDetailPage: React.FC = () => {
 
   const { data: apiReq, isLoading: isApiLoading } = useGetPredictionRequestByIdQuery(
     requestId,
-    { skip: !requestId }
+    { skip: !requestId || Boolean(reduxReq) }
   );
 
   const req = reduxReq || apiReq;
@@ -102,9 +99,8 @@ export const NewPredictionDetailPage: React.FC = () => {
     try {
       await changeIconApi(req.id).unwrap();
     } catch (e) {
-      console.warn('API change-icon error, applying local icon fallback', e);
+      console.warn('API change-icon error', e);
     }
-    dispatch(regenerateIcon(req.id));
   };
 
   const handleSelectTemplate = (val: string) => {
@@ -131,12 +127,8 @@ export const NewPredictionDetailPage: React.FC = () => {
       />
       <PredictionDetailChoicesList
         req={req}
-        onRegenerateChoiceIcon={(choiceIndex) =>
-          dispatch(regenerateChoiceIcon({ requestId: req.id, choiceIndex }))
-        }
-        onRegenerateAllChoiceIcons={() =>
-          dispatch(regenerateAllChoiceIcons(req.id))
-        }
+        onRegenerateChoiceIcon={() => handleChangeIcon()}
+        onRegenerateAllChoiceIcons={() => handleChangeIcon()}
       />
     </div>
   );

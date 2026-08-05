@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, XCircle, BadgeCheck, AlertTriangle, UserCheck } from 'lucide-react';
 import { IPredictionRequestItem } from '../../../types';
-import { REJECTION_TEMPLATES } from '../../../data/mockData';
+import { REJECTION_TEMPLATES } from '../../../constants/rejectionTemplates';
 
 interface PredictionDetailStickyHeaderProps {
   req: IPredictionRequestItem;

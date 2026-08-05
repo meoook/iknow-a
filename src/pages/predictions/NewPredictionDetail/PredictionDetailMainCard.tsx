@@ -20,13 +20,13 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
         <div className="relative group shrink-0">
           <img
             src={formatIconUrl(req.icon)}
-            alt="Main Icon"
+            alt="Icon"
             className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl"
           />
           <button
             onClick={onChangeIcon}
             className="absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-transform hover:scale-110 cursor-pointer"
-            title="Сгенерировать другую главную иконку"
+            title="Сгенерировать другую иконку"
           >
             <RefreshCw size={14} className="font-bold" />
           </button>

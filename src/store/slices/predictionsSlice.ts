@@ -4,11 +4,6 @@ import {
   IPredictionItem,
   RequestState,
 } from '../../types';
-import {
-  initialPredictionRequests,
-  initialActivePredictions,
-  initialArchivePredictions,
-} from '../../data/mockData';
 
 interface IPredictionsState {
   requests: IPredictionRequestItem[];
@@ -17,19 +12,10 @@ interface IPredictionsState {
   hasUnreadNewRequests: boolean;
 }
 
-// Generates high quality random tech/crypto icons for re-generating icon feature
-const ICON_POOL = [
-  'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=128&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1622979135225-d2ba269bc1bd?w=128&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=128&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=128&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=128&auto=format&fit=crop&q=80',
-];
-
 const initialState: IPredictionsState = {
   requests: [],
-  active: initialActivePredictions,
-  archive: initialArchivePredictions,
+  active: [],
+  archive: [],
   hasUnreadNewRequests: false,
 };
 
@@ -40,16 +26,31 @@ export const predictionsSlice = createSlice({
     setPredictionRequests: (state, action: PayloadAction<IPredictionRequestItem[]>) => {
       const existingUnreads = new Set(state.requests.filter((r) => r.hasUnreadWsEvent).map((r) => r.id));
       const existingModerators = new Map(state.requests.map((r) => [r.id, r.moderators]));
+      const existingVersionedIcons = new Map(
+        state.requests.filter((r) => r.icon && r.icon.includes('?v=')).map((r) => [r.id, r.icon])
+      );
 
       state.requests = action.payload
         .filter((r) => r.state === 'VALIDATE')
         .map((r) => ({
           ...r,
+          icon: existingVersionedIcons.get(r.id) || r.icon,
           hasUnreadWsEvent: existingUnreads.has(r.id),
           moderators: existingModerators.get(r.id) || r.moderators,
         }));
 
       state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
+    },
+    upsertPredictionRequest: (state, action: PayloadAction<IPredictionRequestItem>) => {
+      const item = action.payload;
+      const index = state.requests.findIndex((r) => r.id === item.id);
+      if (index !== -1) {
+        const existingIcon = state.requests[index].icon;
+        const iconToUse = (existingIcon && existingIcon.includes('?v=')) ? existingIcon : item.icon;
+        state.requests[index] = { ...state.requests[index], ...item, icon: iconToUse };
+      } else {
+        state.requests.push({ ...item });
+      }
     },
     approveRequest: (state, action: PayloadAction<number>) => {
       const reqId = action.payload;
@@ -101,36 +102,6 @@ export const predictionsSlice = createSlice({
       state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
     },
 
-    regenerateIcon: (state, action: PayloadAction<number>) => {
-      const req = state.requests.find((r) => r.id === action.payload);
-      if (req) {
-        const nextIcon = ICON_POOL[Math.floor(Math.random() * ICON_POOL.length)];
-        req.icon = req.icon || nextIcon;
-      }
-    },
-
-    regenerateChoiceIcon: (
-      state,
-      action: PayloadAction<{ requestId: number; choiceIndex: number }>
-    ) => {
-      const { requestId, choiceIndex } = action.payload;
-      const req = state.requests.find((r) => r.id === requestId);
-      if (req) {
-        if (!req.choiceIcons) req.choiceIcons = {};
-        req.choiceIcons[choiceIndex] = ICON_POOL[Math.floor(Math.random() * ICON_POOL.length)];
-      }
-    },
-
-    regenerateAllChoiceIcons: (state, action: PayloadAction<number>) => {
-      const req = state.requests.find((r) => r.id === action.payload);
-      if (req) {
-        if (!req.choiceIcons) req.choiceIcons = {};
-        req.choices.forEach((_, idx) => {
-          req.choiceIcons![idx] = ICON_POOL[Math.floor(Math.random() * ICON_POOL.length)];
-        });
-      }
-    },
-
     clearNewRequestsBadge: (state) => {
       state.requests.forEach((r) => {
         r.hasUnreadWsEvent = false;
@@ -179,6 +150,11 @@ export const predictionsSlice = createSlice({
         const req = state.requests.find((r) => r.id === id);
         if (req) {
           Object.assign(req, directProps, params);
+          const rawIcon = params?.icon || directProps.icon;
+          if (rawIcon) {
+            const cleanIcon = rawIcon.split('?')[0];
+            req.icon = `${cleanIcon}?v=${Date.now()}`;
+          }
         }
       }
     },
@@ -202,11 +178,9 @@ export const predictionsSlice = createSlice({
 
 export const {
   setPredictionRequests,
+  upsertPredictionRequest,
   approveRequest,
   rejectRequest,
-  regenerateIcon,
-  regenerateChoiceIcon,
-  regenerateAllChoiceIcons,
   clearNewRequestsBadge,
   resolveActivePrediction,
   addWsPredictionRequest,
