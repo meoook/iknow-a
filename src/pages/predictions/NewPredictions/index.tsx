@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store';
-import { clearNewRequestsBadge, setPredictionRequests } from '../../../store/slices/predictionsSlice';
+import { clearNewRequestsBadge } from '../../../store/slices/predictionsSlice';
 import { useGetPredictionRequestsQuery } from '../../../services/adminApi';
 import { NewPredictionsHeader } from './NewPredictionsHeader';
 import { NewPredictionCard } from './NewPredictionCard';
@@ -13,7 +13,7 @@ export const NewPredictionsPage: React.FC = () => {
   const requests = useAppSelector((state) => state.predictions.requests);
   const hasUnread = useAppSelector((state) => state.predictions.hasUnreadNewRequests);
 
-  const { data: apiRequests, isLoading } = useGetPredictionRequestsQuery();
+  const { isLoading } = useGetPredictionRequestsQuery();
 
   useEffect(() => {
     if (hasUnread) {

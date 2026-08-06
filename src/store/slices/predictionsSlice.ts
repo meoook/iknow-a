@@ -1,9 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
-  IPredictionRequestItem,
-  IPredictionItem,
-  RequestState,
-} from '../../types';
+import { IPredictionRequestItem, IPredictionItem } from '../../types';
 
 interface IPredictionsState {
   requests: IPredictionRequestItem[];
@@ -62,30 +58,6 @@ export const predictionsSlice = createSlice({
       if (req) {
         req.state = 'APPROVED';
         req.hasUnreadWsEvent = false;
-
-        // Move to active predictions
-        const newActivePrediction: IPredictionItem = {
-          id: Date.now(),
-          fromRequestId: req.id,
-          groups: req.groups,
-          state: 'ACTIVE',
-          icon: req.icon,
-          title: req.title,
-          rules: req.rules,
-          link: req.link,
-          volume: req.amount,
-          endDate: String(req.end_date || req.endDate || ''),
-          betDate: String(req.bet_date || req.betDate || ''),
-          created: new Date().toISOString().split('T')[0],
-          choices: req.choices.map((c, idx) => ({
-            id: Date.now() + idx,
-            title: c,
-            volume: idx === 0 ? req.amount : 0,
-            multiplier: 2.0,
-          })),
-        };
-
-        state.active.unshift(newActivePrediction);
         state.requests = state.requests.filter((r) => r.id !== reqId);
       }
       state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
@@ -179,9 +151,17 @@ export const predictionsSlice = createSlice({
     wsRequestSetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
       const { id, moderator } = action.payload;
       const req = state.requests.find((r) => r.id === id);
+      console.log('[WS] Set moderator', id, moderator, Boolean(req));
       if (req && moderator) {
         if (!req.moderators) req.moderators = [];
         if (!req.moderators.includes(moderator)) req.moderators.push(moderator);
+      }
+    },
+    wsRequestUnsetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
+      const { id, moderator } = action.payload;
+      const req = state.requests.find((r) => r.id === id);
+      if (req && moderator && req.moderators) {
+        req.moderators = req.moderators.filter((m) => m !== moderator);
       }
     },
   },
@@ -201,6 +181,7 @@ export const {
   wsRequestVerdict,
   wsRequestUpdate,
   wsRequestSetModerator,
+  wsRequestUnsetModerator,
 } = predictionsSlice.actions;
 
 export default predictionsSlice.reducer;

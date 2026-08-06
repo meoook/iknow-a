@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, XCircle, Loader2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store';
-import { sendWsMessage, wsManager } from '../../../services/websocket';
+import { wsManager } from '../../../services/websocket';
 import {
   approveRequest,
   rejectRequest,
@@ -44,6 +44,9 @@ export const NewPredictionDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (requestId) wsManager.requestJoin(requestId);
+    return () => {
+      if (requestId) wsManager.requestLeave(requestId);
+    };
   }, [requestId]);
 
   if (isApiLoading && !req) {

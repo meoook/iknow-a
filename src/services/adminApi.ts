@@ -17,13 +17,11 @@ import { setPredictionRequests, upsertPredictionRequest } from '../store/slices/
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost/api',
+    baseUrl: import.meta.env.VITE_API_URL,
     credentials: 'include',
     prepareHeaders: (headers) => {
       const csrf = getCookie('csrftoken');
-      if (csrf) {
-        headers.set('X-CSRFToken', csrf);
-      }
+      if (csrf) headers.set('X-CSRFToken', csrf);
       return headers;
     },
   }),
@@ -52,9 +50,7 @@ export const adminApi = createApi({
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          if (data && Array.isArray(data)) {
-            dispatch(setPredictionRequests(data));
-          }
+          if (data && Array.isArray(data)) dispatch(setPredictionRequests(data));
         } catch { }
       },
     }),
@@ -63,9 +59,7 @@ export const adminApi = createApi({
       async onQueryStarted(_id, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          if (data) {
-            dispatch(upsertPredictionRequest(data));
-          }
+          if (data) dispatch(upsertPredictionRequest(data));
         } catch { }
       },
     }),
@@ -159,9 +153,7 @@ export const adminApi = createApi({
         // Optimistically update single user detail cache
         const patchResultDetail = dispatch(
           adminApi.util.updateQueryData('getAdminUserById', id, (draft) => {
-            if (draft) {
-              Object.assign(draft, patch);
-            }
+            if (draft) Object.assign(draft, patch);
           })
         );
 
@@ -170,9 +162,7 @@ export const adminApi = createApi({
           if (updatedUser) {
             dispatch(
               adminApi.util.updateQueryData('getAdminUserById', id, (draft) => {
-                if (draft) {
-                  Object.assign(draft, updatedUser);
-                }
+                if (draft) Object.assign(draft, updatedUser);
               })
             );
           }
