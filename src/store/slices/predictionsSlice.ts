@@ -10,6 +10,8 @@ interface IPredictionsState {
   active: IPredictionItem[];
   archive: IPredictionItem[];
   hasUnreadNewRequests: boolean;
+  hasUnreadDispute: boolean;
+  unreadDisputeCount: number;
 }
 
 const initialState: IPredictionsState = {
@@ -17,6 +19,8 @@ const initialState: IPredictionsState = {
   active: [],
   archive: [],
   hasUnreadNewRequests: false,
+  hasUnreadDispute: false,
+  unreadDisputeCount: 0,
 };
 
 export const predictionsSlice = createSlice({
@@ -109,6 +113,20 @@ export const predictionsSlice = createSlice({
       state.hasUnreadNewRequests = false;
     },
 
+    wsRequestNew: (state) => {
+      state.hasUnreadNewRequests = true;
+    },
+
+    addWsDisputeEvent: (state) => {
+      state.hasUnreadDispute = true;
+      state.unreadDisputeCount += 1;
+    },
+
+    clearDisputeBadge: (state) => {
+      state.hasUnreadDispute = false;
+      state.unreadDisputeCount = 0;
+    },
+
     resolveActivePrediction: (
       state,
       action: PayloadAction<{ predictionId: number; winningChoiceId: number }>
@@ -138,39 +156,32 @@ export const predictionsSlice = createSlice({
       state.hasUnreadNewRequests = true;
     },
 
-    updateWsPredictionRequest: (
+    wsRequestVerdict(state, action: PayloadAction<{ id: number }>) {
+      const { id } = action.payload;
+      state.requests = state.requests.filter((r) => r.id !== id);
+    },
+
+    wsRequestUpdate: (
       state,
-      action: PayloadAction<Partial<IPredictionRequestItem> & { params?: Partial<IPredictionRequestItem> }>
+      action: PayloadAction<Partial<IPredictionRequestItem> & { data?: Partial<IPredictionRequestItem> }>
     ) => {
-      const { id, params, ...directProps } = action.payload;
-      const targetState = params?.state || directProps.state;
-      if (id !== undefined && (targetState === 'APPROVED' || targetState === 'REJECTED')) {
-        state.requests = state.requests.filter((r) => r.id !== id);
-      } else if (id !== undefined) {
-        const req = state.requests.find((r) => r.id === id);
-        if (req) {
-          Object.assign(req, directProps, params);
-          const rawIcon = params?.icon || directProps.icon;
-          if (rawIcon) {
-            const cleanIcon = rawIcon.split('?')[0];
-            req.icon = `${cleanIcon}?v=${Date.now()}`;
-          }
+      const { id, data, ...directProps } = action.payload;
+      const req = state.requests.find((r) => r.id === id);
+      if (req) {
+        Object.assign(req, directProps, data);
+        const rawIcon = data?.icon || directProps.icon;
+        if (rawIcon) {
+          const cleanIcon = rawIcon.split('?')[0];
+          req.icon = `${cleanIcon}?v=${Date.now()}`;
         }
       }
     },
-    setRequestModerator: (
-      state,
-      action: PayloadAction<{ id: number; moderator: string }>
-    ) => {
+    wsRequestSetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
       const { id, moderator } = action.payload;
       const req = state.requests.find((r) => r.id === id);
       if (req && moderator) {
-        if (!req.moderators) {
-          req.moderators = [];
-        }
-        if (!req.moderators.includes(moderator)) {
-          req.moderators.push(moderator);
-        }
+        if (!req.moderators) req.moderators = [];
+        if (!req.moderators.includes(moderator)) req.moderators.push(moderator);
       }
     },
   },
@@ -182,10 +193,14 @@ export const {
   approveRequest,
   rejectRequest,
   clearNewRequestsBadge,
+  wsRequestNew,
+  addWsDisputeEvent,
+  clearDisputeBadge,
   resolveActivePrediction,
   addWsPredictionRequest,
-  updateWsPredictionRequest,
-  setRequestModerator,
+  wsRequestVerdict,
+  wsRequestUpdate,
+  wsRequestSetModerator,
 } = predictionsSlice.actions;
 
 export default predictionsSlice.reducer;

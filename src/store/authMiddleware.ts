@@ -2,7 +2,7 @@ import type { Middleware } from '@reduxjs/toolkit';
 import { adminApi } from '../services/adminApi';
 import { getCookie } from '../utils/cookies';
 import { setAuthUser, setAuthFailed, logout } from './slices/authSlice';
-import { initWebSocket, closeWebSocket } from '../services/websocket';
+import { wsManager } from '../services/websocket';
 import type { RootState } from './index';
 
 /**
@@ -50,7 +50,7 @@ export const authMiddleware: Middleware = (store) => {
       store.dispatch(setAuthFailed());
       if (state.auth.user) {
         startPolling();
-        initWebSocket();
+        wsManager.connect();
       }
     }
   }, 0);
@@ -70,19 +70,19 @@ export const authMiddleware: Middleware = (store) => {
       if (userData) {
         store.dispatch(setAuthUser(userData));
         startPolling();
-        initWebSocket();
+        wsManager.connect();
       }
     }
 
     // If getAdminUser was rejected (401 / 403)
     if (adminApi.endpoints.getAdminUser.matchRejected(action) || setAuthFailed.match(action)) {
-      closeWebSocket();
+      wsManager.disconnect();
       stopPolling();
     }
 
     // Sign out mutation or logout action
     if (adminApi.endpoints.signOut.matchFulfilled(action) || logout.match(action)) {
-      closeWebSocket();
+      wsManager.disconnect();
       store.dispatch(adminApi.util.resetApiState());
       stopPolling();
     }

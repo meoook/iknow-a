@@ -4,6 +4,7 @@ import {
   IAdminUser,
   IAdminUsersInfo,
   IPredictionRequestItem,
+  IPredictionItem,
   IUserItem,
   IAdminUserUpdatePayload,
   IAdminUserIpLog,
@@ -26,7 +27,7 @@ export const adminApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['UsersList'],
+  tagTypes: ['UsersList', 'AdminPredictions', 'PredictionRequests', 'Withdraw'],
   endpoints: (builder) => ({
     getAdminUser: builder.query<IAdminUser, void>({
       query: () => 'auth/user',
@@ -47,13 +48,14 @@ export const adminApi = createApi({
 
     getPredictionRequests: builder.query<IPredictionRequestItem[], void>({
       query: () => 'admin/requests',
+      providesTags: ['PredictionRequests'],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           if (data && Array.isArray(data)) {
             dispatch(setPredictionRequests(data));
           }
-        } catch {}
+        } catch { }
       },
     }),
     getPredictionRequestById: builder.query<IPredictionRequestItem, number>({
@@ -64,7 +66,7 @@ export const adminApi = createApi({
           if (data) {
             dispatch(upsertPredictionRequest(data));
           }
-        } catch {}
+        } catch { }
       },
     }),
     approvePredictionRequest: builder.mutation<void, number>({
@@ -72,6 +74,7 @@ export const adminApi = createApi({
         url: `admin/requests/${id}/approve`,
         method: 'POST',
       }),
+      invalidatesTags: ['PredictionRequests'],
     }),
     rejectPredictionRequest: builder.mutation<void, { id: number; reason: string }>({
       query: ({ id, reason }) => ({
@@ -79,6 +82,7 @@ export const adminApi = createApi({
         method: 'POST',
         body: { reason },
       }),
+      invalidatesTags: ['PredictionRequests'],
     }),
     changeRequestIcon: builder.mutation<void, number>({
       query: (id) => ({
@@ -86,6 +90,28 @@ export const adminApi = createApi({
         method: 'PUT',
         body: { icon: true },
       }),
+    }),
+
+    getAdminPredictions: builder.query<IPredictionItem[], { phase?: string } | void>({
+      query: (params) => {
+        if (params && typeof params === 'object' && params.phase) {
+          return `admin/predictions?phase=${encodeURIComponent(params.phase)}`;
+        }
+        return 'admin/predictions';
+      },
+      providesTags: ['AdminPredictions'],
+    }),
+    getAdminPredictionById: builder.query<IPredictionItem, number>({
+      query: (id) => `admin/predictions/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'AdminPredictions', id }],
+    }),
+    setPredictionWinner: builder.mutation<IPredictionItem, { predictionId: number; choiceId: number }>({
+      query: ({ predictionId, choiceId }) => ({
+        url: `admin/predictions/${predictionId}/set_winner`,
+        method: 'POST',
+        body: { choice_id: choiceId },
+      }),
+      invalidatesTags: ['AdminPredictions'],
     }),
     getAdminUsersInfo: builder.query<IAdminUsersInfo, void>({
       query: () => 'admin/users/info',
@@ -167,6 +193,9 @@ export const {
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,
+  useGetAdminPredictionsQuery,
+  useGetAdminPredictionByIdQuery,
+  useSetPredictionWinnerMutation,
   useGetAdminUsersInfoQuery,
   useGetAdminUsersListQuery,
   useGetAdminUserByIdQuery,

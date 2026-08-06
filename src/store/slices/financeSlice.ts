@@ -102,10 +102,7 @@ export const financeSlice = createSlice({
       state.hasUnreadWithdrawals = false;
     },
 
-    addWsWithdrawalRequest: (
-      state,
-      action: PayloadAction<IWithdrawalRequestItem>
-    ) => {
+    addWsWithdrawalRequest: (state, action: PayloadAction<IWithdrawalRequestItem>) => {
       const newItem = {
         ...action.payload,
         hasUnreadWsEvent: true,

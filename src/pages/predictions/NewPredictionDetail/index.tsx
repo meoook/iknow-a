@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, XCircle, Loader2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store';
-import { sendWsMessage } from '../../../services/websocket';
+import { sendWsMessage, wsManager } from '../../../services/websocket';
 import {
   approveRequest,
   rejectRequest,
@@ -43,9 +43,7 @@ export const NewPredictionDetailPage: React.FC = () => {
   const [isRejecting, setIsRejecting] = useState<boolean>(false);
 
   useEffect(() => {
-    if (requestId) {
-      sendWsMessage({ type: 'request.join', value: requestId });
-    }
+    if (requestId) wsManager.requestJoin(requestId);
   }, [requestId]);
 
   if (isApiLoading && !req) {

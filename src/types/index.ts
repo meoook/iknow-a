@@ -146,6 +146,7 @@ export interface IPredictionRequestItem {
 
 export interface IChoiceItem {
   id: number;
+  icon?: string | null;
   title: string;
   volume: number;
   multiplier: number;

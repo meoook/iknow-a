@@ -8,7 +8,9 @@ import { UsersPage } from './pages/Users';
 import { UserDetailPage } from './pages/UserDetail';
 import { NewPredictionsPage } from './pages/predictions/NewPredictions';
 import { NewPredictionDetailPage } from './pages/predictions/NewPredictionDetail';
-import { ActivePredictionsPage } from './pages/predictions/ActivePredictions';
+import { WinnerSelectionPage } from './pages/predictions/WinnerSelection';
+import { FinishPredictionsPage } from './pages/predictions/FinishPredictions';
+import { PredictionDetailPage } from './pages/predictions/PredictionDetail';
 import { ArchivePredictionsPage } from './pages/predictions/ArchivePredictions';
 import { FinanceInfoPage } from './pages/finance/FinanceInfo';
 import { TransactionsPage } from './pages/finance/Transactions';
@@ -41,7 +43,9 @@ const ProtectedLayout: React.FC = () => {
             {/* Predictions Group */}
             <Route path="/predictions/new" element={<NewPredictionsPage />} />
             <Route path="/predictions/new/:id" element={<NewPredictionDetailPage />} />
-            <Route path="/predictions/active" element={<ActivePredictionsPage />} />
+            <Route path="/predictions/dispute" element={<WinnerSelectionPage />} />
+            <Route path="/predictions/finish" element={<FinishPredictionsPage />} />
+            <Route path="/predictions/detail/:id" element={<PredictionDetailPage />} />
             <Route path="/predictions/archive" element={<ArchivePredictionsPage />} />
 
             {/* Finances Group */}

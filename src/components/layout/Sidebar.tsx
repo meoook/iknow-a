@@ -3,7 +3,8 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Sparkles,
-  Clock,
+  Award,
+  Flag,
   Archive,
   Wallet,
   ArrowLeftRight,
@@ -38,6 +39,12 @@ export const Sidebar: React.FC = () => {
   );
   const unreadRequestsCount = useAppSelector(
     (state) => state.predictions.requests.filter((r) => r.hasUnreadWsEvent).length
+  );
+  const hasUnreadDispute = useAppSelector(
+    (state) => state.predictions.hasUnreadDispute
+  );
+  const unreadDisputeCount = useAppSelector(
+    (state) => state.predictions.unreadDisputeCount
   );
 
   const isConnected = useAppSelector((state) => state.websocket.isConnected);
@@ -129,20 +136,46 @@ export const Sidebar: React.FC = () => {
             )}
           </NavLink>
 
-          {/* Активные */}
+          {/* Выбор победителя */}
           <NavLink
-            to="/predictions/active"
+            to="/predictions/dispute"
             className={({ isActive }) =>
               `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-slate-800 text-cyan-400 font-medium'
+                  ? 'bg-slate-800 text-amber-400 font-medium'
                   : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
               }`
             }
           >
             <div className="flex items-center gap-2.5">
-              <Clock size={16} />
-              <span>Активные</span>
+              <Award size={16} />
+              <span>Выбор победителя</span>
+            </div>
+
+            {hasUnreadDispute && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded-full font-mono font-bold">
+                  {unreadDisputeCount || '!'}
+                </span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 red-dot-pulse" />
+              </div>
+            )}
+          </NavLink>
+
+          {/* Завершить */}
+          <NavLink
+            to="/predictions/finish"
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-slate-800 text-emerald-400 font-medium'
+                  : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+              }`
+            }
+          >
+            <div className="flex items-center gap-2.5">
+              <Flag size={16} />
+              <span>Завершить</span>
             </div>
           </NavLink>
 
