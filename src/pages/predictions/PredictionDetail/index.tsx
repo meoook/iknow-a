@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Award,
@@ -12,25 +12,63 @@ import {
   Clock,
   Coins,
   RotateCcw,
+  UserCheck,
 } from 'lucide-react';
+import { useAppSelector } from '../../../store';
+import { predictionsSelectors } from '../../../store/slices/predictionsSlice';
+import { wsManager } from '../../../services/websocket';
 import {
-  useGetAdminPredictionByIdQuery,
+  useGetPredictionByIdQuery,
   useSetPredictionWinnerMutation,
+  useFinishPredictionMutation,
+  useExtendPredictionDisputeMutation,
 } from '../../../services/adminApi';
 import { formatIconUrl } from '../../../utils/images';
 
 export const PredictionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const predictionId = Number(id);
 
-  const { data: prediction, isLoading } = useGetAdminPredictionByIdQuery(predictionId, {
-    skip: !predictionId,
+  useEffect(() => {
+    if (predictionId) wsManager.predictionJoin(predictionId);
+    return () => {
+      if (predictionId) wsManager.predictionLeave(predictionId);
+    };
+  }, [predictionId]);
+
+  const prediction = useAppSelector((state) => predictionsSelectors.selectById(state, predictionId));
+
+  const { isLoading } = useGetPredictionByIdQuery(predictionId, {
+    skip: !predictionId || Boolean(prediction),
   });
   const [setWinnerApi, { isLoading: isSettingWinner }] = useSetPredictionWinnerMutation();
+  const [finishApi, { isLoading: isFinishing }] = useFinishPredictionMutation();
+  const [extendDisputeApi, { isLoading: isExtending }] = useExtendPredictionDisputeMutation();
 
   const [isWinnerModalOpen, setIsWinnerModalOpen] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
   const [winnerSuccess, setWinnerSuccess] = useState(false);
+
+  const handleExtendDispute = async () => {
+    if (!prediction) return;
+    try {
+      await extendDisputeApi({ predictionId: prediction.id, days: 1 }).unwrap();
+      navigate('/predictions/dispute');
+    } catch (err) {
+      console.warn('Extend dispute failed', err);
+    }
+  };
+
+  const handleFinishPrediction = async () => {
+    if (!prediction) return;
+    try {
+      await finishApi(prediction.id).unwrap();
+      navigate('/predictions/finish');
+    } catch (err) {
+      console.warn('Finish prediction failed', err);
+    }
+  };
 
   if (isLoading && !prediction) {
     return (
@@ -115,18 +153,20 @@ export const PredictionDetailPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => alert('Дискуссия продлена')}
-              className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+              onClick={handleExtendDispute}
+              disabled={isExtending}
+              className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
             >
-              <Clock size={14} />
+              {isExtending ? <Loader2 size={14} className="animate-spin" /> : <Clock size={14} />}
               <span>Продлить дискуссию</span>
             </button>
 
             <button
-              onClick={() => alert('Предсказание завершено, выигрыши выплачены')}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 px-4 py-2 rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+              onClick={handleFinishPrediction}
+              disabled={isFinishing}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 px-4 py-2 rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
             >
-              <Coins size={16} />
+              {isFinishing ? <Loader2 size={16} className="animate-spin" /> : <Coins size={16} />}
               <span>Завершить и выплатить выигрыши</span>
             </button>
           </div>
@@ -157,6 +197,13 @@ export const PredictionDetailPage: React.FC = () => {
               <span className="bg-slate-800 text-slate-300 text-[11px] font-mono px-2 py-0.5 rounded-full">
                 Статус: {prediction.state}
               </span>
+
+              {prediction.moderators && prediction.moderators.length > 0 && (
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1">
+                  <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+                  Взято в работу: @{prediction.moderators.join(', @')}
+                </span>
+              )}
             </div>
 
             <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-tight">
@@ -232,11 +279,10 @@ export const PredictionDetailPage: React.FC = () => {
           {prediction.choices?.map((choice, idx) => (
             <div
               key={choice.id || idx}
-              className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-all ${
-                choice.win === true
+              className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-all ${choice.win === true
                   ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
                   : 'bg-slate-950/70 border-slate-800'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 {choice.icon && (
@@ -300,11 +346,10 @@ export const PredictionDetailPage: React.FC = () => {
                     <label
                       key={choice.id}
                       onClick={() => setSelectedChoiceId(choice.id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                        selectedChoiceId === choice.id
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedChoiceId === choice.id
                           ? 'bg-amber-500/10 border-amber-500/50 text-white'
                           : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <input

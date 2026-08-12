@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, KeyRound, XCircle, Loader2 } from 'lucide-react';
+import { useAppSelector } from '../../store';
 import {
-  useGetAdminUserQuery,
-  useGetAdminUserByIdQuery,
-  useGetAdminUserIpsQuery,
-  useGetAdminUserCommentsQuery,
-  useGetAdminUserBetsQuery,
-  useGetAdminUserWalletsQuery,
-  useUpdateAdminUserMutation,
+  useGetUserByIdQuery,
+  useGetUserIpsQuery,
+  useGetUserCommentsQuery,
+  useGetUserBetsQuery,
+  useGetUserWalletsQuery,
+  useUpdateUserMutation,
 } from '../../services/adminApi';
 import { IUserItem } from '../../types';
 import { UserProfileHeader } from './UserProfileHeader';
@@ -22,19 +22,17 @@ export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const userId = Number(id);
 
-  const { data: loggedAdminUser } = useGetAdminUserQuery();
+  const currentUser = useAppSelector((state) => state.auth.user);
 
-  const { data: apiDetailUser, isLoading: isDetailLoading } = useGetAdminUserByIdQuery(userId, {
+  const { data: apiDetailUser, isLoading: isDetailLoading } = useGetUserByIdQuery(userId, {
     skip: !userId,
   });
-  const { data: apiIps, isLoading: isIpsLoading } = useGetAdminUserIpsQuery(userId, { skip: !userId });
-  const { data: apiComments, isLoading: isCommentsLoading } = useGetAdminUserCommentsQuery(userId, { skip: !userId });
-  const { data: apiBets, isLoading: isBetsLoading } = useGetAdminUserBetsQuery(userId, { skip: !userId });
-  const { data: apiWallets, isLoading: isWalletsLoading } = useGetAdminUserWalletsQuery(userId, { skip: !userId });
-  const [updateAdminUser] = useUpdateAdminUserMutation();
-  const isSuperuserLogged = loggedAdminUser?.is_superuser === true;
-
-  const effectiveUser = apiDetailUser;
+  const { data: apiIps, isLoading: isIpsLoading } = useGetUserIpsQuery(userId, { skip: !userId });
+  const { data: apiComments, isLoading: isCommentsLoading } = useGetUserCommentsQuery(userId, { skip: !userId });
+  const { data: apiBets, isLoading: isBetsLoading } = useGetUserBetsQuery(userId, { skip: !userId });
+  const { data: apiWallets, isLoading: isWalletsLoading } = useGetUserWalletsQuery(userId, { skip: !userId });
+  const [updateUser] = useUpdateUserMutation();
+  const isSuperuserLogged = currentUser?.is_superuser === true;
 
   const user: IUserItem | undefined = apiDetailUser;
 
@@ -75,27 +73,27 @@ export const UserDetailPage: React.FC = () => {
   };
 
   const handleToggleActive = () => {
-    updateAdminUser({ id: user.id, is_active: !user.is_active }).unwrap().catch(() => { });
+    updateUser({ id: user.id, is_active: !user.is_active }).unwrap().catch(() => { });
   };
 
   const handleToggleWithdrawBlocked = () => {
-    updateAdminUser({ id: user.id, withdraw_blocked: !user.withdraw_blocked }).unwrap().catch(() => { });
+    updateUser({ id: user.id, withdraw_blocked: !user.withdraw_blocked }).unwrap().catch(() => { });
   };
 
   const handleToggleStaff = () => {
     if (!isSuperuserLogged) return;
-    updateAdminUser({ id: user.id, is_staff: !user.is_staff }).unwrap().catch(() => { });
+    updateUser({ id: user.id, is_staff: !user.is_staff }).unwrap().catch(() => { });
   };
 
   const handleToggleSuperuser = () => {
     if (!isSuperuserLogged) return;
-    updateAdminUser({ id: user.id, is_superuser: !user.is_superuser }).unwrap().catch(() => { });
+    updateUser({ id: user.id, is_superuser: !user.is_superuser }).unwrap().catch(() => { });
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.trim()) {
-      updateAdminUser({ id: user.id, password: newPassword }).unwrap().then(() => {
+      updateUser({ id: user.id, password: newPassword }).unwrap().then(() => {
         setPasswordSuccess(true);
         setNewPassword('');
         setTimeout(() => {

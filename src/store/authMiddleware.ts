@@ -1,7 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import { adminApi } from '../services/adminApi';
-import { getCookie } from '../utils/cookies';
-import { setAuthUser, setAuthFailed, logout } from './slices/authSlice';
+import { getCookie, removeCookie } from '../utils/cookies';
+import { setAuthUser, setAuthFailed, setAuthNetworkError, logout } from './slices/authSlice';
 import { wsManager } from '../services/websocket';
 import type { RootState } from './index';
 
@@ -45,7 +45,7 @@ export const authMiddleware: Middleware = (store) => {
 
     if (getCookie('authed') === '1' && !state.auth.user) {
       // @ts-ignore
-      store.dispatch(adminApi.endpoints.getAdminUser.initiate(undefined, { forceRefetch: true }));
+      store.dispatch(adminApi.endpoints.getAuthUser.initiate(undefined, { forceRefetch: true }));
     } else {
       store.dispatch(setAuthFailed());
       if (state.auth.user) {
@@ -61,11 +61,11 @@ export const authMiddleware: Middleware = (store) => {
     // Successful admin login mutation
     if (adminApi.endpoints.adminLogin.matchFulfilled(action)) {
       // @ts-ignore
-      store.dispatch(adminApi.endpoints.getAdminUser.initiate(undefined, { forceRefetch: true }));
+      store.dispatch(adminApi.endpoints.getAuthUser.initiate(undefined, { forceRefetch: true }));
     }
 
     // After successful getAdminUser query
-    if (adminApi.endpoints.getAdminUser.matchFulfilled(action)) {
+    if (adminApi.endpoints.getAuthUser.matchFulfilled(action)) {
       const userData = (action as any).payload;
       if (userData) {
         store.dispatch(setAuthUser(userData));
@@ -74,14 +74,38 @@ export const authMiddleware: Middleware = (store) => {
       }
     }
 
-    // If getAdminUser was rejected (401 / 403)
-    if (adminApi.endpoints.getAdminUser.matchRejected(action) || setAuthFailed.match(action)) {
+    // If getAdminUser was rejected
+    if (adminApi.endpoints.getAuthUser.matchRejected(action)) {
+      const payload = (action as any).payload;
+      const status = payload?.status;
+
+      if (status === 401 || status === 403) {
+        // Real Auth Failure: Remove authed cookie and redirect to login
+        removeCookie('authed');
+        store.dispatch(setAuthFailed());
+        wsManager.disconnect();
+        stopPolling();
+      } else if (status === 'FETCH_ERROR' || status === 'TIMEOUT_ERROR') {
+        // Network Offline or Timeout: Keep authed cookie intact!
+        store.dispatch(setAuthNetworkError('network'));
+      } else if (typeof status === 'number' && status >= 500) {
+        // Server Error (500, 502, 503, 504): Keep authed cookie intact!
+        store.dispatch(setAuthNetworkError('server'));
+      } else {
+        // Fallback for unexpected connection issues
+        store.dispatch(setAuthNetworkError('network'));
+      }
+    }
+
+    if (setAuthFailed.match(action)) {
+      removeCookie('authed');
       wsManager.disconnect();
       stopPolling();
     }
 
     // Sign out mutation or logout action
     if (adminApi.endpoints.signOut.matchFulfilled(action) || logout.match(action)) {
+      removeCookie('authed');
       wsManager.disconnect();
       store.dispatch(adminApi.util.resetApiState());
       stopPolling();

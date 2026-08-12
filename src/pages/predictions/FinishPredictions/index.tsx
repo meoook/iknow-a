@@ -1,18 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Loader2 } from 'lucide-react';
-import { useGetAdminPredictionsQuery } from '../../../services/adminApi';
+import { useAppSelector } from '../../../store';
+import { predictionsSelectors } from '../../../store/slices/predictionsSlice';
+import { useGetPredictionsQuery } from '../../../services/adminApi';
 import { PredictionCard } from '../../../components/predictions/PredictionCard';
 
 export const FinishPredictionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { data: predictionsList, isLoading } = useGetAdminPredictionsQuery({ phase: 'finish' });
+  const allPredictions = useAppSelector(predictionsSelectors.selectAll);
+  const { isLoading } = useGetPredictionsQuery({ phase: 'finish' });
 
   const handleCardClick = (id: number) => {
     navigate(`/predictions/detail/${id}`);
   };
 
-  const finishItems = predictionsList || [];
+  const finishItems = allPredictions.filter(
+    (p) => p.state === 'DISPUTE' && p.choices?.some((c) => c.win === true)
+  );
 
   if (isLoading && finishItems.length === 0) {
     return (
@@ -37,11 +42,7 @@ export const FinishPredictionsPage: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-4">
           {finishItems.map((prediction) => (
-            <PredictionCard
-              key={prediction.id}
-              prediction={prediction}
-              onClick={handleCardClick}
-            />
+            <PredictionCard key={prediction.id} prediction={prediction} onClick={handleCardClick} />
           ))}
         </div>
       )}

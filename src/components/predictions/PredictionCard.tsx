@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Award, CheckCircle2, ChevronRight, BarChart2 } from 'lucide-react';
+import { Calendar, Award, CheckCircle2, ChevronRight, BarChart2, UserCheck } from 'lucide-react';
 import { IPredictionItem } from '../../types';
 import { formatIconUrl } from '../../utils/images';
 
@@ -36,6 +36,13 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, onCl
             <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
               {prediction.title}
             </h3>
+
+            {prediction.moderators && prediction.moderators.length > 0 && (
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1">
+                <UserCheck className="w-3 h-3 text-amber-400" />
+                Взято в работу: @{prediction.moderators.join(', @')}
+              </span>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-400 font-mono">

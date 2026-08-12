@@ -3,8 +3,11 @@ import { NavLink } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { useAppSelector } from '../../store';
 
+import { predictionsSelectors } from '../../store/slices/predictionsSlice';
+
 export const DashboardActivePredictionsPreview: React.FC = () => {
-  const activePredictions = useAppSelector((state) => state.predictions.active);
+  const allPredictions = useAppSelector(predictionsSelectors.selectAll);
+  const activePredictions = allPredictions.filter((p) => p.state === 'ACTIVE');
 
   return (
     <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-xl p-5 glass-panel">

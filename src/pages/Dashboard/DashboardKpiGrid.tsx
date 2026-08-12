@@ -3,13 +3,18 @@ import { NavLink } from 'react-router-dom';
 import { Sparkles, Wallet, Send, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { useAppSelector } from '../../store';
 
+import { requestsSelectors, predictionsSelectors } from '../../store/slices/predictionsSlice';
+
 export const DashboardKpiGrid: React.FC = () => {
-  const requests = useAppSelector((state) => state.predictions.requests);
-  const activePredictions = useAppSelector((state) => state.predictions.active);
+  const requests = useAppSelector(requestsSelectors.selectAll);
+  const allPredictions = useAppSelector(predictionsSelectors.selectAll);
+  const activePredictions = allPredictions.filter((p) => p.state === 'ACTIVE');
   const bankInfo = useAppSelector((state) => state.finance.bankInfo);
   const withdrawals = useAppSelector((state) => state.finance.withdrawals);
 
-  const totalActiveVolume = activePredictions.reduce((acc, p) => acc + p.volume, 0);
+  const totalActiveVolume = activePredictions.reduce((acc, p) => acc + (p.volume || 0), 0);
+
+  const hasUnreadNewRequests = useAppSelector((state) => state.predictions.hasUnreadNewRequests);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -68,7 +73,7 @@ export const DashboardKpiGrid: React.FC = () => {
           </span>
           <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 relative group-hover:scale-110 transition-transform">
             <Sparkles className="w-5 h-5" />
-            {requests.some((r) => r.hasUnreadWsEvent) && (
+            {hasUnreadNewRequests && (
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 red-dot-pulse" />
             )}
           </div>

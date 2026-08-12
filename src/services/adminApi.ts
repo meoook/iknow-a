@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { getCookie } from '../utils/cookies';
+import { getCookie, removeCookie } from '../utils/cookies';
+import { setAuthFailed } from '../store/slices/authSlice';
 import {
   IAdminUser,
   IAdminUsersInfo,
@@ -12,22 +13,41 @@ import {
   IAdminUserBet,
   IAdminUserDepositWallet,
 } from '../types';
-import { setPredictionRequests, upsertPredictionRequest } from '../store/slices/predictionsSlice';
+import {
+  setPredictionRequests,
+  upsertPredictionRequest,
+  removePredictionRequest,
+  setPredictions,
+  upsertPrediction,
+  removePrediction,
+} from '../store/slices/predictionsSlice';
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: import.meta.env.VITE_API_URL,
+  credentials: 'include',
+  timeout: 20000,
+  prepareHeaders: (headers) => {
+    const csrf = getCookie('csrftoken');
+    if (csrf) headers.set('X-CSRFToken', csrf);
+    return headers;
+  },
+});
+
+const baseQueryWithReauth: typeof rawBaseQuery = async (args, api, extraOptions) => {
+  const result = await rawBaseQuery(args, api, extraOptions);
+  if (result.error && (result.error.status === 401 || result.error.status === 403)) {
+    api.dispatch(setAuthFailed());
+    // removeCookie('authed');
+  }
+  return result;
+};
 
 export const adminApi = createApi({
   reducerPath: 'adminApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL,
-    credentials: 'include',
-    prepareHeaders: (headers) => {
-      const csrf = getCookie('csrftoken');
-      if (csrf) headers.set('X-CSRFToken', csrf);
-      return headers;
-    },
-  }),
-  tagTypes: ['UsersList', 'AdminPredictions', 'PredictionRequests', 'Withdraw'],
+  baseQuery: baseQueryWithReauth,
+  tagTypes: ['UsersList', 'Withdraw'],
   endpoints: (builder) => ({
-    getAdminUser: builder.query<IAdminUser, void>({
+    getAuthUser: builder.query<IAdminUser, void>({
       query: () => 'auth/user',
     }),
     adminLogin: builder.mutation<{ ok: boolean }, { username: string; password: string }>({
@@ -44,9 +64,8 @@ export const adminApi = createApi({
       }),
     }),
 
-    getPredictionRequests: builder.query<IPredictionRequestItem[], void>({
+    getRequests: builder.query<IPredictionRequestItem[], void>({
       query: () => 'admin/requests',
-      providesTags: ['PredictionRequests'],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
@@ -54,7 +73,7 @@ export const adminApi = createApi({
         } catch { }
       },
     }),
-    getPredictionRequestById: builder.query<IPredictionRequestItem, number>({
+    getRequestById: builder.query<IPredictionRequestItem, number>({
       query: (id) => `admin/requests/${id}`,
       async onQueryStarted(_id, { dispatch, queryFulfilled }) {
         try {
@@ -68,7 +87,12 @@ export const adminApi = createApi({
         url: `admin/requests/${id}/approve`,
         method: 'POST',
       }),
-      invalidatesTags: ['PredictionRequests'],
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        dispatch(removePredictionRequest(id));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
     }),
     rejectPredictionRequest: builder.mutation<void, { id: number; reason: string }>({
       query: ({ id, reason }) => ({
@@ -76,65 +100,105 @@ export const adminApi = createApi({
         method: 'POST',
         body: { reason },
       }),
-      invalidatesTags: ['PredictionRequests'],
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        dispatch(removePredictionRequest(id));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
     }),
     changeRequestIcon: builder.mutation<void, number>({
       query: (id) => ({
-        url: `admin/requests/${id}`,
-        method: 'PUT',
+        url: `admin/requests/${id}/icon`,
+        method: 'POST',
         body: { icon: true },
       }),
     }),
 
-    getAdminPredictions: builder.query<IPredictionItem[], { phase?: string } | void>({
+    getPredictions: builder.query<IPredictionItem[], { phase?: string } | void>({
       query: (params) => {
         if (params && typeof params === 'object' && params.phase) {
           return `admin/predictions?phase=${encodeURIComponent(params.phase)}`;
         }
         return 'admin/predictions';
       },
-      providesTags: ['AdminPredictions'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data && Array.isArray(data)) dispatch(setPredictions(data));
+        } catch { }
+      },
     }),
-    getAdminPredictionById: builder.query<IPredictionItem, number>({
+    getPredictionById: builder.query<IPredictionItem, number>({
       query: (id) => `admin/predictions/${id}`,
-      providesTags: (_result, _error, id) => [{ type: 'AdminPredictions', id }],
+      async onQueryStarted(_id, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data) dispatch(upsertPrediction(data));
+        } catch { }
+      },
     }),
-    setPredictionWinner: builder.mutation<IPredictionItem, { predictionId: number; choiceId: number }>({
+    setPredictionWinner: builder.mutation<void, { predictionId: number; choiceId: number }>({
       query: ({ predictionId, choiceId }) => ({
-        url: `admin/predictions/${predictionId}/set_winner`,
+        url: `admin/predictions/${predictionId}/winner`,
         method: 'POST',
         body: { choice_id: choiceId },
       }),
-      invalidatesTags: ['AdminPredictions'],
+      async onQueryStarted({ predictionId }, { dispatch, queryFulfilled }) {
+        dispatch(removePrediction(predictionId));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
     }),
-    getAdminUsersInfo: builder.query<IAdminUsersInfo, void>({
+    finishPrediction: builder.mutation<void, number>({
+      query: (predictionId) => ({
+        url: `admin/predictions/${predictionId}/close`,
+        method: 'POST',
+      }),
+      async onQueryStarted(predictionId, { dispatch, queryFulfilled }) {
+        dispatch(removePrediction(predictionId));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
+    }),
+    extendPredictionDispute: builder.mutation<void, { predictionId: number; days?: number }>({
+      query: ({ predictionId, days = 1 }) => ({
+        url: `admin/predictions/${predictionId}/extend`,
+        method: 'POST',
+        body: { days },
+      }),
+      async onQueryStarted({ predictionId }, { dispatch, queryFulfilled }) {
+        dispatch(removePrediction(predictionId));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
+    }),
+    getUsersInfo: builder.query<IAdminUsersInfo, void>({
       query: () => 'admin/users/info',
     }),
-    getAdminUsersList: builder.query<IUserItem[], { search?: string } | void>({
-      query: (params) => {
-        if (params && typeof params === 'object' && params.search) {
-          return `admin/users?search=${encodeURIComponent(params.search)}`;
-        }
-        return 'admin/users';
-      },
+    getUsersList: builder.query<IUserItem[], { search?: string }>({
+      query: ({ search }) => `admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`,
       providesTags: ['UsersList'],
     }),
-    getAdminUserById: builder.query<IUserItem, number>({
+    getUserById: builder.query<IUserItem, number>({
       query: (id) => `admin/users/${id}`,
     }),
-    getAdminUserIps: builder.query<IAdminUserIpLog[], number>({
+    getUserIps: builder.query<IAdminUserIpLog[], number>({
       query: (id) => `admin/users/${id}/ips`,
     }),
-    getAdminUserComments: builder.query<IAdminUserComment[], number>({
+    getUserComments: builder.query<IAdminUserComment[], number>({
       query: (id) => `admin/users/${id}/comments`,
     }),
-    getAdminUserBets: builder.query<IAdminUserBet[], number>({
+    getUserBets: builder.query<IAdminUserBet[], number>({
       query: (id) => `admin/users/${id}/bets`,
     }),
-    getAdminUserWallets: builder.query<IAdminUserDepositWallet[], number>({
+    getUserWallets: builder.query<IAdminUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
     }),
-    updateAdminUser: builder.mutation<IUserItem, IAdminUserUpdatePayload>({
+    updateUser: builder.mutation<IUserItem, IAdminUserUpdatePayload>({
       query: ({ id, ...body }) => ({
         url: `admin/users/${id}`,
         method: 'PATCH',
@@ -152,17 +216,17 @@ export const adminApi = createApi({
       async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
         // Optimistically update single user detail cache
         const patchResultDetail = dispatch(
-          adminApi.util.updateQueryData('getAdminUserById', id, (draft) => {
+          adminApi.util.updateQueryData('getUserById', id, (draft) => {
             if (draft) Object.assign(draft, patch);
           })
         );
 
         try {
-          const { data: updatedUser } = await queryFulfilled;
-          if (updatedUser) {
+          const { data } = await queryFulfilled;
+          if (data) {
             dispatch(
-              adminApi.util.updateQueryData('getAdminUserById', id, (draft) => {
-                if (draft) Object.assign(draft, updatedUser);
+              adminApi.util.updateQueryData('getUserById', id, (draft) => {
+                if (draft) Object.assign(draft, data);
               })
             );
           }
@@ -175,23 +239,24 @@ export const adminApi = createApi({
 });
 
 export const {
-  useGetAdminUserQuery,
   useAdminLoginMutation,
   useSignOutMutation,
-  useGetPredictionRequestsQuery,
-  useGetPredictionRequestByIdQuery,
+  useGetRequestsQuery,
+  useGetRequestByIdQuery,
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,
-  useGetAdminPredictionsQuery,
-  useGetAdminPredictionByIdQuery,
+  useGetPredictionsQuery,
+  useGetPredictionByIdQuery,
   useSetPredictionWinnerMutation,
-  useGetAdminUsersInfoQuery,
-  useGetAdminUsersListQuery,
-  useGetAdminUserByIdQuery,
-  useGetAdminUserIpsQuery,
-  useGetAdminUserCommentsQuery,
-  useGetAdminUserBetsQuery,
-  useGetAdminUserWalletsQuery,
-  useUpdateAdminUserMutation,
+  useFinishPredictionMutation,
+  useExtendPredictionDisputeMutation,
+  useGetUsersInfoQuery,
+  useGetUsersListQuery,
+  useGetUserByIdQuery,
+  useGetUserIpsQuery,
+  useGetUserCommentsQuery,
+  useGetUserBetsQuery,
+  useGetUserWalletsQuery,
+  useUpdateUserMutation,
 } = adminApi;

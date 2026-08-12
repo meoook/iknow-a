@@ -37,9 +37,6 @@ export const Sidebar: React.FC = () => {
   const hasUnreadNewRequests = useAppSelector(
     (state) => state.predictions.hasUnreadNewRequests
   );
-  const unreadRequestsCount = useAppSelector(
-    (state) => state.predictions.requests.filter((r) => r.hasUnreadWsEvent).length
-  );
   const hasUnreadDispute = useAppSelector(
     (state) => state.predictions.hasUnreadDispute
   );
@@ -127,12 +124,7 @@ export const Sidebar: React.FC = () => {
             </div>
 
             {hasUnreadNewRequests && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded-full font-mono font-bold">
-                  {unreadRequestsCount || '!'}
-                </span>
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 red-dot-pulse" />
-              </div>
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 red-dot-pulse" />
             )}
           </NavLink>
 

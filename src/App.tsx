@@ -17,6 +17,7 @@ import { TransactionsPage } from './pages/finance/Transactions';
 import { WithdrawalsPage } from './pages/finance/Withdrawals';
 import { useAppSelector } from './store';
 import { Loader2 } from 'lucide-react';
+import { AuthNetworkErrorScreen } from './components/ui/AuthNetworkErrorScreen';
 
 const ProtectedLayout: React.FC = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -64,6 +65,7 @@ const ProtectedLayout: React.FC = () => {
 
 export const App: React.FC = () => {
   const isAuthChecking = useAppSelector((state) => state.auth.isAuthChecking);
+  const authCheckError = useAppSelector((state) => state.auth.authCheckError);
 
   if (isAuthChecking) {
     return (
@@ -74,6 +76,10 @@ export const App: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  if (authCheckError) {
+    return <AuthNetworkErrorScreen type={authCheckError} />;
   }
 
   return (

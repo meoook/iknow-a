@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store';
-import { clearDisputeBadge } from '../../../store/slices/predictionsSlice';
-import { useGetAdminPredictionsQuery } from '../../../services/adminApi';
+import { clearDisputeBadge, predictionsSelectors } from '../../../store/slices/predictionsSlice';
+import { useGetPredictionsQuery } from '../../../services/adminApi';
 import { PredictionCard } from '../../../components/predictions/PredictionCard';
 
 export const WinnerSelectionPage: React.FC = () => {
@@ -11,7 +11,8 @@ export const WinnerSelectionPage: React.FC = () => {
   const navigate = useNavigate();
 
   const hasUnreadDispute = useAppSelector((state) => state.predictions.hasUnreadDispute);
-  const { data: predictionsList, isLoading } = useGetAdminPredictionsQuery({ phase: 'dispute' });
+  const allPredictions = useAppSelector(predictionsSelectors.selectAll);
+  const { isLoading } = useGetPredictionsQuery({ phase: 'dispute' });
 
   useEffect(() => {
     if (hasUnreadDispute) {
@@ -23,7 +24,9 @@ export const WinnerSelectionPage: React.FC = () => {
     navigate(`/predictions/detail/${id}`);
   };
 
-  const disputeItems = predictionsList || [];
+  const disputeItems = allPredictions.filter(
+    (p) => p.state === 'DISPUTE' && !p.choices?.some((c) => c.win === true)
+  );
 
   if (isLoading && disputeItems.length === 0) {
     return (

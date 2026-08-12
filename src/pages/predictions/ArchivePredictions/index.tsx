@@ -3,8 +3,13 @@ import { useAppSelector } from '../../../store';
 import { ArchivePredictionsToolbar } from './ArchivePredictionsToolbar';
 import { ArchivePredictionsTable } from './ArchivePredictionsTable';
 
+import { predictionsSelectors } from '../../../store/slices/predictionsSlice';
+
 export const ArchivePredictionsPage: React.FC = () => {
-  const archivePredictions = useAppSelector((state) => state.predictions.archive);
+  const allPredictions = useAppSelector(predictionsSelectors.selectAll);
+  const archivePredictions = allPredictions.filter(
+    (p) => p.state === 'ENDED' || p.state === 'CANCEL'
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'volume'>('date');

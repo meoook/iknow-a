@@ -141,7 +141,6 @@ export interface IPredictionRequestItem {
   bet_date?: string;
   betDate?: string;
   created: number | string;
-  hasUnreadWsEvent?: boolean;
 }
 
 export interface IChoiceItem {
@@ -169,6 +168,7 @@ export interface IPredictionItem {
   closed?: string | null;
   created: string;
   choices: IChoiceItem[];
+  moderators?: string[];
 }
 
 export interface IBankWallet {

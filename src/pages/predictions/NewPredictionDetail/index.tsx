@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, XCircle, Loader2 } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../store';
+import { useAppSelector } from '../../../store';
 import { wsManager } from '../../../services/websocket';
 import {
-  approveRequest,
-  rejectRequest,
-} from '../../../store/slices/predictionsSlice';
-import {
-  useGetPredictionRequestByIdQuery,
+  useGetRequestByIdQuery,
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,
@@ -17,22 +13,16 @@ import { PredictionDetailStickyHeader } from './PredictionDetailStickyHeader';
 import { PredictionDetailMainCard } from './PredictionDetailMainCard';
 import { PredictionDetailChoicesList } from './PredictionDetailChoicesList';
 
+import { requestsSelectors } from '../../../store/slices/predictionsSlice';
+
 export const NewPredictionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const requestId = Number(id);
-  const reduxReq = useAppSelector((state) =>
-    state.predictions.requests.find((r) => r.id === requestId)
-  );
+  const req = useAppSelector((state) => requestsSelectors.selectById(state, requestId));
 
-  const { data: apiReq, isLoading: isApiLoading } = useGetPredictionRequestByIdQuery(
-    requestId,
-    { skip: !requestId || Boolean(reduxReq) }
-  );
-
-  const req = reduxReq || apiReq;
+  const { isLoading: isApiLoading } = useGetRequestByIdQuery(requestId, { skip: !requestId || Boolean(req) });
 
   const [approveApi] = useApprovePredictionRequestMutation();
   const [rejectApi] = useRejectPredictionRequestMutation();
@@ -79,21 +69,27 @@ export const NewPredictionDetailPage: React.FC = () => {
 
   const handleApprove = () => {
     const targetId = req.id;
-    dispatch(approveRequest(targetId));
-    navigate('/predictions/new');
-    approveApi(targetId).catch((e) => {
-      console.warn('API approve call error', e);
-    });
+    approveApi(targetId)
+      .unwrap()
+      .then(() => {
+        navigate('/predictions/new');
+      })
+      .catch((e) => {
+        console.warn('API approve call error', e);
+      });
   };
 
   const handleConfirmReject = () => {
     const targetId = req.id;
     const finalReason = customReason.trim() || selectedTemplate || 'Отклонено модератором';
-    dispatch(rejectRequest({ id: targetId, reason: finalReason }));
-    navigate('/predictions/new');
-    rejectApi({ id: targetId, reason: finalReason }).catch((e) => {
-      console.warn('API reject call error', e);
-    });
+    rejectApi({ id: targetId, reason: finalReason })
+      .unwrap()
+      .then(() => {
+        navigate('/predictions/new');
+      })
+      .catch((e) => {
+        console.warn('API reject call error', e);
+      });
   };
 
   const handleChangeIcon = async () => {

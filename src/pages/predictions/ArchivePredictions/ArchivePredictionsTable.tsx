@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trophy } from 'lucide-react';
 import { IPredictionItem } from '../../../types';
+import { formatDisplayDate } from '../../../utils/dates';
 
 interface ArchivePredictionsTableProps {
   filteredArchive: IPredictionItem[];
@@ -81,13 +82,13 @@ export const ArchivePredictionsTable: React.FC<ArchivePredictionsTableProps> = (
                     {/* Даты */}
                     <td className="py-3.5 px-4 text-right font-mono text-[11px] text-slate-400 space-y-0.5">
                       <div>
-                        Создано: <span className="text-slate-300">{pred.created}</span>
+                        Создано: <span className="text-slate-300">{formatDisplayDate(pred.created)}</span>
                       </div>
                       <div>
-                        Ставки до: <span className="text-slate-300">{pred.betDate}</span>
+                        Ставки до: <span className="text-slate-300">{formatDisplayDate(pred.betDate)}</span>
                       </div>
                       <div>
-                        Завершено: <span className="text-slate-300">{pred.closed || pred.endDate}</span>
+                        Завершено: <span className="text-slate-300">{formatDisplayDate(pred.closed || pred.endDate)}</span>
                       </div>
                     </td>
                   </tr>

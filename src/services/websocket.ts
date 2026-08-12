@@ -1,11 +1,14 @@
 import { store } from '../store';
 import {
-  wsRequestUpdate,
-  wsRequestVerdict,
   wsRequestSetModerator,
   wsRequestUnsetModerator,
-  wsRequestNew,
+  wsRequestUpdateIcon,
+  addWsNewRequestEvent,
   addWsDisputeEvent,
+  removePredictionRequest,
+  removePrediction,
+  wsPredictionSetModerator,
+  wsPredictionUnsetModerator,
 } from '../store/slices/predictionsSlice';
 import { addWsWithdrawalRequest } from '../store/slices/financeSlice';
 import { receiveWsEvent, setConnectionStatus } from '../store/slices/websocketSlice';
@@ -14,7 +17,9 @@ import { IWithdrawalRequestItem, IWsEventData } from '../types';
 
 const WsOutEvent = {
   request_join: 'request.join',
-  request_leave: 'request.leave',
+  request_left: 'request.left',
+  prediction_join: 'prediction.join',
+  prediction_left: 'prediction.left',
 } as const
 type WsOutEvent = (typeof WsOutEvent)[keyof typeof WsOutEvent]
 
@@ -25,6 +30,9 @@ const WsInEvent = {
   request_updated: 'request.updated',
   request_verdict: 'request.verdict',
   prediction_dispute: 'prediction.dispute',
+  prediction_close: 'prediction.close',
+  prediction_taken: 'prediction.taken',
+  prediction_dropped: 'prediction.dropped',
   withdraw: 'withdraw'
 } as const
 type WsInEvent = (typeof WsInEvent)[keyof typeof WsInEvent]
@@ -119,16 +127,31 @@ class WebSocketManager {
 
   private handleMessage(msg: WsInMessage) {
     if (msg.type === WsInEvent.request_created) {
-      store.dispatch(wsRequestNew());
-      store.dispatch(adminApi.util.invalidateTags(['PredictionRequests']));
+      store.dispatch(addWsNewRequestEvent());
+      if (msg.value) store.dispatch(adminApi.endpoints.getRequestById.initiate(msg.value));
     }
     else if (msg.type === WsInEvent.request_taken) store.dispatch(wsRequestSetModerator(msg.value));
     else if (msg.type === WsInEvent.request_dropped) store.dispatch(wsRequestUnsetModerator(msg.value));
-    else if (msg.type === WsInEvent.request_updated) store.dispatch(wsRequestUpdate(msg.value));
-    else if (msg.type === WsInEvent.request_verdict) store.dispatch(wsRequestVerdict(msg.value));
+    else if (msg.type === WsInEvent.request_updated) {
+      if (msg.value?.id && msg.value?.data?.icon) {
+        store.dispatch(wsRequestUpdateIcon({ id: msg.value.id, icon: msg.value.data.icon }));
+      }
+    }
+    else if (msg.type === WsInEvent.request_verdict) {
+      if (msg.value) store.dispatch(removePredictionRequest(msg.value));
+    }
     else if (msg.type === WsInEvent.prediction_dispute) {
       store.dispatch(addWsDisputeEvent());
-      store.dispatch(adminApi.util.invalidateTags(['AdminPredictions']));
+      if (msg.value) store.dispatch(adminApi.endpoints.getPredictionById.initiate(msg.value));
+    }
+    else if (msg.type === WsInEvent.prediction_close) {
+      if (msg.value) store.dispatch(removePrediction(msg.value));
+    }
+    else if (msg.type === WsInEvent.prediction_taken) {
+      if (msg.value) store.dispatch(wsPredictionSetModerator(msg.value));
+    }
+    else if (msg.type === WsInEvent.prediction_dropped) {
+      if (msg.value) store.dispatch(wsPredictionUnsetModerator(msg.value));
     }
     else if (msg.type === WsInEvent.withdraw) {
       store.dispatch(addWsWithdrawalRequest(msg.value));
@@ -150,7 +173,13 @@ class WebSocketManager {
     this.send(WsOutEvent.request_join, requestId);
   }
   requestLeave(requestId: number) {
-    this.send(WsOutEvent.request_leave, requestId);
+    this.send(WsOutEvent.request_left, requestId);
+  }
+  predictionJoin(predictionId: number) {
+    this.send(WsOutEvent.prediction_join, predictionId);
+  }
+  predictionLeave(predictionId: number) {
+    this.send(WsOutEvent.prediction_left, predictionId);
   }
 }
 

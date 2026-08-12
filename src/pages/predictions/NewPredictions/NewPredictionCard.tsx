@@ -3,7 +3,6 @@ import { User, Calendar, Clock, CheckCircle2, UserCheck } from 'lucide-react';
 import { IPredictionRequestItem } from '../../../types';
 import { formatDisplayDate } from '../../../utils/dates';
 import { formatIconUrl } from '../../../utils/images';
-import { RedDotBadge } from '../../../components/ui/RedDotBadge';
 
 interface NewPredictionCardProps {
   req: IPredictionRequestItem;
@@ -20,13 +19,6 @@ export const NewPredictionCard: React.FC<NewPredictionCardProps> = ({ req, onCli
       onClick={() => onClick(req.id)}
       className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 cursor-pointer glass-panel glass-panel-hover relative group flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 transition-all hover:border-cyan-500/40"
     >
-      {/* Live WebSocket Event Red Dot Badge */}
-      {req.hasUnreadWsEvent && (
-        <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-rose-500/20 border border-rose-500/40 px-2.5 py-0.5 rounded-full text-[10px] text-rose-300 font-bold z-10">
-          <RedDotBadge />
-          <span>Новый WS</span>
-        </div>
-      )}
 
       {/* Left & Middle Content: Icon, Title, Tags, User, Bet */}
       <div className="flex items-start gap-4 flex-1 min-w-0 w-full">

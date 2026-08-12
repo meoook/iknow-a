@@ -1,19 +1,18 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createEntityAdapter, PayloadAction } from '@reduxjs/toolkit';
 import { IPredictionRequestItem, IPredictionItem } from '../../types';
+import { RootState } from '../index';
 
-interface IPredictionsState {
-  requests: IPredictionRequestItem[];
-  active: IPredictionItem[];
-  archive: IPredictionItem[];
-  hasUnreadNewRequests: boolean;
-  hasUnreadDispute: boolean;
-  unreadDisputeCount: number;
-}
+export const requestsAdapter = createEntityAdapter<IPredictionRequestItem>({
+  sortComparer: (a, b) => b.id - a.id,
+});
 
-const initialState: IPredictionsState = {
-  requests: [],
-  active: [],
-  archive: [],
+export const predictionsAdapter = createEntityAdapter<IPredictionItem>({
+  sortComparer: (a, b) => b.id - a.id,
+});
+
+const initialState = {
+  requests: requestsAdapter.getInitialState(),
+  predictions: predictionsAdapter.getInitialState(),
   hasUnreadNewRequests: false,
   hasUnreadDispute: false,
   unreadDisputeCount: 0,
@@ -23,145 +22,94 @@ export const predictionsSlice = createSlice({
   name: 'predictions',
   initialState,
   reducers: {
+    // Requests Adapter Reducers
     setPredictionRequests: (state, action: PayloadAction<IPredictionRequestItem[]>) => {
-      const existingUnreads = new Set(state.requests.filter((r) => r.hasUnreadWsEvent).map((r) => r.id));
-      const existingModerators = new Map(state.requests.map((r) => [r.id, r.moderators]));
-      const existingVersionedIcons = new Map(
-        state.requests.filter((r) => r.icon && r.icon.includes('?v=')).map((r) => [r.id, r.icon])
-      );
-
-      state.requests = action.payload
-        .filter((r) => r.state === 'VALIDATE')
-        .map((r) => ({
-          ...r,
-          icon: existingVersionedIcons.get(r.id) || r.icon,
-          hasUnreadWsEvent: existingUnreads.has(r.id),
-          moderators: existingModerators.get(r.id) || r.moderators,
-        }));
-
-      state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
+      const filtered = action.payload.filter((r) => r.state === 'VALIDATE');
+      requestsAdapter.setAll(state.requests, filtered);
     },
     upsertPredictionRequest: (state, action: PayloadAction<IPredictionRequestItem>) => {
-      const item = action.payload;
-      const index = state.requests.findIndex((r) => r.id === item.id);
-      if (index !== -1) {
-        const existingIcon = state.requests[index].icon;
-        const iconToUse = (existingIcon && existingIcon.includes('?v=')) ? existingIcon : item.icon;
-        state.requests[index] = { ...state.requests[index], ...item, icon: iconToUse };
-      } else {
-        state.requests.push({ ...item });
-      }
+      requestsAdapter.upsertOne(state.requests, action.payload);
     },
-    approveRequest: (state, action: PayloadAction<number>) => {
-      const reqId = action.payload;
-      const req = state.requests.find((r) => r.id === reqId);
-      if (req) {
-        req.state = 'APPROVED';
-        req.hasUnreadWsEvent = false;
-        state.requests = state.requests.filter((r) => r.id !== reqId);
-      }
-      state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
+    removePredictionRequest: (state, action: PayloadAction<number>) => {
+      requestsAdapter.removeOne(state.requests, action.payload);
+    },
+    updatePredictionRequest: (state, action: PayloadAction<{ id: number; changes: Partial<IPredictionRequestItem> }>) => {
+      requestsAdapter.updateOne(state.requests, action.payload);
     },
 
-    rejectRequest: (
-      state,
-      action: PayloadAction<{ id: number; reason: string }>
-    ) => {
-      const { id, reason } = action.payload;
-      const req = state.requests.find((r) => r.id === id);
-      if (req) {
-        req.state = 'REJECTED';
-        req.rejectReason = reason;
-        req.hasUnreadWsEvent = false;
-        state.requests = state.requests.filter((r) => r.id !== id);
-      }
-      state.hasUnreadNewRequests = state.requests.some((r) => r.hasUnreadWsEvent);
+    // Predictions Adapter Reducers
+    setPredictions: (state, action: PayloadAction<IPredictionItem[]>) => {
+      predictionsAdapter.setAll(state.predictions, action.payload);
+    },
+    upsertPrediction: (state, action: PayloadAction<IPredictionItem>) => {
+      predictionsAdapter.upsertOne(state.predictions, action.payload);
+    },
+    removePrediction: (state, action: PayloadAction<number>) => {
+      predictionsAdapter.removeOne(state.predictions, action.payload);
+    },
+    updatePrediction: (state, action: PayloadAction<{ id: number; changes: Partial<IPredictionItem> }>) => {
+      predictionsAdapter.updateOne(state.predictions, action.payload);
     },
 
-    clearNewRequestsBadge: (state) => {
-      state.requests.forEach((r) => {
-        r.hasUnreadWsEvent = false;
-      });
-      state.hasUnreadNewRequests = false;
-    },
-
-    wsRequestNew: (state) => {
+    // UI Badges & Lamp Flags
+    addWsNewRequestEvent: (state) => {
       state.hasUnreadNewRequests = true;
     },
-
+    clearNewRequestsBadge: (state) => {
+      state.hasUnreadNewRequests = false;
+    },
     addWsDisputeEvent: (state) => {
       state.hasUnreadDispute = true;
       state.unreadDisputeCount += 1;
     },
-
     clearDisputeBadge: (state) => {
       state.hasUnreadDispute = false;
       state.unreadDisputeCount = 0;
     },
 
-    resolveActivePrediction: (
-      state,
-      action: PayloadAction<{ predictionId: number; winningChoiceId: number }>
-    ) => {
-      const { predictionId, winningChoiceId } = action.payload;
-      const predIndex = state.active.findIndex((p) => p.id === predictionId);
-
-      if (predIndex !== -1) {
-        const target = state.active[predIndex];
-        target.state = 'ENDED';
-        target.closed = new Date().toISOString().split('T')[0];
-        target.choices.forEach((ch) => {
-          ch.win = ch.id === winningChoiceId;
-        });
-
-        state.archive.unshift(target);
-        state.active.splice(predIndex, 1);
-      }
-    },
-
-    addWsPredictionRequest: (state, action: PayloadAction<IPredictionRequestItem>) => {
-      const newItem = {
-        ...action.payload,
-        hasUnreadWsEvent: true,
-      };
-      state.requests.unshift(newItem);
-      state.hasUnreadNewRequests = true;
-    },
-
-    wsRequestVerdict(state, action: PayloadAction<{ id: number }>) {
-      const { id } = action.payload;
-      state.requests = state.requests.filter((r) => r.id !== id);
-    },
-
-    wsRequestUpdate: (
-      state,
-      action: PayloadAction<Partial<IPredictionRequestItem> & { data?: Partial<IPredictionRequestItem> }>
-    ) => {
-      const { id, data, ...directProps } = action.payload;
-      const req = state.requests.find((r) => r.id === id);
-      if (req) {
-        Object.assign(req, directProps, data);
-        const rawIcon = data?.icon || directProps.icon;
-        if (rawIcon) {
-          const cleanIcon = rawIcon.split('?')[0];
-          req.icon = `${cleanIcon}?v=${Date.now()}`;
-        }
-      }
-    },
+    // Moderation & WS helpers
     wsRequestSetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
       const { id, moderator } = action.payload;
-      const req = state.requests.find((r) => r.id === id);
-      console.log('[WS] Set moderator', id, moderator, Boolean(req));
+      const req = state.requests.entities[id];
       if (req && moderator) {
-        if (!req.moderators) req.moderators = [];
-        if (!req.moderators.includes(moderator)) req.moderators.push(moderator);
+        const moderators = req.moderators ? [...req.moderators] : [];
+        if (!moderators.includes(moderator)) {
+          moderators.push(moderator);
+          requestsAdapter.updateOne(state.requests, { id, changes: { moderators } });
+        }
       }
     },
     wsRequestUnsetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
       const { id, moderator } = action.payload;
-      const req = state.requests.find((r) => r.id === id);
+      const req = state.requests.entities[id];
       if (req && moderator && req.moderators) {
-        req.moderators = req.moderators.filter((m) => m !== moderator);
+        const moderators = req.moderators.filter((m) => m !== moderator);
+        requestsAdapter.updateOne(state.requests, { id, changes: { moderators } });
+      }
+    },
+    wsRequestUpdateIcon: (state, action: PayloadAction<{ id: number; icon: string }>) => {
+      const { id, icon } = action.payload;
+      const cleanIcon = icon.split('?')[0];
+      const versionedIcon = `${cleanIcon}?v=${Date.now()}`;
+      requestsAdapter.updateOne(state.requests, { id, changes: { icon: versionedIcon } });
+    },
+    wsPredictionSetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
+      const { id, moderator } = action.payload;
+      const pred = state.predictions.entities[id];
+      if (pred && moderator) {
+        const moderators = pred.moderators ? [...pred.moderators] : [];
+        if (!moderators.includes(moderator)) {
+          moderators.push(moderator);
+          predictionsAdapter.updateOne(state.predictions, { id, changes: { moderators } });
+        }
+      }
+    },
+    wsPredictionUnsetModerator: (state, action: PayloadAction<{ id: number; moderator: string }>) => {
+      const { id, moderator } = action.payload;
+      const pred = state.predictions.entities[id];
+      if (pred && moderator && pred.moderators) {
+        const moderators = pred.moderators.filter((m) => m !== moderator);
+        predictionsAdapter.updateOne(state.predictions, { id, changes: { moderators } });
       }
     },
   },
@@ -170,18 +118,30 @@ export const predictionsSlice = createSlice({
 export const {
   setPredictionRequests,
   upsertPredictionRequest,
-  approveRequest,
-  rejectRequest,
+  removePredictionRequest,
+  updatePredictionRequest,
+  setPredictions,
+  upsertPrediction,
+  removePrediction,
+  updatePrediction,
+  addWsNewRequestEvent,
   clearNewRequestsBadge,
-  wsRequestNew,
   addWsDisputeEvent,
   clearDisputeBadge,
-  resolveActivePrediction,
-  addWsPredictionRequest,
-  wsRequestVerdict,
-  wsRequestUpdate,
   wsRequestSetModerator,
   wsRequestUnsetModerator,
+  wsRequestUpdateIcon,
+  wsPredictionSetModerator,
+  wsPredictionUnsetModerator,
 } = predictionsSlice.actions;
+
+// Entity Selectors
+export const requestsSelectors = requestsAdapter.getSelectors<RootState>(
+  (state) => state.predictions.requests
+);
+
+export const predictionsSelectors = predictionsAdapter.getSelectors<RootState>(
+  (state) => state.predictions.predictions
+);
 
 export default predictionsSlice.reducer;

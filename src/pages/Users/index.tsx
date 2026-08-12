@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetAdminUsersInfoQuery, useGetAdminUsersListQuery } from '../../services/adminApi';
+import { useGetUsersInfoQuery, useGetUsersListQuery } from '../../services/adminApi';
 import { IUserItem } from '../../types';
 import { UsersSummaryCards } from './UsersSummaryCards';
 import { UsersSearchToolbar } from './UsersSearchToolbar';
@@ -23,8 +23,8 @@ export const UsersPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: infoData } = useGetAdminUsersInfoQuery();
-  const { data: apiUsersList } = useGetAdminUsersListQuery({ search: debouncedSearchQuery });
+  const { data: infoData } = useGetUsersInfoQuery();
+  const { data: apiUsersList } = useGetUsersListQuery({ search: debouncedSearchQuery });
 
   const totalUsers = infoData?.total_users ?? 0;
   const newUsersCount = infoData?.new_users ?? 0;
