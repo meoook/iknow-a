@@ -6,11 +6,13 @@ import { formatIconUrl } from '../../../utils/images';
 
 interface PredictionDetailMainCardProps {
   req: IPredictionRequestItem;
+  isGeneratingIcon?: boolean;
   onChangeIcon: () => void;
 }
 
 export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> = ({
   req,
+  isGeneratingIcon,
   onChangeIcon,
 }) => {
   return (
@@ -21,16 +23,25 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
           <img
             src={formatIconUrl(req.icon)}
             alt="Icon"
-            className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl"
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl transition-all ${
+              isGeneratingIcon ? 'opacity-60 ring-2 ring-cyan-500/50' : ''
+            }`}
           />
+
           <button
+            disabled={isGeneratingIcon}
             onClick={onChangeIcon}
-            className="absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-transform hover:scale-110 cursor-pointer"
-            title="Сгенерировать другую иконку"
+            className={`absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-all cursor-pointer ${
+              isGeneratingIcon
+                ? 'opacity-60 cursor-not-allowed'
+                : 'hover:scale-110'
+            }`}
+            title={isGeneratingIcon ? 'Генерация новой иконки...' : 'Сгенерировать другую иконку'}
           >
-            <RefreshCw size={14} className="font-bold" />
+            <RefreshCw size={14} className={`font-bold ${isGeneratingIcon ? 'animate-spin' : ''}`} />
           </button>
         </div>
+
 
         {/* Title & Tags */}
         <div className="flex-1 flex flex-col gap-3">

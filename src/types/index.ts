@@ -193,35 +193,41 @@ export interface IBankInfo {
   wallets: IBankWallet[];
 }
 
-export interface ITransactionItem {
-  id: string;
-  user: string;
+export interface ITokenInfo {
+  chain: string;
+  currency: string;
+}
+
+export interface IObjectUser {
+  id: number;
+  username: string;
+  avatar: string | null;
+}
+
+export type ExternalTxStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'PROCESSING'
+  | 'SUBMITTED'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'FAILED';
+
+export interface IExternalTxItem {
+  id: number;
+  user?: IObjectUser;
+  token?: ITokenInfo;
   direction: 'IN' | 'OUT';
-  type: 'DEPOSIT' | 'WITHDRAW' | 'BET_PAYOUT' | 'SWEEP';
   amount: number;
-  token: string;
-  chain: string;
-  txHash: string;
-  status: 'COMPLETED' | 'PENDING' | 'FAILED';
-  timestamp: string;
+  status: ExternalTxStatus;
+  tx_id?: string;
+  address?: string;
+  created: number;
+  moderators?: string[];
 }
 
-export interface IWithdrawalRequestItem {
-  id: string;
-  user: IUserRef;
-  amount: number;
-  token: string;
-  chain: string;
-  address: string;
-  created: string;
-  autoApproveReason: string;
-  status: 'PENDING_MANUAL' | 'APPROVED' | 'REJECTED';
-  txHash?: string;
-  hasUnreadWsEvent?: boolean;
-}
+export type ITransactionItem = IExternalTxItem;
+export type IWithdrawalRequestItem = IExternalTxItem;
 
-export interface IWsEventData {
-  type: 'PREDICTION_REQUEST_NEW' | 'WITHDRAWAL_REQUEST_NEW' | 'PREDICTION_UPDATED' | 'TRANSACTION_NEW';
-  timestamp: string;
-  payload: any;
-}
+
+

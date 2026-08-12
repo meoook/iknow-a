@@ -6,12 +6,14 @@ const DEFAULT_CHOICE_ICON = `${import.meta.env.VITE_IMG_URL}/tmp/no_icon.png`;
 
 interface PredictionDetailChoicesListProps {
   req: IPredictionRequestItem;
+  isGeneratingIcon?: boolean;
   onRegenerateChoiceIcon: (index: number) => void;
   onRegenerateAllChoiceIcons: () => void;
 }
 
 export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListProps> = ({
   req,
+  isGeneratingIcon,
   onRegenerateChoiceIcon,
   onRegenerateAllChoiceIcons,
 }) => {
@@ -30,11 +32,14 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
         </div>
 
         <button
+          disabled={isGeneratingIcon}
           onClick={onRegenerateAllChoiceIcons}
-          className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-sm"
+          className={`flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-sm ${
+            isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          <Sparkles size={15} />
-          <span>Сгенерировать иконки для всех вариантов</span>
+          <Sparkles size={15} className={isGeneratingIcon ? 'animate-spin' : ''} />
+          <span>{isGeneratingIcon ? 'Генерация иконок...' : 'Сгенерировать иконки для всех вариантов'}</span>
         </button>
       </div>
 
@@ -58,13 +63,17 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
                     className="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md group-hover:border-cyan-500/40 transition-colors"
                   />
                   <button
+                    disabled={isGeneratingIcon}
                     onClick={() => onRegenerateChoiceIcon(idx)}
-                    className="absolute -bottom-1.5 -right-1.5 bg-slate-900 hover:bg-cyan-500 text-slate-300 hover:text-slate-950 p-1.5 rounded-full shadow-lg border border-slate-700 transition-transform hover:scale-110 cursor-pointer"
+                    className={`absolute -bottom-1.5 -right-1.5 bg-slate-900 hover:bg-cyan-500 text-slate-300 hover:text-slate-950 p-1.5 rounded-full shadow-lg border border-slate-700 transition-transform cursor-pointer ${
+                      isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
+                    }`}
                     title="Сгенерировать другую картинку для этого варианта"
                   >
-                    <RefreshCw size={12} className="font-bold" />
+                    <RefreshCw size={12} className={`font-bold ${isGeneratingIcon ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
+
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">

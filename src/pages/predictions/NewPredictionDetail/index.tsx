@@ -31,6 +31,15 @@ export const NewPredictionDetailPage: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
   const [isRejecting, setIsRejecting] = useState<boolean>(false);
+  const [isGeneratingIcon, setIsGeneratingIcon] = useState<boolean>(false);
+  const prevIconRef = React.useRef(req?.icon);
+
+  useEffect(() => {
+    if (req?.icon && req.icon !== prevIconRef.current) {
+      prevIconRef.current = req.icon;
+      setIsGeneratingIcon(false);
+    }
+  }, [req?.icon]);
 
   useEffect(() => {
     if (requestId) wsManager.requestJoin(requestId);
@@ -93,10 +102,13 @@ export const NewPredictionDetailPage: React.FC = () => {
   };
 
   const handleChangeIcon = async () => {
+    if (isGeneratingIcon || !req) return;
+    setIsGeneratingIcon(true);
     try {
       await changeIconApi(req.id).unwrap();
     } catch (e) {
       console.warn('API change-icon error', e);
+      setIsGeneratingIcon(false);
     }
   };
 
@@ -120,13 +132,16 @@ export const NewPredictionDetailPage: React.FC = () => {
       />
       <PredictionDetailMainCard
         req={req}
+        isGeneratingIcon={isGeneratingIcon}
         onChangeIcon={handleChangeIcon}
       />
       <PredictionDetailChoicesList
         req={req}
+        isGeneratingIcon={isGeneratingIcon}
         onRegenerateChoiceIcon={() => handleChangeIcon()}
         onRegenerateAllChoiceIcons={() => handleChangeIcon()}
       />
     </div>
   );
+
 };

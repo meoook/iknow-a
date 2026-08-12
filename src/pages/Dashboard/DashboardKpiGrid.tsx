@@ -4,13 +4,16 @@ import { Sparkles, Wallet, Send, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { useAppSelector } from '../../store';
 
 import { requestsSelectors, predictionsSelectors } from '../../store/slices/predictionsSlice';
+import { withdrawalsSelectors } from '../../store/slices/financeSlice';
 
 export const DashboardKpiGrid: React.FC = () => {
   const requests = useAppSelector(requestsSelectors.selectAll);
   const allPredictions = useAppSelector(predictionsSelectors.selectAll);
   const activePredictions = allPredictions.filter((p) => p.state === 'ACTIVE');
   const bankInfo = useAppSelector((state) => state.finance.bankInfo);
-  const withdrawals = useAppSelector((state) => state.finance.withdrawals);
+  const withdrawals = useAppSelector(withdrawalsSelectors.selectAll);
+  const hasUnreadWithdrawals = useAppSelector((state) => state.finance.hasUnreadWithdrawals);
+
 
   const totalActiveVolume = activePredictions.reduce((acc, p) => acc + (p.volume || 0), 0);
 
@@ -98,9 +101,10 @@ export const DashboardKpiGrid: React.FC = () => {
           </span>
           <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 relative group-hover:scale-110 transition-transform">
             <Send className="w-5 h-5" />
-            {withdrawals.some((w) => w.hasUnreadWsEvent) && (
+            {hasUnreadWithdrawals && (
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 red-dot-pulse" />
             )}
+
           </div>
         </div>
         <div className="text-2xl font-extrabold text-white font-mono">

@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LogOut,
-  Bell,
   Sparkles,
   Send,
   ChevronDown,
@@ -34,18 +33,11 @@ export const Header: React.FC = () => {
   const location = useLocation();
 
   const user = useAppSelector((state) => state.auth.user);
-  const history = useAppSelector((state) => state.websocket.history);
 
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showEventsLog, setShowEventsLog] = useState(false);
-
   const [signOut] = useSignOutMutation();
 
-  // Refs for click outside detection
-  const eventsLogRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(eventsLogRef, () => setShowEventsLog(false), showEventsLog);
   useClickOutside(userMenuRef, () => setShowUserMenu(false), showUserMenu);
 
   const handleLogout = async () => {
@@ -82,46 +74,8 @@ export const Header: React.FC = () => {
         </h1>
       </div>
 
-      {/* Right Action Icons: Realtime Log, User Profile Menu */}
+      {/* Right Action Icons: User Profile Menu */}
       <div className="flex items-center gap-3">
-        {/* Real-time WS Events Drawer Button */}
-        <div className="relative" ref={eventsLogRef}>
-          <button
-            onClick={() => setShowEventsLog(!showEventsLog)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors relative cursor-pointer"
-            title="Лог событий WebSocket"
-          >
-            <Bell size={18} />
-            {history.length > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 red-dot-pulse" />
-            )}
-          </button>
-
-          {showEventsLog && (
-            <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-3 z-50">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                <span className="text-xs font-bold text-slate-200">Лог событий Realtime</span>
-                <span className="text-[10px] text-slate-500 font-mono">{history.length} событий</span>
-              </div>
-              {history.length === 0 ? (
-                <div className="text-xs text-slate-500 py-4 text-center">Событий пока нет</div>
-              ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {history.slice(0, 5).map((evt, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] font-mono"
-                    >
-                      <div className="text-cyan-400 font-bold">{evt.type}</div>
-                      <div className="text-slate-400 text-[10px]">{evt.timestamp}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* User Profile Menu */}
         <div className="relative" ref={userMenuRef}>
           <button

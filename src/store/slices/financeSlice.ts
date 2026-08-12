@@ -1,123 +1,85 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
-  IBankInfo,
-  ITransactionItem,
-  IWithdrawalRequestItem,
-} from '../../types';
-import {
-  initialBankInfo,
-  initialTransactions,
-  initialWithdrawalRequests,
-} from '../../data/mockData';
+import { createSlice, createEntityAdapter, PayloadAction } from '@reduxjs/toolkit';
+import { IExternalTxItem } from '../../types';
+import { RootState } from '../index';
 
-interface IFinanceState {
-  bankInfo: IBankInfo;
-  transactions: ITransactionItem[];
-  withdrawals: IWithdrawalRequestItem[];
-  hasUnreadWithdrawals: boolean;
-}
+export const txAdapter = createEntityAdapter<IExternalTxItem>({
+  sortComparer: (a, b) => b.id - a.id,
+});
 
-const initialState: IFinanceState = {
+export const withdrawalsAdapter = createEntityAdapter<IExternalTxItem>({
+  sortComparer: (a, b) => b.id - a.id,
+});
+
+import { initialBankInfo } from '../../data/mockData';
+
+const initialState = {
   bankInfo: initialBankInfo,
-  transactions: initialTransactions,
-  withdrawals: initialWithdrawalRequests,
-  hasUnreadWithdrawals: initialWithdrawalRequests.some((w) => w.hasUnreadWsEvent),
+  transactions: txAdapter.getInitialState(),
+  withdrawals: withdrawalsAdapter.getInitialState(),
+  hasUnreadWithdrawals: false,
+  unreadWithdrawalsCount: 0,
 };
+
 
 export const financeSlice = createSlice({
   name: 'finance',
   initialState,
   reducers: {
-    approveWithdrawal: (
-      state,
-      action: PayloadAction<{ id: string; txHash?: string }>
-    ) => {
-      const { id, txHash } = action.payload;
-      const wreq = state.withdrawals.find((w) => w.id === id);
+    setTransactions: (state, action: PayloadAction<IExternalTxItem[]>) => {
+      txAdapter.setAll(state.transactions, action.payload);
+    },
+    upsertTransaction: (state, action: PayloadAction<IExternalTxItem>) => {
+      txAdapter.upsertOne(state.transactions, action.payload);
+    },
+    updateTransaction: (state, action: PayloadAction<{ id: number; changes: Partial<IExternalTxItem> }>) => {
+      txAdapter.updateOne(state.transactions, action.payload);
+    },
 
-      if (wreq) {
-        wreq.status = 'APPROVED';
-        wreq.txHash =
-          txHash ||
-          '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-        wreq.hasUnreadWsEvent = false;
-
-        // Add to completed transactions
-        const newTx: ITransactionItem = {
-          id: `tx-${Date.now()}`,
-          user: wreq.user.username,
-          direction: 'OUT',
-          type: 'WITHDRAW',
-          amount: wreq.amount,
-          token: wreq.token,
-          chain: wreq.chain,
-          txHash: wreq.txHash,
-          status: 'COMPLETED',
-          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        };
-
-        state.transactions.unshift(newTx);
-        state.withdrawals = state.withdrawals.filter((w) => w.id !== id);
-
-        // Update total balance
-        state.bankInfo.bankTotalBalanceUsd -= wreq.amount;
-        state.bankInfo.hotWalletsUsd -= wreq.amount;
+    setWithdrawals: (state, action: PayloadAction<IExternalTxItem[]>) => {
+      const filtered = action.payload.filter((w) => w.direction === 'OUT');
+      withdrawalsAdapter.setAll(state.withdrawals, filtered);
+    },
+    upsertWithdrawal: (state, action: PayloadAction<IExternalTxItem>) => {
+      if (action.payload.direction === 'OUT') {
+        withdrawalsAdapter.upsertOne(state.withdrawals, action.payload);
       }
-
-      state.hasUnreadWithdrawals = state.withdrawals.some((w) => w.hasUnreadWsEvent);
+    },
+    removeWithdrawal: (state, action: PayloadAction<number>) => {
+      withdrawalsAdapter.removeOne(state.withdrawals, action.payload);
+    },
+    updateWithdrawal: (state, action: PayloadAction<{ id: number; changes: Partial<IExternalTxItem> }>) => {
+      withdrawalsAdapter.updateOne(state.withdrawals, action.payload);
     },
 
-    rejectWithdrawal: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const wreq = state.withdrawals.find((w) => w.id === id);
-
-      if (wreq) {
-        wreq.status = 'REJECTED';
-        wreq.hasUnreadWsEvent = false;
-
-        const newTx: ITransactionItem = {
-          id: `tx-${Date.now()}`,
-          user: wreq.user.username,
-          direction: 'OUT',
-          type: 'WITHDRAW',
-          amount: wreq.amount,
-          token: wreq.token,
-          chain: wreq.chain,
-          txHash: 'REJECTED_BY_ADMIN',
-          status: 'FAILED',
-          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        };
-
-        state.transactions.unshift(newTx);
-        state.withdrawals = state.withdrawals.filter((w) => w.id !== id);
-      }
-
-      state.hasUnreadWithdrawals = state.withdrawals.some((w) => w.hasUnreadWsEvent);
-    },
-
-    clearWithdrawalsBadge: (state) => {
-      state.withdrawals.forEach((w) => {
-        w.hasUnreadWsEvent = false;
-      });
-      state.hasUnreadWithdrawals = false;
-    },
-
-    addWsWithdrawalRequest: (state, action: PayloadAction<IWithdrawalRequestItem>) => {
-      const newItem = {
-        ...action.payload,
-        hasUnreadWsEvent: true,
-      };
-      state.withdrawals.unshift(newItem);
+    addWsWithdrawalBadge: (state) => {
       state.hasUnreadWithdrawals = true;
+      state.unreadWithdrawalsCount += 1;
+    },
+    clearWithdrawalsBadge: (state) => {
+      state.hasUnreadWithdrawals = false;
+      state.unreadWithdrawalsCount = 0;
     },
   },
 });
 
 export const {
-  approveWithdrawal,
-  rejectWithdrawal,
+  setTransactions,
+  upsertTransaction,
+  updateTransaction,
+  setWithdrawals,
+  upsertWithdrawal,
+  removeWithdrawal,
+  updateWithdrawal,
+  addWsWithdrawalBadge,
   clearWithdrawalsBadge,
-  addWsWithdrawalRequest,
 } = financeSlice.actions;
+
+export const transactionsSelectors = txAdapter.getSelectors<RootState>(
+  (state) => state.finance.transactions
+);
+
+export const withdrawalsSelectors = withdrawalsAdapter.getSelectors<RootState>(
+  (state) => state.finance.withdrawals
+);
 
 export default financeSlice.reducer;

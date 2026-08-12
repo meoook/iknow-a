@@ -1,25 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../store';
+import { clearWithdrawalsBadge, setWithdrawals, withdrawalsSelectors } from '../../../store/slices/financeSlice';
 import {
-  approveWithdrawal,
-  rejectWithdrawal,
-  clearWithdrawalsBadge,
-} from '../../../store/slices/financeSlice';
-import { IWithdrawalRequestItem } from '../../../types';
+  useGetAdminTxsQuery,
+  useApproveWithdrawalMutation,
+  useRejectWithdrawalMutation,
+} from '../../../services/adminApi';
+import { IExternalTxItem } from '../../../types';
 import { WithdrawalsHeader } from './WithdrawalsHeader';
 import { WithdrawalsTable } from './WithdrawalsTable';
 import { WithdrawalApprovalModal } from './WithdrawalApprovalModal';
 
 export const WithdrawalsPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const withdrawals = useAppSelector((state) => state.finance.withdrawals);
+  const { data: apiWithdrawals } = useGetAdminTxsQuery({ withdraw: 1 });
+
+  useEffect(() => {
+    if (apiWithdrawals && Array.isArray(apiWithdrawals)) {
+      dispatch(setWithdrawals(apiWithdrawals));
+    }
+  }, [apiWithdrawals, dispatch]);
+
+  const withdrawals = useAppSelector(withdrawalsSelectors.selectAll);
+
   const hasUnread = useAppSelector((state) => state.finance.hasUnreadWithdrawals);
   const currentUser = useAppSelector((state) => state.auth.user);
 
   const isSuperuser = currentUser?.is_superuser ?? true;
 
-  const [selectedWithdrawal, setSelectedWithdrawal] = useState<IWithdrawalRequestItem | null>(null);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<IExternalTxItem | null>(null);
   const [manualTxHash, setManualTxHash] = useState<string>('');
+
+  const [approveWithdrawalApi] = useApproveWithdrawalMutation();
+  const [rejectWithdrawalApi] = useRejectWithdrawalMutation();
 
   useEffect(() => {
     if (hasUnread) {
@@ -27,7 +40,7 @@ export const WithdrawalsPage: React.FC = () => {
     }
   }, [hasUnread, dispatch]);
 
-  const handleOpenModal = (w: IWithdrawalRequestItem) => {
+  const handleOpenModal = (w: IExternalTxItem) => {
     if (!isSuperuser) return;
     setSelectedWithdrawal(w);
     setManualTxHash('');
@@ -37,21 +50,24 @@ export const WithdrawalsPage: React.FC = () => {
     setSelectedWithdrawal(null);
   };
 
-  const handleConfirmApprove = () => {
+  const handleConfirmApprove = async () => {
     if (selectedWithdrawal && isSuperuser) {
-      dispatch(
-        approveWithdrawal({
-          id: selectedWithdrawal.id,
-          txHash: manualTxHash.trim() || undefined,
-        })
-      );
+      try {
+        await approveWithdrawalApi(selectedWithdrawal.id).unwrap();
+      } catch (err) {
+        console.error('Failed to approve withdrawal', err);
+      }
       handleCloseModal();
     }
   };
 
-  const handleConfirmReject = (id: string) => {
+  const handleConfirmReject = async (id: number) => {
     if (!isSuperuser) return;
-    dispatch(rejectWithdrawal(id));
+    try {
+      await rejectWithdrawalApi(id).unwrap();
+    } catch (err) {
+      console.error('Failed to reject withdrawal', err);
+    }
     if (selectedWithdrawal?.id === id) {
       handleCloseModal();
     }

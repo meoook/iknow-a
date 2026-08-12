@@ -12,6 +12,7 @@ import {
   IAdminUserComment,
   IAdminUserBet,
   IAdminUserDepositWallet,
+  IExternalTxItem,
 } from '../types';
 import {
   setPredictionRequests,
@@ -21,6 +22,14 @@ import {
   upsertPrediction,
   removePrediction,
 } from '../store/slices/predictionsSlice';
+import {
+  setTransactions,
+  upsertTransaction,
+  setWithdrawals,
+  upsertWithdrawal,
+  updateWithdrawal,
+} from '../store/slices/financeSlice';
+
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL,
@@ -235,6 +244,68 @@ export const adminApi = createApi({
         }
       },
     }),
+
+    getAdminTxs: builder.query<IExternalTxItem[], { withdraw?: boolean | number; search?: string } | void>({
+      query: (params) => {
+        const queryParts: string[] = [];
+        if (params && typeof params === 'object') {
+          if (params.withdraw) queryParts.push('withdraw=1');
+          if (params.search && params.search.trim()) {
+            queryParts.push(`search=${encodeURIComponent(params.search.trim())}`);
+          }
+        }
+        return queryParts.length ? `admin/tx?${queryParts.join('&')}` : 'admin/tx';
+      },
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data && Array.isArray(data)) {
+            if (arg && typeof arg === 'object' && arg.withdraw) {
+              dispatch(setWithdrawals(data));
+            } else {
+              dispatch(setTransactions(data));
+            }
+          }
+        } catch { }
+      },
+    }),
+
+    getAdminTxById: builder.query<IExternalTxItem, number>({
+      query: (id) => `admin/tx/${id}`,
+      async onQueryStarted(_id, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data) {
+            dispatch(upsertTransaction(data));
+            if (data.direction === 'OUT') dispatch(upsertWithdrawal(data));
+          }
+        } catch { }
+      },
+    }),
+    approveWithdrawal: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `admin/tx/${id}/approve`,
+        method: 'POST',
+      }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        dispatch(updateWithdrawal({ id, changes: { status: 'APPROVED' } }));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
+    }),
+    rejectWithdrawal: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `admin/tx/${id}/reject`,
+        method: 'POST',
+      }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        dispatch(updateWithdrawal({ id, changes: { status: 'REJECTED' } }));
+        try {
+          await queryFulfilled;
+        } catch { }
+      },
+    }),
   }),
 });
 
@@ -259,4 +330,9 @@ export const {
   useGetUserBetsQuery,
   useGetUserWalletsQuery,
   useUpdateUserMutation,
+  useGetAdminTxsQuery,
+  useGetAdminTxByIdQuery,
+  useApproveWithdrawalMutation,
+  useRejectWithdrawalMutation,
 } = adminApi;
+

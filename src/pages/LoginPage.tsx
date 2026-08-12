@@ -9,7 +9,7 @@ const STORAGE_KEY_LAST_USERNAME = 'iknow_admin_last_username';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_KEY_LAST_USERNAME) || 'admin_iknow';
+    return localStorage.getItem(STORAGE_KEY_LAST_USERNAME) || '';
   });
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

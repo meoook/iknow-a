@@ -1,13 +1,14 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { IWithdrawalRequestItem } from '../../../types';
-import { RedDotBadge } from '../../../components/ui/RedDotBadge';
+import { IExternalTxItem } from '../../../types';
+import { formatDisplayDate } from '../../../utils/dates';
 
 interface WithdrawalsTableProps {
-  withdrawals: IWithdrawalRequestItem[];
+  withdrawals: IExternalTxItem[];
   isSuperuser: boolean;
-  onOpenModal: (w: IWithdrawalRequestItem) => void;
-  onConfirmReject: (id: string) => void;
+  onOpenModal: (w: IExternalTxItem) => void;
+  onConfirmReject: (id: number) => void;
 }
 
 export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
@@ -24,7 +25,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
             <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               <th className="py-3.5 px-4">Сумма</th>
               <th className="py-3.5 px-4">Пользователь</th>
-              <th className="py-3.5 px-4">Сеть</th>
+              <th className="py-3.5 px-4">Сеть / Валюта</th>
               <th className="py-3.5 px-4">Адрес</th>
               <th className="py-3.5 px-4">Время создания</th>
               <th className="py-3.5 px-4 text-right">Действия</th>
@@ -42,41 +43,45 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                 <tr key={wreq.id} className="hover:bg-slate-800/40 transition-colors">
                   {/* Сумма */}
                   <td className="py-3.5 px-4 font-mono font-extrabold text-emerald-400">
-                    <div className="flex items-center gap-2">
-                      {wreq.hasUnreadWsEvent && (
-                        <RedDotBadge title="Новое событие WebSocket" />
-                      )}
-                      <span>
-                        ${wreq.amount.toLocaleString()} {wreq.token}
-                      </span>
-                    </div>
+                    <span>
+                      ${wreq.amount.toLocaleString()} {wreq.token?.currency ?? ''}
+                    </span>
                   </td>
 
                   {/* Пользователь */}
                   <td className="py-3.5 px-4 font-semibold text-slate-200">
-                    @{wreq.user.username}
+                    {wreq.user?.id ? (
+                      <Link
+                        to={`/users/${wreq.user.id}`}
+                        className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
+                      >
+                        @{wreq.user.username}
+                      </Link>
+                    ) : (
+                      <span>@{wreq.user?.username ?? 'Пользователь'}</span>
+                    )}
                   </td>
 
                   {/* Сеть */}
                   <td className="py-3.5 px-4 font-mono text-slate-300">
-                    {wreq.chain}
+                    {wreq.token?.chain ?? '-'} ({wreq.token?.currency ?? '-'})
                   </td>
 
                   {/* Адрес */}
                   <td className="py-3.5 px-4 font-mono text-slate-400 max-w-[200px] truncate" title={wreq.address}>
-                    {wreq.address}
+                    {wreq.address ?? '-'}
                   </td>
 
                   {/* Время создания */}
                   <td className="py-3.5 px-4 font-mono text-slate-400">
-                    {wreq.created}
+                    {formatDisplayDate(wreq.created)}
                   </td>
 
                   {/* Кнопки Принять / Отклонить */}
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        disabled={!isSuperuser}
+                        disabled={!isSuperuser || wreq.status !== 'PENDING'}
                         onClick={() => onConfirmReject(wreq.id)}
                         className="py-1.5 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         title={!isSuperuser ? 'Требуются права Superuser' : ''}
@@ -86,7 +91,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                       </button>
 
                       <button
-                        disabled={!isSuperuser}
+                        disabled={!isSuperuser || wreq.status !== 'PENDING'}
                         onClick={() => onOpenModal(wreq)}
                         className="py-1.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold flex items-center gap-1 shadow-md shadow-emerald-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         title={!isSuperuser ? 'Требуются права Superuser' : ''}

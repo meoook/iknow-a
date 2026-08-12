@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
-import { IWithdrawalRequestItem } from '../../../types';
+import { IExternalTxItem } from '../../../types';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 
 interface WithdrawalApprovalModalProps {
-  selectedWithdrawal: IWithdrawalRequestItem | null;
+  selectedWithdrawal: IExternalTxItem | null;
   isSuperuser: boolean;
   manualTxHash: string;
   onManualTxHashChange: (val: string) => void;
@@ -45,9 +45,9 @@ export const WithdrawalApprovalModal: React.FC<WithdrawalApprovalModalProps> = (
           <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
             <div className="text-slate-400 mb-1">Получатель и сумма:</div>
             <div className="text-base font-extrabold text-white font-mono">
-              ${selectedWithdrawal.amount.toLocaleString()} {selectedWithdrawal.token}
+              ${selectedWithdrawal.amount.toLocaleString()} {selectedWithdrawal.token?.currency ?? ''}
             </div>
-            <div className="text-slate-300 mt-1">@{selectedWithdrawal.user.username}</div>
+            <div className="text-slate-300 mt-1">@{selectedWithdrawal.user?.username ?? 'Пользователь'}</div>
           </div>
 
           <div>

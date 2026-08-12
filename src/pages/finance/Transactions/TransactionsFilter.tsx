@@ -22,7 +22,7 @@ export const TransactionsFilter: React.FC<TransactionsFilterProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Поиск по хэшу, пользователю или сети..."
+          placeholder="Поиск по хэшу или пользователю..."
           className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
         />
       </div>
@@ -31,34 +31,32 @@ export const TransactionsFilter: React.FC<TransactionsFilterProps> = ({
         <span className="text-slate-400 font-medium">Фильтр:</span>
         <button
           onClick={() => onDirectionChange('ALL')}
-          className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-            filterDirection === 'ALL'
+          className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${filterDirection === 'ALL'
               ? 'bg-slate-800 text-white border border-slate-700'
               : 'bg-slate-950 text-slate-400 border border-slate-800 hover:bg-slate-800'
-          }`}
+            }`}
         >
           Все
         </button>
         <button
           onClick={() => onDirectionChange('IN')}
-          className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-            filterDirection === 'IN'
+          className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${filterDirection === 'IN'
               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
               : 'bg-slate-950 text-slate-400 border border-slate-800 hover:bg-slate-800'
-          }`}
+            }`}
         >
           Ввод (IN)
         </button>
         <button
           onClick={() => onDirectionChange('OUT')}
-          className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-            filterDirection === 'OUT'
+          className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${filterDirection === 'OUT'
               ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
               : 'bg-slate-950 text-slate-400 border border-slate-800 hover:bg-slate-800'
-          }`}
+            }`}
         >
           Вывод (OUT)
         </button>
+
       </div>
     </div>
   );

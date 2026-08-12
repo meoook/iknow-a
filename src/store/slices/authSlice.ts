@@ -6,6 +6,7 @@ interface IAuthState {
   isAuthenticated: boolean;
   user: IAdminUser | null;
   authCheckError: 'network' | 'server' | null;
+  isConnected: boolean;
 }
 
 const initialState: IAuthState = {
@@ -13,12 +14,16 @@ const initialState: IAuthState = {
   isAuthenticated: false,
   user: null,
   authCheckError: null,
+  isConnected: false,
 };
 
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    setConnectionStatus: (state, action: PayloadAction<boolean>) => {
+      state.isConnected = action.payload;
+    },
     setAuthUser: (state, action: PayloadAction<IAdminUser>) => {
       state.isAuthChecking = false;
       state.isAuthenticated = true;
@@ -30,6 +35,7 @@ export const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.authCheckError = null;
+      state.isConnected = false;
     },
     setAuthNetworkError: (state, action: PayloadAction<'network' | 'server'>) => {
       state.isAuthChecking = false;
@@ -44,9 +50,18 @@ export const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.authCheckError = null;
+      state.isConnected = false;
     },
   },
 });
 
-export const { setAuthUser, setAuthFailed, setAuthNetworkError, retryAuthCheck, logout } = authSlice.actions;
+export const {
+  setConnectionStatus,
+  setAuthUser,
+  setAuthFailed,
+  setAuthNetworkError,
+  retryAuthCheck,
+  logout,
+} = authSlice.actions;
+
 export default authSlice.reducer;

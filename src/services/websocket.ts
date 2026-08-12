@@ -10,10 +10,15 @@ import {
   wsPredictionSetModerator,
   wsPredictionUnsetModerator,
 } from '../store/slices/predictionsSlice';
-import { addWsWithdrawalRequest } from '../store/slices/financeSlice';
-import { receiveWsEvent, setConnectionStatus } from '../store/slices/websocketSlice';
+import {
+  addWsWithdrawalBadge,
+  removeWithdrawal,
+  upsertTransaction,
+  upsertWithdrawal,
+} from '../store/slices/financeSlice';
+import { setConnectionStatus } from '../store/slices/authSlice';
 import { adminApi } from './adminApi';
-import { IWithdrawalRequestItem, IWsEventData } from '../types';
+
 
 const WsOutEvent = {
   request_join: 'request.join',
@@ -33,7 +38,10 @@ const WsInEvent = {
   prediction_close: 'prediction.close',
   prediction_taken: 'prediction.taken',
   prediction_dropped: 'prediction.dropped',
-  withdraw: 'withdraw'
+  withdraw_created: 'withdraw.created',
+  withdraw_verdict: 'withdraw.verdict',
+  tx_created: 'tx.created',
+  tx_updated: 'tx.updated',
 } as const
 type WsInEvent = (typeof WsInEvent)[keyof typeof WsInEvent]
 
@@ -153,12 +161,22 @@ class WebSocketManager {
     else if (msg.type === WsInEvent.prediction_dropped) {
       if (msg.value) store.dispatch(wsPredictionUnsetModerator(msg.value));
     }
-    else if (msg.type === WsInEvent.withdraw) {
-      store.dispatch(addWsWithdrawalRequest(msg.value));
-      store.dispatch(adminApi.util.invalidateTags(['Withdraw']));
+    else if (msg.type === WsInEvent.withdraw_created) {
+      store.dispatch(addWsWithdrawalBadge());
+      if (msg.value) store.dispatch(adminApi.endpoints.getAdminTxById.initiate(msg.value));
+    }
+    else if (msg.type === WsInEvent.withdraw_verdict) {
+      if (msg.value) store.dispatch(removeWithdrawal(msg.value));
+    }
+    else if (msg.type === WsInEvent.tx_created || msg.type === WsInEvent.tx_updated) {
+      if (msg.value) {
+        store.dispatch(upsertTransaction(msg.value));
+        if (msg.value.direction === 'OUT') store.dispatch(upsertWithdrawal(msg.value));
+      }
     }
     else console.log('[WS] Unknown message type', msg.type)
   }
+
 
   private send(type: WsOutEvent, value: any) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {

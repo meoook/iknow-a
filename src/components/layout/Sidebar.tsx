@@ -44,14 +44,16 @@ export const Sidebar: React.FC = () => {
     (state) => state.predictions.unreadDisputeCount
   );
 
-  const isConnected = useAppSelector((state) => state.websocket.isConnected);
+  const isConnected = useAppSelector((state) => state.auth.isConnected);
+
 
   const hasUnreadWithdrawals = useAppSelector(
     (state) => state.finance.hasUnreadWithdrawals
   );
   const unreadWithdrawalsCount = useAppSelector(
-    (state) => state.finance.withdrawals.filter((w) => w.hasUnreadWsEvent).length
+    (state) => state.finance.unreadWithdrawalsCount
   );
+
 
   return (
     <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col h-screen sticky top-0 z-40 select-none glass-panel">

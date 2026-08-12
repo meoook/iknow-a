@@ -3,7 +3,6 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import authReducer from './slices/authSlice';
 import predictionsReducer from './slices/predictionsSlice';
 import financeReducer from './slices/financeSlice';
-import websocketReducer from './slices/websocketSlice';
 import { adminApi } from '../services/adminApi';
 import { authMiddleware } from './authMiddleware';
 
@@ -12,7 +11,6 @@ export const store = configureStore({
     auth: authReducer,
     predictions: predictionsReducer,
     finance: financeReducer,
-    websocket: websocketReducer,
     [adminApi.reducerPath]: adminApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
