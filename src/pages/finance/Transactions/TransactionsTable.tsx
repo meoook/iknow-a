@@ -76,9 +76,21 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({ filteredTx
 
                   <td className="py-3.5 px-4 font-mono text-slate-400">
                     <div className="flex items-center gap-1 max-w-[180px] truncate" title={tx.tx_id}>
-                      <span className="truncate">{tx.tx_id || '-'}</span>
+                      {tx.url ? (
+                        <a
+                          href={tx.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="truncate text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
+                        >
+                          {tx.tx_id || '-'}
+                        </a>
+                      ) : (
+                        <span className="truncate">{tx.tx_id || '-'}</span>
+                      )}
                     </div>
                   </td>
+
 
                   <td className="py-3.5 px-4">
                     {(tx.status === 'COMPLETED' || tx.status === 'APPROVED') && (

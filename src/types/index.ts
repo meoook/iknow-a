@@ -221,6 +221,7 @@ export interface IExternalTxItem {
   amount: number;
   status: ExternalTxStatus;
   tx_id?: string;
+  url: string;
   address?: string;
   created: number;
   moderators?: string[];

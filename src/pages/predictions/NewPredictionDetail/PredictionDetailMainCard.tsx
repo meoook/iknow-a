@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { RefreshCw, User, Calendar, Clock, CheckCircle2, FileText, ExternalLink, Tag, DollarSign } from 'lucide-react';
 import { IPredictionRequestItem } from '../../../types';
 import { formatDisplayDate } from '../../../utils/dates';
@@ -23,19 +24,17 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
           <img
             src={formatIconUrl(req.icon)}
             alt="Icon"
-            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl transition-all ${
-              isGeneratingIcon ? 'opacity-60 ring-2 ring-cyan-500/50' : ''
-            }`}
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl transition-all ${isGeneratingIcon ? 'opacity-60 ring-2 ring-cyan-500/50' : ''
+              }`}
           />
 
           <button
             disabled={isGeneratingIcon}
             onClick={onChangeIcon}
-            className={`absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-all cursor-pointer ${
-              isGeneratingIcon
+            className={`absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-all cursor-pointer ${isGeneratingIcon
                 ? 'opacity-60 cursor-not-allowed'
                 : 'hover:scale-110'
-            }`}
+              }`}
             title={isGeneratingIcon ? 'Генерация новой иконки...' : 'Сгенерировать другую иконку'}
           >
             <RefreshCw size={14} className={`font-bold ${isGeneratingIcon ? 'animate-spin' : ''}`} />
@@ -72,14 +71,24 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
             <span>Автор заявки</span>
           </span>
           <div>
-            <div className="text-slate-100 font-bold font-mono text-base">
-              @{req.user.username}
-            </div>
+            {req.user?.id ? (
+              <Link
+                to={`/users/${req.user.id}`}
+                className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors font-bold font-mono text-base"
+              >
+                @{req.user.username}
+              </Link>
+            ) : (
+              <div className="text-slate-100 font-bold font-mono text-base">
+                @{req.user?.username ?? 'Пользователь'}
+              </div>
+            )}
             <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-              ID: #{req.user.id}
+              ID: #{req.user?.id}
             </div>
           </div>
         </div>
+
 
         {/* 2. Ставка автора */}
         <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between gap-3">
@@ -89,7 +98,7 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
           </span>
           <div>
             <div className="text-emerald-400 font-extrabold font-mono text-base">
-              ${req.amount.toLocaleString()} USDT
+              ${req.amount.toLocaleString()}
             </div>
             <div className="text-amber-400 font-bold font-mono text-xs mt-1 truncate">
               {req.vote}
