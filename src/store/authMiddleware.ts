@@ -79,7 +79,7 @@ export const authMiddleware: Middleware = (store) => {
       const payload = (action as any).payload;
       const status = payload?.status;
 
-      if (status === 401 || status === 403) {
+      if (status === 401) {
         // Real Auth Failure: Remove authed cookie and redirect to login
         removeCookie('authed');
         store.dispatch(setAuthFailed());

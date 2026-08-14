@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -24,6 +24,7 @@ import {
   useExtendPredictionDisputeMutation,
 } from '../../../services/adminApi';
 import { formatIconUrl } from '../../../utils/images';
+import { useClickOutside } from '../../../hooks/useClickOutside';
 
 export const PredictionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +50,10 @@ export const PredictionDetailPage: React.FC = () => {
   const [isWinnerModalOpen, setIsWinnerModalOpen] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
   const [winnerSuccess, setWinnerSuccess] = useState(false);
+
+  const winnerModalRef = useRef<HTMLDivElement>(null);
+  useClickOutside(winnerModalRef, () => setIsWinnerModalOpen(false), isWinnerModalOpen);
+
 
   const handleExtendDispute = async () => {
     if (!prediction) return;
@@ -316,7 +321,7 @@ export const PredictionDetailPage: React.FC = () => {
       {/* Winner Selection Modal */}
       {isWinnerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+          <div ref={winnerModalRef} className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Award className="text-amber-400" size={20} />

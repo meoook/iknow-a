@@ -113,6 +113,7 @@ export interface IUserItem {
 
 export interface IAdminUserUpdatePayload {
   id: number;
+  username?: string;
   is_active?: boolean;
   withdraw_blocked?: boolean;
   is_staff?: boolean;

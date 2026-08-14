@@ -11,6 +11,7 @@ export const UsersPage: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'user' | 'admin'>('user');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -23,8 +24,16 @@ export const UsersPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const handleRoleFilterChange = (role: 'user' | 'admin') => {
+    setRoleFilter(role);
+    setCurrentPage(1);
+  };
+
   const { data: infoData } = useGetUsersInfoQuery();
-  const { data: apiUsersList } = useGetUsersListQuery({ search: debouncedSearchQuery });
+  const { data: apiUsersList } = useGetUsersListQuery({
+    search: debouncedSearchQuery,
+    is_staff: roleFilter === 'admin' ? 1 : 0,
+  });
 
   const totalUsers = infoData?.total_users ?? 0;
   const newUsersCount = infoData?.new_users ?? 0;
@@ -63,8 +72,10 @@ export const UsersPage: React.FC = () => {
       <UsersSearchToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        foundCount={displayUsers.length}
+        roleFilter={roleFilter}
+        onRoleFilterChange={handleRoleFilterChange}
       />
+
       <UsersTable
         currentUsers={currentUsers}
         displayUsersCount={displayUsers.length}

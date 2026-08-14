@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { KeyRound, X, Check } from 'lucide-react';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface UserPasswordModalProps {
   isOpen: boolean;
@@ -20,11 +21,15 @@ export const UserPasswordModal: React.FC<UserPasswordModalProps> = ({
   onNewPasswordChange,
   onClose,
 }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useClickOutside(modalRef, onClose, isOpen);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95">
+      <div ref={modalRef} className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95">
+
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
             <KeyRound size={18} />
@@ -32,7 +37,7 @@ export const UserPasswordModal: React.FC<UserPasswordModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors"
           >
             <X size={20} />
           </button>
@@ -63,13 +68,13 @@ export const UserPasswordModal: React.FC<UserPasswordModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
             >
               Отмена
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors shadow-lg shadow-cyan-500/20"
+              className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors shadow-lg shadow-cyan-500/20 cursor-pointer"
             >
               Сохранить пароль
             </button>

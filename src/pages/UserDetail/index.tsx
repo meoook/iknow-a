@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, KeyRound, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, KeyRound, UserCheck, XCircle, Loader2 } from 'lucide-react';
 import { useAppSelector } from '../../store';
 import {
   useGetUserByIdQuery,
@@ -17,6 +17,7 @@ import { UserBalanceCard } from './UserBalanceCard';
 import { UserDepositWallets } from './UserDepositWallets';
 import { UserActivityLogs } from './UserActivityLogs';
 import { UserPasswordModal } from './UserPasswordModal';
+import { UserUsernameModal } from './UserUsernameModal';
 
 export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,8 +44,10 @@ export const UserDetailPage: React.FC = () => {
 
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isUsernameModalOpen, setIsUsernameModalOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+
 
   const isLoading = isDetailLoading && !user;
 
@@ -73,10 +76,12 @@ export const UserDetailPage: React.FC = () => {
   };
 
   const handleToggleActive = () => {
+    if (!isSuperuserLogged && (user.is_staff || user.is_superuser)) return;
     updateUser({ id: user.id, is_active: !user.is_active }).unwrap().catch(() => { });
   };
 
   const handleToggleWithdrawBlocked = () => {
+    if (!isSuperuserLogged && (user.is_staff || user.is_superuser)) return;
     updateUser({ id: user.id, withdraw_blocked: !user.withdraw_blocked }).unwrap().catch(() => { });
   };
 
@@ -88,6 +93,10 @@ export const UserDetailPage: React.FC = () => {
   const handleToggleSuperuser = () => {
     if (!isSuperuserLogged) return;
     updateUser({ id: user.id, is_superuser: !user.is_superuser }).unwrap().catch(() => { });
+  };
+
+  const handleSubmitUsername = async (newUsername: string) => {
+    await updateUser({ id: user.id, username: newUsername }).unwrap();
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -121,13 +130,37 @@ export const UserDetailPage: React.FC = () => {
           <span>Назад к списку</span>
         </Link>
 
-        <button
-          onClick={() => setIsPasswordModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-800 transition-all cursor-pointer shadow-md"
-        >
-          <KeyRound size={14} />
-          <span>Сменить пароль</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          {/* Change Username Button */}
+          <button
+            disabled={!isSuperuserLogged}
+            onClick={() => setIsUsernameModalOpen(true)}
+            title={!isSuperuserLogged ? 'Только суперпользователь может менять username' : ''}
+            className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${
+              !isSuperuserLogged
+                ? 'opacity-40 cursor-not-allowed'
+                : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
+            }`}
+          >
+            <UserCheck size={14} />
+            <span>Сменить username</span>
+          </button>
+
+          {/* Change Password Button */}
+          <button
+            disabled={!isSuperuserLogged}
+            onClick={() => setIsPasswordModalOpen(true)}
+            title={!isSuperuserLogged ? 'Только суперпользователь может менять пароль' : ''}
+            className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${
+              !isSuperuserLogged
+                ? 'opacity-40 cursor-not-allowed'
+                : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
+            }`}
+          >
+            <KeyRound size={14} />
+            <span>Сменить пароль</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Profile Header & Actions Grid */}
@@ -168,6 +201,16 @@ export const UserDetailPage: React.FC = () => {
         betsList={betsList}
       />
 
+      {/* Username Change Modal */}
+      <UserUsernameModal
+        isOpen={isUsernameModalOpen}
+        currentUsername={user.username}
+        userId={user.id}
+        onSubmitUsername={handleSubmitUsername}
+        onUpdateSuccess={() => {}}
+        onClose={() => setIsUsernameModalOpen(false)}
+      />
+
       {/* Password Change Modal */}
       <UserPasswordModal
         isOpen={isPasswordModalOpen}
@@ -181,3 +224,4 @@ export const UserDetailPage: React.FC = () => {
     </div>
   );
 };
+

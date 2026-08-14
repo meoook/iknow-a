@@ -38,7 +38,7 @@ export const UserDepositWallets: React.FC<UserDepositWalletsProps> = ({
                   onClick={() => onCopy(w.address)}
                   className="flex items-center justify-between bg-slate-900 hover:bg-slate-800/80 border border-slate-800 px-2.5 py-1 rounded-lg cursor-pointer transition-all group"
                 >
-                  <span className="truncate max-w-[180px] text-[11px] text-slate-200">{w.address}</span>
+                  <span className="truncate pr-1 text-[11px] text-slate-200">{w.address}</span>
                   {copiedText === w.address ? (
                     <Check size={12} className="text-emerald-400 shrink-0" />
                   ) : (

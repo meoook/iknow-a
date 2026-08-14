@@ -41,7 +41,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           <thead>
             <tr className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               <th className="py-3.5 px-5">Пользователь</th>
-              <th className="py-3.5 px-4">Почта / TG ID</th>
+              <th className="py-3.5 px-4">Email / Address</th>
               <th className="py-3.5 px-4">Баланс</th>
               <th className="py-3.5 px-4">Статус</th>
               <th className="py-3.5 px-4">Вывод</th>
@@ -79,13 +79,16 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                     </div>
                   </td>
 
-                  {/* Почта */}
+                  {/* Email / Address */}
                   <td className="py-4 px-4 font-mono text-slate-300">
-                    <div>{user.email || '—'}</div>
-                    {user.telegram_id && (
-                      <div className="text-[10px] text-slate-500">TG: {user.telegram_id}</div>
+                    <div className="truncate max-w-[200px]" title={user.email}>{user.email || '—'}</div>
+                    {user.address && (
+                      <div className="text-[10px] text-slate-500 truncate max-w-[200px]" title={user.address}>
+                        {user.address}
+                      </div>
                     )}
                   </td>
+
 
                   {/* Баланс */}
                   <td className="py-4 px-4 font-mono font-bold text-emerald-400">

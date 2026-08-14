@@ -44,7 +44,7 @@ const rawBaseQuery = fetchBaseQuery({
 
 const baseQueryWithReauth: typeof rawBaseQuery = async (args, api, extraOptions) => {
   const result = await rawBaseQuery(args, api, extraOptions);
-  if (result.error && (result.error.status === 401 || result.error.status === 403)) {
+  if (result.error && result.error.status === 401) {
     api.dispatch(setAuthFailed());
     // removeCookie('authed');
   }
@@ -188,13 +188,28 @@ export const adminApi = createApi({
     getUsersInfo: builder.query<IAdminUsersInfo, void>({
       query: () => 'admin/users/info',
     }),
-    getUsersList: builder.query<IUserItem[], { search?: string }>({
-      query: ({ search }) => `admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`,
+    getUsersList: builder.query<IUserItem[], { search?: string; is_staff?: boolean | number } | void>({
+      query: (params) => {
+        const queryParts: string[] = [];
+        if (params && typeof params === 'object') {
+          if (params.search && params.search.trim()) {
+            queryParts.push(`search=${encodeURIComponent(params.search.trim())}`);
+          }
+          if (params.is_staff !== undefined) {
+            queryParts.push(`is_staff=${params.is_staff ? '1' : '0'}`);
+          }
+        }
+        return queryParts.length ? `admin/users?${queryParts.join('&')}` : 'admin/users';
+      },
       providesTags: ['UsersList'],
+    }),
+    checkUsername: builder.query<{ available: boolean }, string>({
+      query: (username) => `auth/user/check/username?username=${encodeURIComponent(username.trim())}`,
     }),
     getUserById: builder.query<IUserItem, number>({
       query: (id) => `admin/users/${id}`,
     }),
+
     getUserIps: builder.query<IAdminUserIpLog[], number>({
       query: (id) => `admin/users/${id}/ips`,
     }),
@@ -215,6 +230,7 @@ export const adminApi = createApi({
       }),
       invalidatesTags: (_result, _error, arg) => {
         const hasStatusChange =
+          arg.username !== undefined ||
           arg.is_active !== undefined ||
           arg.withdraw_blocked !== undefined ||
           arg.is_staff !== undefined ||
@@ -324,7 +340,10 @@ export const {
   useExtendPredictionDisputeMutation,
   useGetUsersInfoQuery,
   useGetUsersListQuery,
+  useCheckUsernameQuery,
+  useLazyCheckUsernameQuery,
   useGetUserByIdQuery,
+
   useGetUserIpsQuery,
   useGetUserCommentsQuery,
   useGetUserBetsQuery,
