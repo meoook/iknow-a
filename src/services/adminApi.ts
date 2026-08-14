@@ -13,6 +13,9 @@ import {
   IAdminUserBet,
   IAdminUserDepositWallet,
   IExternalTxItem,
+  IFinanceDashboard,
+  IFinanceChain,
+  IFinanceToken,
 } from '../types';
 import {
   setPredictionRequests,
@@ -54,7 +57,7 @@ const baseQueryWithReauth: typeof rawBaseQuery = async (args, api, extraOptions)
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['UsersList', 'Withdraw'],
+  tagTypes: ['UsersList', 'Withdraw', 'FinanceDashboard'],
   endpoints: (builder) => ({
     getAuthUser: builder.query<IAdminUser, void>({
       query: () => 'auth/user',
@@ -322,6 +325,26 @@ export const adminApi = createApi({
         } catch { }
       },
     }),
+    getFinanceInfo: builder.query<IFinanceDashboard, void>({
+      query: () => 'admin/finance/info',
+      providesTags: ['FinanceDashboard'],
+    }),
+    updateFinanceChain: builder.mutation<IFinanceChain, { id: number; active: boolean }>({
+      query: ({ id, ...patch }) => ({
+        url: `admin/finance/chains/${id}`,
+        method: 'PATCH',
+        body: patch,
+      }),
+      invalidatesTags: ['FinanceDashboard'],
+    }),
+    updateFinanceToken: builder.mutation<IFinanceToken, { id: number; active: boolean }>({
+      query: ({ id, ...patch }) => ({
+        url: `admin/finance/tokens/${id}`,
+        method: 'PATCH',
+        body: patch,
+      }),
+      invalidatesTags: ['FinanceDashboard'],
+    }),
   }),
 });
 
@@ -353,5 +376,9 @@ export const {
   useGetAdminTxByIdQuery,
   useApproveWithdrawalMutation,
   useRejectWithdrawalMutation,
+  useGetFinanceInfoQuery,
+  useUpdateFinanceChainMutation,
+  useUpdateFinanceTokenMutation,
 } = adminApi;
+
 

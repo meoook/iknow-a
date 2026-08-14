@@ -231,5 +231,51 @@ export interface IExternalTxItem {
 export type ITransactionItem = IExternalTxItem;
 export type IWithdrawalRequestItem = IExternalTxItem;
 
+export interface IFinanceToken {
+  id: number;
+  currency: string;
+  address: string;
+  active: boolean;
+  decimals: number;
+  minimum: number;
+  bank_balance: string;
+}
 
+export interface IFinanceChain {
+  id: number;
+  name: string;
+  chain_type: string;
+  chain_id: number;
+  active: boolean;
+  scan_url: string;
+  rpc_url: string;
+  bank_address: string;
+  native_balance: string;
+  tokens: IFinanceToken[];
+}
+
+export interface IFinanceExternalTxsSummary {
+  in_amount: number;
+  out_amount: number;
+  net_amount?: number;
+  in_count: number;
+  out_count: number;
+}
+
+export interface IFinanceBetsSummary {
+  total_amount: number;
+  total_count: number;
+}
+
+export interface IFinanceDashboard {
+  bank_balance: number;
+  bank_fee_balance: number;
+  users_balance: number;
+  active_bets_amount: number;
+  // active_bets_count: number;
+  external_txs_today: IFinanceExternalTxsSummary;
+  external_txs_total: IFinanceExternalTxsSummary;
+  bets_today: IFinanceBetsSummary;
+  chains: IFinanceChain[];
+}
 
