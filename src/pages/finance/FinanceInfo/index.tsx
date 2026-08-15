@@ -19,12 +19,12 @@ export const FinanceInfoPage: React.FC = () => {
 
   const handleToggleChain = (chainId: number, active: boolean) => {
     if (!isSuperuser) return;
-    updateChain({ id: chainId, active }).unwrap().catch(() => {});
+    updateChain({ id: chainId, active }).unwrap().catch(() => { });
   };
 
   const handleToggleToken = (tokenId: number, active: boolean) => {
     if (!isSuperuser) return;
-    updateToken({ id: tokenId, active }).unwrap().catch(() => {});
+    updateToken({ id: tokenId, active }).unwrap().catch(() => { });
   };
 
   if (isLoading && !dashboardData) {
@@ -51,7 +51,7 @@ export const FinanceInfoPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-4 font-sans">
       <FinanceKpiCards data={dashboardData} />
       <FinanceChainsList
         chains={dashboardData.chains || []}

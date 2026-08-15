@@ -51,7 +51,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                     Баланс банка и покрытие ставок
                   </h3>
                   <span className="text-xs text-slate-400">
-                    Системный баланс за вычетом активных обязательств
+                    Системный баланс за вычетом активных ставок
                   </span>
                 </div>
               </div>
@@ -82,8 +82,8 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
               >
                 <div className="space-y-2">
                   {/* Line 1: Bank Balance */}
-                  <div className="flex items-center justify-between font-mono text-sm">
-                    <span className="text-slate-300 flex items-center gap-2 font-sans font-medium">
+                  <div className="flex items-center justify-between font-mono">
+                    <span className="text-slate-300 flex items-center gap-2 font-sans font-bold">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
                       <span>Баланс банка:</span>
                     </span>
@@ -93,21 +93,20 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                   </div>
 
                   {/* Line 2: Minus Active Bets */}
-                  <div className="flex items-center justify-between font-mono text-sm">
-                    <span className="text-slate-300 flex items-center gap-2 font-sans font-medium">
+                  <div className="flex items-center justify-between font-mono">
+                    <span className="text-slate-300 flex items-center gap-2 font-sans font-bold">
                       <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
                       <span>Сумма ставок:</span>
-                      {/* <span className="text-xs text-slate-500 font-mono">({data.active_bets_count} пари)</span> */}
                     </span>
                     <span className="font-bold text-blue-400">
-                      -${activeBetsAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${activeBetsAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
 
                 {/* Line 3: Equals Net Difference */}
-                <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between text-sm font-mono font-bold">
-                  <span className="text-slate-200 font-sans flex items-center gap-2">
+                <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between font-mono font-bold">
+                  <span className="text-slate-200 font-sans flex items-baseline gap-2">
                     <span>Разница:</span>
                     <span className="text-xs text-slate-400 font-normal font-mono">
                       ({diffPercent.toFixed(2)}%)
@@ -122,7 +121,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                           : 'text-rose-400 text-base'
                     }
                   >
-                    {bankDiff >= 0 ? '+' : ''}${bankDiff.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ${bankDiff.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
@@ -151,7 +150,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3.5">
               {/* Today */}
-              <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-2.5">
+              <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-1.5">
                 <span className="text-xs uppercase font-bold text-slate-400 tracking-wider block">
                   За сегодня
                 </span>
@@ -159,24 +158,24 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                   <div className="flex items-center justify-between font-mono text-sm">
                     <span className="text-slate-300 font-sans font-medium">Ввод:</span>
                     <span className="font-bold text-emerald-400">
-                      +${data.external_txs_today.in_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${data.external_txs_today.in_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between font-mono text-sm">
                     <span className="text-slate-300 font-sans font-medium">Вывод:</span>
                     <span className="font-bold text-rose-400">
-                      -${data.external_txs_today.out_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${data.external_txs_today.out_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-slate-800/70 text-xs text-slate-500 font-mono flex items-center justify-between">
+                <div className="pt-1 border-t border-slate-800/70 text-sm text-slate-500 font-mono flex items-center justify-between">
                   <span>{data.external_txs_today.in_count} ввод.</span>
                   <span>{data.external_txs_today.out_count} вывод.</span>
                 </div>
               </div>
 
               {/* All Time */}
-              <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-2.5">
+              <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-1.5">
                 <span className="text-xs uppercase font-bold text-slate-400 tracking-wider block">
                   За все время
                 </span>
@@ -184,19 +183,19 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                   <div className="flex items-center justify-between font-mono text-sm">
                     <span className="text-slate-300 font-sans font-medium">Ввод:</span>
                     <span className="font-bold text-emerald-400">
-                      +${totalIn.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${totalIn.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between font-mono text-sm">
                     <span className="text-slate-300 font-sans font-medium">Вывод:</span>
                     <span className="font-bold text-rose-400">
-                      -${totalOut.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${totalOut.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between text-sm font-mono font-bold">
+                <div className="pt-1 border-t border-slate-800/70 flex items-center justify-between text-sm font-mono font-bold">
                   <span className="text-slate-200 font-sans">Разница:</span>
-                  <span className={`text-base ${totalNet >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className={`${totalNet >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -248,13 +247,13 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
         <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl glass-panel relative flex items-center justify-between shadow-lg">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-              Заработанные средства (Fee)
+              Заработанные средства
             </span>
             <div className="text-xl font-extrabold text-cyan-400 font-mono mt-1">
               ${data.bank_fee_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
             <span className="text-xs text-slate-500 font-medium mt-0.5 block">
-              Комиссионный доход (@bank_fee)
+              Комиссионный доход
             </span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">

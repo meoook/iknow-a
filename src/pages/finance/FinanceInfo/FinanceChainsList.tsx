@@ -59,14 +59,14 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
           <div
             key={chain.id}
             className={`rounded-2xl border transition-all overflow-hidden ${chain.active
-                ? 'bg-slate-950/70 border-slate-800/90 shadow-md'
-                : 'bg-slate-950/40 border-slate-800/40 opacity-75'
+              ? 'bg-slate-950/70 border-slate-800/90 shadow-md'
+              : 'bg-slate-950/40 border-slate-800/40 opacity-75'
               }`}
           >
             {/* Chain Card Header */}
             <div className="p-5 border-b border-slate-800/80 bg-slate-900/40 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-sm text-cyan-400 shrink-0 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-cyan-400 shrink-0 shadow-sm">
                   {chain.name.slice(0, 3).toUpperCase()}
                 </div>
 
@@ -76,6 +76,11 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                     <span className="bg-slate-800/90 text-slate-300 font-mono text-[10px] px-2.5 py-0.5 rounded-md font-bold border border-slate-700/60">
                       {chain.chain_type}
                     </span>
+                    {chain.coin && (
+                      <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+                        {chain.coin}
+                      </span>
+                    )}
                     {chain.chain_id && (
                       <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                         ID: {chain.chain_id}
@@ -101,18 +106,20 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                       <span>Адрес банка:</span>
                     </span>
                     <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2.5 py-0.5 rounded-lg text-xs font-mono text-slate-300">
-                      <span className="truncate max-w-[180px] sm:max-w-xs">{chain.bank_address}</span>
-                      <button
-                        onClick={() => handleCopy(chain.bank_address, `chain-${chain.id}`)}
-                        className="text-slate-400 hover:text-white transition-colors cursor-pointer"
-                        title="Скопировать адрес"
-                      >
-                        {copiedKey === `chain-${chain.id}` ? (
-                          <Check size={12} className="text-emerald-400" />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
+                      <span className="truncate max-w-[180px] sm:max-w-xs">{chain.address || '—'}</span>
+                      {chain.address && (
+                        <button
+                          onClick={() => handleCopy(chain.address, `chain-${chain.id}`)}
+                          className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                          title="Скопировать адрес"
+                        >
+                          {copiedKey === `chain-${chain.id}` ? (
+                            <Check size={12} className="text-emerald-400" />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -125,7 +132,7 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                     Нативный баланс банка
                   </div>
                   <div className="text-sm font-extrabold font-mono text-emerald-400 mt-0.5">
-                    {chain.native_balance}
+                    0.00 {chain.coin || chain.name}
                   </div>
                 </div>
 
@@ -145,10 +152,10 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                     onClick={() => onToggleChain(chain.id, !chain.active)}
                     title={!isSuperuser ? 'Только суперадмин может менять статус сети' : ''}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${!isSuperuser
-                        ? 'cursor-not-allowed opacity-50 bg-slate-800'
-                        : chain.active
-                          ? 'bg-cyan-500 cursor-pointer'
-                          : 'bg-slate-700 cursor-pointer'
+                      ? 'cursor-not-allowed opacity-50 bg-slate-800'
+                      : chain.active
+                        ? 'bg-cyan-500 cursor-pointer'
+                        : 'bg-slate-700 cursor-pointer'
                       }`}
                   >
                     <span
@@ -179,8 +186,8 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                     <div
                       key={token.id}
                       className={`p-4 rounded-xl border transition-all flex flex-col justify-between gap-3 ${token.active
-                          ? 'bg-slate-900/80 border-slate-800'
-                          : 'bg-slate-900/40 border-slate-800/40 opacity-70'
+                        ? 'bg-slate-900/80 border-slate-800'
+                        : 'bg-slate-900/40 border-slate-800/40 opacity-70'
                         }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -191,8 +198,8 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                             </span>
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${token.active
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                  : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : 'bg-slate-800 text-slate-400 border border-slate-700'
                                 }`}
                             >
                               {token.active ? 'Active' : 'Disabled'}
@@ -236,10 +243,10 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                             onClick={() => onToggleToken(token.id, !token.active)}
                             title={!isSuperuser ? 'Только суперадмин может менять статус токена' : ''}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${!isSuperuser
-                                ? 'cursor-not-allowed opacity-50 bg-slate-800'
-                                : token.active
-                                  ? 'bg-emerald-500 cursor-pointer'
-                                  : 'bg-slate-700 cursor-pointer'
+                              ? 'cursor-not-allowed opacity-50 bg-slate-800'
+                              : token.active
+                                ? 'bg-emerald-500 cursor-pointer'
+                                : 'bg-slate-700 cursor-pointer'
                               }`}
                           >
                             <span
@@ -257,7 +264,7 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                             Баланс банка
                           </span>
                           <span className="font-extrabold text-emerald-400">
-                            {token.bank_balance}
+                            0.00 {token.currency}
                           </span>
                         </div>
 

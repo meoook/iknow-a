@@ -238,19 +238,17 @@ export interface IFinanceToken {
   active: boolean;
   decimals: number;
   minimum: number;
-  bank_balance: string;
 }
 
 export interface IFinanceChain {
   id: number;
   name: string;
   chain_type: string;
-  chain_id: number;
+  chain_id: number | null;
+  coin: string;
   active: boolean;
   scan_url: string;
-  rpc_url: string;
-  bank_address: string;
-  native_balance: string;
+  address: string;
   tokens: IFinanceToken[];
 }
 
@@ -272,10 +270,8 @@ export interface IFinanceDashboard {
   bank_fee_balance: number;
   users_balance: number;
   active_bets_amount: number;
-  // active_bets_count: number;
   external_txs_today: IFinanceExternalTxsSummary;
   external_txs_total: IFinanceExternalTxsSummary;
   bets_today: IFinanceBetsSummary;
   chains: IFinanceChain[];
 }
-
