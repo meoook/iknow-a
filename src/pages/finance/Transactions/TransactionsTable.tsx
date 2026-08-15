@@ -54,25 +54,21 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({ filteredTx
                   </td>
 
                   <td className="py-3.5 px-4 font-mono font-medium text-slate-300">
-                    {tx.user?.id ? (
-                      <Link
-                        to={`/users/${tx.user.id}`}
-                        className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
-                      >
-                        @{tx.user.username}
-                      </Link>
-                    ) : (
-                      <span>@{tx.user?.username ?? 'Пользователь'}</span>
-                    )}
+                    <Link
+                      to={`/users/${tx.user.id}`}
+                      className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
+                    >
+                      @{tx.user.username}
+                    </Link>
                   </td>
 
                   <td className="py-3.5 px-4 font-mono font-bold">
                     <span className={tx.direction === 'IN' ? 'text-emerald-400' : 'text-rose-400'}>
-                      {tx.direction === 'IN' ? '+' : '-'}{tx.amount.toLocaleString()} {tx.token?.currency ?? ''}
+                      {tx.direction === 'IN' ? '+' : '-'}{tx.amount.toLocaleString()} {tx.token.currency}
                     </span>
                   </td>
 
-                  <td className="py-3.5 px-4 font-mono text-slate-400">{tx.token?.chain ?? '-'}</td>
+                  <td className="py-3.5 px-4 font-mono text-slate-400">{tx.token.chain}</td>
 
                   <td className="py-3.5 px-4 font-mono text-slate-400">
                     <div className="flex items-center gap-1 max-w-[180px] truncate" title={tx.tx_id}>

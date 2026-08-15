@@ -21,8 +21,8 @@ export const ArchivePredictionsPage: React.FC = () => {
       if (sortBy === 'volume') {
         return sortOrder === 'desc' ? b.volume - a.volume : a.volume - b.volume;
       } else {
-        const dateA = new Date(a.closed || a.endDate).getTime();
-        const dateB = new Date(b.closed || b.endDate).getTime();
+        const dateA = new Date(a.closed || a.end_date).getTime();
+        const dateB = new Date(b.closed || b.end_date).getTime();
         return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
       }
     });

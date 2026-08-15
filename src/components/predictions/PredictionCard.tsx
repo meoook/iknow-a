@@ -53,7 +53,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, onCl
 
             <span className="flex items-center gap-1.5">
               <Calendar size={13} className="text-slate-400" />
-              <span>До: {prediction.endDate || '—'}</span>
+              <span>До: {prediction.end_date || '—'}</span>
             </span>
           </div>
 
@@ -62,11 +62,10 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, onCl
             {prediction.choices?.map((choice) => (
               <span
                 key={choice.id}
-                className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl font-medium border transition-colors ${
-                  choice.win === true
+                className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl font-medium border transition-colors ${choice.win === true
                     ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-semibold'
                     : 'bg-slate-950/60 border-slate-800 text-slate-300'
-                }`}
+                  }`}
               >
                 {choice.win === true && <CheckCircle2 size={12} className="text-emerald-400" />}
                 <span>{choice.title}</span>

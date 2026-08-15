@@ -85,10 +85,10 @@ export const ArchivePredictionsTable: React.FC<ArchivePredictionsTableProps> = (
                         Создано: <span className="text-slate-300">{formatDisplayDate(pred.created)}</span>
                       </div>
                       <div>
-                        Ставки до: <span className="text-slate-300">{formatDisplayDate(pred.betDate)}</span>
+                        Ставки до: <span className="text-slate-300">{formatDisplayDate(pred.bet_date)}</span>
                       </div>
                       <div>
-                        Завершено: <span className="text-slate-300">{formatDisplayDate(pred.closed || pred.endDate)}</span>
+                        Завершено: <span className="text-slate-300">{formatDisplayDate(pred.closed || pred.end_date)}</span>
                       </div>
                     </td>
                   </tr>

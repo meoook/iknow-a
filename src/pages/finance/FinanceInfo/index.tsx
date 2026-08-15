@@ -3,6 +3,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { useAppSelector } from '../../../store';
 import {
   useGetFinanceInfoQuery,
+  useGetFinanceChainsQuery,
   useUpdateFinanceChainMutation,
   useUpdateFinanceTokenMutation,
 } from '../../../services/adminApi';
@@ -13,7 +14,9 @@ export const FinanceInfoPage: React.FC = () => {
   const currentUser = useAppSelector((state) => state.auth.user);
   const isSuperuser = currentUser?.is_superuser === true;
 
-  const { data: dashboardData, isLoading, error } = useGetFinanceInfoQuery();
+  const { data: dashboardData, isLoading: isDashboardLoading, error: dashboardError } = useGetFinanceInfoQuery();
+  const { data: chainsData, isLoading: isChainsLoading, error: chainsError } = useGetFinanceChainsQuery();
+
   const [updateChain] = useUpdateFinanceChainMutation();
   const [updateToken] = useUpdateFinanceTokenMutation();
 
@@ -27,7 +30,7 @@ export const FinanceInfoPage: React.FC = () => {
     updateToken({ id: tokenId, active }).unwrap().catch(() => { });
   };
 
-  if (isLoading && !dashboardData) {
+  if ((isDashboardLoading && !dashboardData) || (isChainsLoading && !chainsData)) {
     return (
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-16 text-center flex flex-col items-center justify-center gap-4 min-h-[350px]">
         <Loader2 className="w-10 h-10 text-cyan-400 animate-spin mx-auto" />
@@ -38,7 +41,7 @@ export const FinanceInfoPage: React.FC = () => {
     );
   }
 
-  if (error || !dashboardData) {
+  if (dashboardError || chainsError || !dashboardData) {
     return (
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
         <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
@@ -54,7 +57,7 @@ export const FinanceInfoPage: React.FC = () => {
     <div className="space-y-4 font-sans">
       <FinanceKpiCards data={dashboardData} />
       <FinanceChainsList
-        chains={dashboardData.chains || []}
+        chains={chainsData || []}
         isSuperuser={isSuperuser}
         onToggleChain={handleToggleChain}
         onToggleToken={handleToggleToken}

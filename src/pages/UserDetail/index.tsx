@@ -25,9 +25,7 @@ export const UserDetailPage: React.FC = () => {
 
   const currentUser = useAppSelector((state) => state.auth.user);
 
-  const { data: apiDetailUser, isLoading: isDetailLoading } = useGetUserByIdQuery(userId, {
-    skip: !userId,
-  });
+  const { data: apiDetailUser, isLoading: isDetailLoading } = useGetUserByIdQuery(userId, { skip: !userId });
   const { data: apiIps, isLoading: isIpsLoading } = useGetUserIpsQuery(userId, { skip: !userId });
   const { data: apiComments, isLoading: isCommentsLoading } = useGetUserCommentsQuery(userId, { skip: !userId });
   const { data: apiBets, isLoading: isBetsLoading } = useGetUserBetsQuery(userId, { skip: !userId });
@@ -136,11 +134,10 @@ export const UserDetailPage: React.FC = () => {
             disabled={!isSuperuserLogged}
             onClick={() => setIsUsernameModalOpen(true)}
             title={!isSuperuserLogged ? 'Только суперпользователь может менять username' : ''}
-            className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${
-              !isSuperuserLogged
+            className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${!isSuperuserLogged
                 ? 'opacity-40 cursor-not-allowed'
                 : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
-            }`}
+              }`}
           >
             <UserCheck size={14} />
             <span>Сменить username</span>
@@ -151,11 +148,10 @@ export const UserDetailPage: React.FC = () => {
             disabled={!isSuperuserLogged}
             onClick={() => setIsPasswordModalOpen(true)}
             title={!isSuperuserLogged ? 'Только суперпользователь может менять пароль' : ''}
-            className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${
-              !isSuperuserLogged
+            className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${!isSuperuserLogged
                 ? 'opacity-40 cursor-not-allowed'
                 : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
-            }`}
+              }`}
           >
             <KeyRound size={14} />
             <span>Сменить пароль</span>
@@ -207,7 +203,7 @@ export const UserDetailPage: React.FC = () => {
         currentUsername={user.username}
         userId={user.id}
         onSubmitUsername={handleSubmitUsername}
-        onUpdateSuccess={() => {}}
+        onUpdateSuccess={() => { }}
         onClose={() => setIsUsernameModalOpen(false)}
       />
 

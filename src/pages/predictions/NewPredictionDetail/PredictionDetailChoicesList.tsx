@@ -34,9 +34,8 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
         <button
           disabled={isGeneratingIcon}
           onClick={onRegenerateAllChoiceIcons}
-          className={`flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-sm ${
-            isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className={`flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-sm ${isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
         >
           <Sparkles size={15} className={isGeneratingIcon ? 'animate-spin' : ''} />
           <span>{isGeneratingIcon ? 'Генерация иконок...' : 'Сгенерировать иконки для всех вариантов'}</span>
@@ -46,7 +45,7 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
       {/* 2-Column Choices Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {req.choices.map((choiceTitle, idx) => {
-          const currentChoiceIcon = req.choiceIcons?.[idx] || DEFAULT_CHOICE_ICON;
+          const currentChoiceIcon = DEFAULT_CHOICE_ICON;
           const isAuthorVote = choiceTitle === req.vote;
 
           return (
@@ -65,9 +64,8 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
                   <button
                     disabled={isGeneratingIcon}
                     onClick={() => onRegenerateChoiceIcon(idx)}
-                    className={`absolute -bottom-1.5 -right-1.5 bg-slate-900 hover:bg-cyan-500 text-slate-300 hover:text-slate-950 p-1.5 rounded-full shadow-lg border border-slate-700 transition-transform cursor-pointer ${
-                      isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
-                    }`}
+                    className={`absolute -bottom-1.5 -right-1.5 bg-slate-900 hover:bg-cyan-500 text-slate-300 hover:text-slate-950 p-1.5 rounded-full shadow-lg border border-slate-700 transition-transform cursor-pointer ${isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
+                      }`}
                     title="Сгенерировать другую картинку для этого варианта"
                   >
                     <RefreshCw size={12} className={`font-bold ${isGeneratingIcon ? 'animate-spin' : ''}`} />

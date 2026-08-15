@@ -2,20 +2,19 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getCookie, removeCookie } from '../utils/cookies';
 import { setAuthFailed } from '../store/slices/authSlice';
 import {
-  IAdminUser,
-  IAdminUsersInfo,
+  IUserAuthed,
+  IUsersInfo,
   IPredictionRequestItem,
   IPredictionItem,
   IUserItem,
-  IAdminUserUpdatePayload,
-  IAdminUserIpLog,
-  IAdminUserComment,
-  IAdminUserBet,
-  IAdminUserDepositWallet,
+  IUserUpdatePayload,
+  IUserIpLog,
+  IUserComment,
+  IUserBet,
+  IUserDepositWallet,
   IExternalTxItem,
   IFinanceDashboard,
   IFinanceChain,
-  IFinanceToken,
 } from '../types';
 import {
   setPredictionRequests,
@@ -57,9 +56,9 @@ const baseQueryWithReauth: typeof rawBaseQuery = async (args, api, extraOptions)
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['UsersList', 'Withdraw', 'FinanceDashboard'],
+  tagTypes: ['UsersList', 'Withdraw', 'FinanceDashboard', 'FinanceChains'],
   endpoints: (builder) => ({
-    getAuthUser: builder.query<IAdminUser, void>({
+    getAuthUser: builder.query<IUserAuthed, void>({
       query: () => 'auth/user',
     }),
     adminLogin: builder.mutation<{ ok: boolean }, { username: string; password: string }>({
@@ -188,7 +187,7 @@ export const adminApi = createApi({
         } catch { }
       },
     }),
-    getUsersInfo: builder.query<IAdminUsersInfo, void>({
+    getUsersInfo: builder.query<IUsersInfo, void>({
       query: () => 'admin/users/info',
     }),
     getUsersList: builder.query<IUserItem[], { search?: string; is_staff?: boolean | number } | void>({
@@ -213,19 +212,19 @@ export const adminApi = createApi({
       query: (id) => `admin/users/${id}`,
     }),
 
-    getUserIps: builder.query<IAdminUserIpLog[], number>({
+    getUserIps: builder.query<IUserIpLog[], number>({
       query: (id) => `admin/users/${id}/ips`,
     }),
-    getUserComments: builder.query<IAdminUserComment[], number>({
+    getUserComments: builder.query<IUserComment[], number>({
       query: (id) => `admin/users/${id}/comments`,
     }),
-    getUserBets: builder.query<IAdminUserBet[], number>({
+    getUserBets: builder.query<IUserBet[], number>({
       query: (id) => `admin/users/${id}/bets`,
     }),
-    getUserWallets: builder.query<IAdminUserDepositWallet[], number>({
+    getUserWallets: builder.query<IUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
     }),
-    updateUser: builder.mutation<IUserItem, IAdminUserUpdatePayload>({
+    updateUser: builder.mutation<IUserItem, IUserUpdatePayload>({
       query: ({ id, ...body }) => ({
         url: `admin/users/${id}`,
         method: 'PATCH',
@@ -329,21 +328,25 @@ export const adminApi = createApi({
       query: () => 'admin/finance/info',
       providesTags: ['FinanceDashboard'],
     }),
-    updateFinanceChain: builder.mutation<IFinanceChain, { id: number; active: boolean }>({
+    getFinanceChains: builder.query<IFinanceChain[], void>({
+      query: () => 'admin/finance/chains',
+      providesTags: ['FinanceChains'],
+    }),
+    updateFinanceChain: builder.mutation<void, { id: number; active: boolean }>({
       query: ({ id, ...patch }) => ({
         url: `admin/finance/chains/${id}`,
         method: 'PATCH',
         body: patch,
       }),
-      invalidatesTags: ['FinanceDashboard'],
+      invalidatesTags: ['FinanceChains'],
     }),
-    updateFinanceToken: builder.mutation<IFinanceToken, { id: number; active: boolean }>({
+    updateFinanceToken: builder.mutation<void, { id: number; active: boolean }>({
       query: ({ id, ...patch }) => ({
         url: `admin/finance/tokens/${id}`,
         method: 'PATCH',
         body: patch,
       }),
-      invalidatesTags: ['FinanceDashboard'],
+      invalidatesTags: ['FinanceChains'],
     }),
   }),
 });
@@ -377,8 +380,10 @@ export const {
   useApproveWithdrawalMutation,
   useRejectWithdrawalMutation,
   useGetFinanceInfoQuery,
+  useGetFinanceChainsQuery,
   useUpdateFinanceChainMutation,
   useUpdateFinanceTokenMutation,
 } = adminApi;
+
 
 

@@ -32,8 +32,8 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
             disabled={isGeneratingIcon}
             onClick={onChangeIcon}
             className={`absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-all cursor-pointer ${isGeneratingIcon
-                ? 'opacity-60 cursor-not-allowed'
-                : 'hover:scale-110'
+              ? 'opacity-60 cursor-not-allowed'
+              : 'hover:scale-110'
               }`}
             title={isGeneratingIcon ? 'Генерация новой иконки...' : 'Сгенерировать другую иконку'}
           >
@@ -121,7 +121,7 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
               <Calendar size={13} className="text-amber-400" />
               <span>Ставки до:</span>
             </span>
-            <span className="font-mono text-amber-400 font-bold">{formatDisplayDate(req.bet_date || req.betDate)}</span>
+            <span className="font-mono text-amber-400 font-bold">{formatDisplayDate(req.bet_date)}</span>
           </div>
 
           <div className="flex items-center justify-between text-xs">
@@ -129,7 +129,7 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
               <CheckCircle2 size={13} className="text-cyan-400" />
               <span>Финал:</span>
             </span>
-            <span className="font-mono text-cyan-400 font-bold">{formatDisplayDate(req.end_date || req.endDate)}</span>
+            <span className="font-mono text-cyan-400 font-bold">{formatDisplayDate(req.end_date)}</span>
           </div>
         </div>
       </div>

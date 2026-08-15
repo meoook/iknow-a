@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IAdminUser } from '../../types';
+import { IUserAuthed } from '../../types';
 
 interface IAuthState {
   isAuthChecking: boolean;
   isAuthenticated: boolean;
-  user: IAdminUser | null;
+  user: IUserAuthed | null;
   authCheckError: 'network' | 'server' | null;
   isConnected: boolean;
 }
@@ -24,7 +24,7 @@ export const authSlice = createSlice({
     setConnectionStatus: (state, action: PayloadAction<boolean>) => {
       state.isConnected = action.payload;
     },
-    setAuthUser: (state, action: PayloadAction<IAdminUser>) => {
+    setAuthUser: (state, action: PayloadAction<IUserAuthed>) => {
       state.isAuthChecking = false;
       state.isAuthenticated = true;
       state.user = action.payload;

@@ -10,14 +10,14 @@ interface NewPredictionCardProps {
 }
 
 export const NewPredictionCard: React.FC<NewPredictionCardProps> = ({ req, onClick }) => {
-  const betDateStr = formatDisplayDate(req.bet_date || req.betDate);
-  const endDateStr = formatDisplayDate(req.end_date || req.endDate);
+  const betDateStr = formatDisplayDate(req.bet_date);
+  const endDateStr = formatDisplayDate(req.end_date);
   const createdStr = formatDisplayDate(req.created);
 
   return (
     <div
       onClick={() => onClick(req.id)}
-      className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 cursor-pointer glass-panel glass-panel-hover relative group flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 transition-all hover:border-cyan-500/40"
+      className="bg-slate-900/80 border border-slate-800 rounded-2xl px-5 py-3 cursor-pointer glass-panel glass-panel-hover relative group flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 transition-all hover:border-cyan-500/40"
     >
 
       {/* Left & Middle Content: Icon, Title, Tags, User, Bet */}
@@ -25,7 +25,7 @@ export const NewPredictionCard: React.FC<NewPredictionCardProps> = ({ req, onCli
         <img
           src={formatIconUrl(req.icon)}
           alt="Icon"
-          className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover border border-slate-700 shrink-0 shadow-lg group-hover:border-cyan-500/60 transition-colors"
+          className="w-16 h-16 md:w-22 md:h-22 rounded-2xl object-cover border border-slate-700 shrink-0 shadow-lg group-hover:border-cyan-500/60 transition-colors"
         />
 
         <div className="min-w-0 flex-1 space-y-2">
@@ -65,7 +65,7 @@ export const NewPredictionCard: React.FC<NewPredictionCardProps> = ({ req, onCli
       </div>
 
       {/* Right Side: 3 Dates Block */}
-      <div className="w-full lg:w-auto shrink-0 bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 flex flex-row lg:flex-col justify-between gap-3 text-xs min-w-[210px] self-stretch lg:self-center">
+      <div className="w-full lg:w-auto shrink-0 bg-slate-950/70 px-4 py-3 rounded-xl border border-slate-800/80 flex flex-row lg:flex-col justify-between gap-3 text-xs min-w-[210px] self-stretch lg:self-center">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
           <span className="text-slate-400 font-medium flex items-center gap-1">
             <Clock className="w-3.5 h-3.5 text-slate-500" />

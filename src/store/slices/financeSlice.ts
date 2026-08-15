@@ -10,10 +10,7 @@ export const withdrawalsAdapter = createEntityAdapter<IExternalTxItem>({
   sortComparer: (a, b) => b.id - a.id,
 });
 
-import { initialBankInfo } from '../../data/mockData';
-
 const initialState = {
-  bankInfo: initialBankInfo,
   transactions: txAdapter.getInitialState(),
   withdrawals: withdrawalsAdapter.getInitialState(),
   hasUnreadWithdrawals: false,

@@ -23,10 +23,10 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
   const diffPercent = bankBalance > 0 ? (Math.abs(bankDiff) / bankBalance) * 100 : 0;
   const isHighDiscrepancy = diffPercent > 5;
 
-  const totalIn = data.external_txs_total.in_amount;
-  const totalOut = data.external_txs_total.out_amount;
-  const totalNet = data.external_txs_total.net_amount !== undefined
-    ? data.external_txs_total.net_amount
+  const totalIn = data.txs_total.in_amount;
+  const totalOut = data.txs_total.out_amount;
+  const totalNet = data.txs_total.net_amount !== undefined
+    ? data.txs_total.net_amount
     : totalIn - totalOut;
 
   return (
@@ -85,7 +85,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                   <div className="flex items-center justify-between font-mono">
                     <span className="text-slate-300 flex items-center gap-2 font-sans font-bold">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                      <span>Баланс банка:</span>
+                      <span>Баланс банка</span>
                     </span>
                     <span className="font-bold text-emerald-400">
                       ${bankBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -96,7 +96,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                   <div className="flex items-center justify-between font-mono">
                     <span className="text-slate-300 flex items-center gap-2 font-sans font-bold">
                       <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                      <span>Сумма ставок:</span>
+                      <span>Сумма ставок</span>
                     </span>
                     <span className="font-bold text-blue-400">
                       ${activeBetsAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -107,7 +107,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                 {/* Line 3: Equals Net Difference */}
                 <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between font-mono font-bold">
                   <span className="text-slate-200 font-sans flex items-baseline gap-2">
-                    <span>Разница:</span>
+                    <span>Разница</span>
                     <span className="text-xs text-slate-400 font-normal font-mono">
                       ({diffPercent.toFixed(2)}%)
                     </span>
@@ -121,7 +121,7 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                           : 'text-rose-400 text-base'
                     }
                   >
-                    ${bankDiff.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ${Math.abs(bankDiff).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
@@ -156,21 +156,21 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                 </span>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between font-mono text-sm">
-                    <span className="text-slate-300 font-sans font-medium">Ввод:</span>
+                    <span className="text-slate-300 font-sans font-medium">Ввод</span>
                     <span className="font-bold text-emerald-400">
-                      ${data.external_txs_today.in_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${data.txs_today.in_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between font-mono text-sm">
-                    <span className="text-slate-300 font-sans font-medium">Вывод:</span>
+                    <span className="text-slate-300 font-sans font-medium">Вывод</span>
                     <span className="font-bold text-rose-400">
-                      ${data.external_txs_today.out_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${data.txs_today.out_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
                 <div className="pt-1 border-t border-slate-800/70 text-sm text-slate-500 font-mono flex items-center justify-between">
-                  <span>{data.external_txs_today.in_count} ввод.</span>
-                  <span>{data.external_txs_today.out_count} вывод.</span>
+                  <span>{data.txs_today.in_count} ввод.</span>
+                  <span>{data.txs_today.out_count} вывод.</span>
                 </div>
               </div>
 
@@ -181,22 +181,22 @@ export const FinanceKpiCards: React.FC<FinanceKpiCardsProps> = ({ data }) => {
                 </span>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between font-mono text-sm">
-                    <span className="text-slate-300 font-sans font-medium">Ввод:</span>
+                    <span className="text-slate-300 font-sans font-medium">Ввод</span>
                     <span className="font-bold text-emerald-400">
                       ${totalIn.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between font-mono text-sm">
-                    <span className="text-slate-300 font-sans font-medium">Вывод:</span>
+                    <span className="text-slate-300 font-sans font-medium">Вывод</span>
                     <span className="font-bold text-rose-400">
                       ${totalOut.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
                 <div className="pt-1 border-t border-slate-800/70 flex items-center justify-between text-sm font-mono font-bold">
-                  <span className="text-slate-200 font-sans">Разница:</span>
+                  <span className="text-slate-200 font-sans">Разница</span>
                   <span className={`${totalNet >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {totalNet >= 0 ? '+' : ''}${totalNet.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ${Math.abs(totalNet).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

@@ -247,7 +247,7 @@ export const PredictionDetailPage: React.FC = () => {
             </div>
             <div>
               <div className="text-[11px] text-slate-400 font-mono">Дата окончания</div>
-              <div className="text-sm font-bold text-white">{prediction.endDate || '—'}</div>
+              <div className="text-sm font-bold text-white">{prediction.end_date || '—'}</div>
             </div>
           </div>
 
@@ -257,7 +257,7 @@ export const PredictionDetailPage: React.FC = () => {
             </div>
             <div>
               <div className="text-[11px] text-slate-400 font-mono">Приём ставок до</div>
-              <div className="text-sm font-bold text-white">{prediction.betDate || '—'}</div>
+              <div className="text-sm font-bold text-white">{prediction.bet_date || '—'}</div>
             </div>
           </div>
         </div>
@@ -285,8 +285,8 @@ export const PredictionDetailPage: React.FC = () => {
             <div
               key={choice.id || idx}
               className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-all ${choice.win === true
-                  ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
-                  : 'bg-slate-950/70 border-slate-800'
+                ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
+                : 'bg-slate-950/70 border-slate-800'
                 }`}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -352,8 +352,8 @@ export const PredictionDetailPage: React.FC = () => {
                       key={choice.id}
                       onClick={() => setSelectedChoiceId(choice.id)}
                       className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedChoiceId === choice.id
-                          ? 'bg-amber-500/10 border-amber-500/50 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? 'bg-amber-500/10 border-amber-500/50 text-white'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
                         }`}
                     >
                       <div className="flex items-center gap-3">

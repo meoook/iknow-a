@@ -1,14 +1,15 @@
 import React from 'react';
 import { Laptop, MessageSquare, TrendingUp, Loader2 } from 'lucide-react';
 import { formatDisplayDate } from '../../utils/dates';
+import { IUserBet, IUserComment, IUserIpLog } from '../../types';
 
 interface UserActivityLogsProps {
   isIpsLoading: boolean;
-  ipLogs: any[];
+  ipLogs: IUserIpLog[];
   isCommentsLoading: boolean;
-  commentsList: any[];
+  commentsList: IUserComment[];
   isBetsLoading: boolean;
-  betsList: any[];
+  betsList: IUserBet[];
 }
 
 export const UserActivityLogs: React.FC<UserActivityLogsProps> = ({
@@ -44,8 +45,6 @@ export const UserActivityLogs: React.FC<UserActivityLogsProps> = ({
                   <span className="font-mono font-bold text-cyan-400">{ipItem.ip}</span>
                   <span className="text-[10px] text-slate-500 font-mono">{formatDisplayDate(ipItem.last_used)}</span>
                 </div>
-                {ipItem.device && <div className="text-[11px] text-slate-300">{ipItem.device}</div>}
-                {ipItem.location && <div className="text-[10px] text-slate-400">{ipItem.location}</div>}
               </div>
             ))
           ) : (

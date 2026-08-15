@@ -16,53 +16,36 @@ export type GroupTag =
 
 export type PredictionState = 'ACTIVE' | 'END_BET' | 'DISPUTE' | 'ENDED' | 'CANCEL';
 
-export interface IAdminUser {
+interface IUser {
   id: number;
   username: string;
   avatar: string | null;
+}
+
+export interface IUserAuthed extends IUser {
   is_superuser: boolean;
 }
 
-export interface IAdminUsersInfo {
+export interface IUsersInfo {
   total_users: number;
   new_users: number;
   total_balance: number;
 }
 
-export interface IUserRef {
-  id: number;
-  username: string;
-  avatarUrl?: string;
-  telegramId?: number;
-}
-
-export interface IUserDepositWallet {
-  chain: string;
-  address: string;
-}
-
-export interface IUserIpActivity {
-  id: string;
-  ip: string;
-  device: string;
-  location: string;
-  timestamp: string;
-}
-
-export interface IAdminUserIpLog {
+export interface IUserIpLog {
   id: number;
   ip: string;
   last_used: number;
 }
 
-export interface IAdminUserComment {
+export interface IUserComment {
   id: number;
   prediction: string;
   text: string;
   created: number;
 }
 
-export interface IAdminUserBet {
+export interface IUserBet {
   id: number;
   prediction: string;
   choice: string;
@@ -73,27 +56,10 @@ export interface IAdminUserBet {
   created: number;
 }
 
-export interface IAdminUserDepositWallet {
+export interface IUserDepositWallet {
   id: number;
   address: string;
   chain: string;
-}
-
-export interface IUserMessageActivity {
-  id: string;
-  topic: string;
-  message: string;
-  timestamp: string;
-}
-
-export interface IUserBetActivity {
-  id: string;
-  predictionTitle: string;
-  choice: string;
-  amount: number;
-  multiplier: number;
-  status: 'WIN' | 'LOSS' | 'PENDING';
-  timestamp: string;
 }
 
 export interface IUserItem {
@@ -111,7 +77,7 @@ export interface IUserItem {
   avatar?: string | null;
 }
 
-export interface IAdminUserUpdatePayload {
+export interface IUserUpdatePayload {
   id: number;
   username?: string;
   is_active?: boolean;
@@ -121,117 +87,86 @@ export interface IAdminUserUpdatePayload {
   password?: string;
 }
 
-export interface IPredictionRequestItem {
+interface IPredictionBase {
   id: number;
-  user: IUserRef;
-  moderators?: string[];
-  state: RequestState;
-  reject_reason?: string;
-  rejectReason?: string;
+  user: IUser;
   groups: GroupTag[];
   icon: string;
   title: string;
-  choices: string[];
-  choiceIcons?: Record<number, string>;
   rules: string;
   link: string;
   vote: string;
   amount: number;
   end_date?: string;
-  endDate?: string;
   bet_date?: string;
-  betDate?: string;
-  created: number | string;
-}
-
-export interface IChoiceItem {
-  id: number;
-  icon?: string | null;
-  title: string;
-  volume: number;
-  multiplier: number;
-  win?: boolean | null;
-}
-
-export interface IPredictionItem {
-  id: number;
-  fromRequestId?: number;
-  groups: GroupTag[];
-  state: PredictionState;
-  icon: string;
-  title: string;
-  rules: string;
-  link: string;
-  volume: number;
-  toRefresh?: boolean;
-  endDate: string;
-  betDate: string;
-  closed?: string | null;
-  created: string;
-  choices: IChoiceItem[];
+  created: number;
   moderators?: string[];
 }
 
-export interface IBankWallet {
-  id: string;
-  chain: string;
-  chainType: 'EVM' | 'TON' | 'SOL';
-  address: string;
-  nativeBalance: string;
-  nativeSymbol: string;
-  tokenBalance: string;
-  tokenSymbol: string;
-  usdValue: number;
-  status: 'ACTIVE' | 'SYNCING' | 'WARNING';
+export interface IPredictionRequestItem extends IPredictionBase {
+  state: RequestState;
+  reject_reason?: string;
+  choices: string[];
 }
 
-export interface IBankInfo {
-  bankTotalBalanceUsd: number;
-  hotWalletsUsd: number;
-  coldWalletsUsd: number;
-  reserveRatio: number;
-  twentyFourHourVolumeUsd: number;
-  wallets: IBankWallet[];
+interface IChoiceItem {
+  id: number;
+  icon: string;
+  title: string;
+  volume: number;
+  multiplier: number;
+  win: boolean | null;
 }
 
-export interface ITokenInfo {
+export interface IPredictionItem extends IPredictionBase {
+  state: PredictionState;
+  choices: IChoiceItem[];
+  volume: number;
+  closed?: string | null;
+}
+
+interface ITokenInfo {
   chain: string;
   currency: string;
 }
 
-export interface IObjectUser {
-  id: number;
-  username: string;
-  avatar: string | null;
-}
+// export type ExternalTxStatus =
+//   | 'PENDING'
+//   | 'APPROVED'
+//   | 'PROCESSING'
+//   | 'SUBMITTED'
+//   | 'COMPLETED'
+//   | 'REJECTED'
+//   | 'FAILED';
 
-export type ExternalTxStatus =
-  | 'PENDING'
-  | 'APPROVED'
-  | 'PROCESSING'
-  | 'SUBMITTED'
-  | 'COMPLETED'
-  | 'REJECTED'
-  | 'FAILED';
+export const ExternalTxStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  PROCESSING: 'PROCESSING',
+  SUBMITTED: 'SUBMITTED',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED',
+  FAILED: 'FAILED',
+} as const
+
+export type ExternalTxStatus = (typeof ExternalTxStatus)[keyof typeof ExternalTxStatus]
+
 
 export interface IExternalTxItem {
   id: number;
-  user?: IObjectUser;
-  token?: ITokenInfo;
+  user: IUser;
+  token: ITokenInfo;
   direction: 'IN' | 'OUT';
   amount: number;
   status: ExternalTxStatus;
-  tx_id?: string;
+  tx_id: string | null;
   url: string;
   address?: string;
   created: number;
   moderators?: string[];
 }
 
-export type ITransactionItem = IExternalTxItem;
-export type IWithdrawalRequestItem = IExternalTxItem;
-
-export interface IFinanceToken {
+interface IFinanceToken {
   id: number;
   currency: string;
   address: string;
@@ -249,10 +184,11 @@ export interface IFinanceChain {
   active: boolean;
   scan_url: string;
   address: string;
+  expenses: number;
   tokens: IFinanceToken[];
 }
 
-export interface IFinanceExternalTxsSummary {
+interface IFinanceTxsSummary {
   in_amount: number;
   out_amount: number;
   net_amount?: number;
@@ -260,7 +196,7 @@ export interface IFinanceExternalTxsSummary {
   out_count: number;
 }
 
-export interface IFinanceBetsSummary {
+interface IFinanceBetsSummary {
   total_amount: number;
   total_count: number;
 }
@@ -270,8 +206,8 @@ export interface IFinanceDashboard {
   bank_fee_balance: number;
   users_balance: number;
   active_bets_amount: number;
-  external_txs_today: IFinanceExternalTxsSummary;
-  external_txs_total: IFinanceExternalTxsSummary;
+  txs_today: IFinanceTxsSummary;
+  txs_total: IFinanceTxsSummary;
   bets_today: IFinanceBetsSummary;
-  chains: IFinanceChain[];
 }
+

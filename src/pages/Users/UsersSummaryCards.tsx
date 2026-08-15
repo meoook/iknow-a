@@ -33,7 +33,7 @@ export const UsersSummaryCards: React.FC<UsersSummaryCardsProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Новых пользователей</p>
-            <h3 className="text-2xl font-extrabold text-emerald-400 mt-2 font-mono">+{newUsersCount}</h3>
+            <h3 className="text-2xl font-extrabold text-emerald-400 mt-2 font-mono">{newUsersCount}</h3>
             <p className="text-[11px] text-emerald-500/90 mt-1 font-semibold">За сегодня</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-110 transition-transform">

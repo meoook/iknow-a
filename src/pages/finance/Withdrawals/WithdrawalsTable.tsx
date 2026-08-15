@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { IExternalTxItem } from '../../../types';
+import { ExternalTxStatus, IExternalTxItem } from '../../../types';
 import { formatDisplayDate } from '../../../utils/dates';
 
 interface WithdrawalsTableProps {
@@ -44,27 +44,23 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                   {/* Сумма */}
                   <td className="py-3.5 px-4 font-mono font-extrabold text-emerald-400">
                     <span>
-                      ${wreq.amount.toLocaleString()} {wreq.token?.currency ?? ''}
+                      ${wreq.amount.toLocaleString()} {wreq.token.currency}
                     </span>
                   </td>
 
                   {/* Пользователь */}
                   <td className="py-3.5 px-4 font-semibold text-slate-200">
-                    {wreq.user?.id ? (
-                      <Link
-                        to={`/users/${wreq.user.id}`}
-                        className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
-                      >
-                        @{wreq.user.username}
-                      </Link>
-                    ) : (
-                      <span>@{wreq.user?.username ?? 'Пользователь'}</span>
-                    )}
+                    <Link
+                      to={`/users/${wreq.user.id}`}
+                      className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
+                    >
+                      @{wreq.user.username}
+                    </Link>
                   </td>
 
                   {/* Сеть */}
                   <td className="py-3.5 px-4 font-mono text-slate-300">
-                    {wreq.token?.chain ?? '-'} ({wreq.token?.currency ?? '-'})
+                    {wreq.token.chain} ({wreq.token.currency})
                   </td>
 
                   {/* Адрес */}
@@ -81,7 +77,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        disabled={!isSuperuser || wreq.status !== 'PENDING'}
+                        disabled={!isSuperuser || wreq.status !== ExternalTxStatus.PENDING}
                         onClick={() => onConfirmReject(wreq.id)}
                         className="py-1.5 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         title={!isSuperuser ? 'Требуются права Superuser' : ''}

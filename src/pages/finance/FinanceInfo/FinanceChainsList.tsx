@@ -77,7 +77,7 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                       {chain.chain_type}
                     </span>
                     {chain.coin && (
-                      <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+                      <span className="bg-slate-800/90 text-cyan-300 font-mono text-[10px] px-2.5 py-0.5 rounded-md font-bold border border-slate-700/60">
                         {chain.coin}
                       </span>
                     )}
@@ -125,14 +125,23 @@ export const FinanceChainsList: React.FC<FinanceChainsListProps> = ({
                 </div>
               </div>
 
-              {/* Right Side: Native Balance & Active Toggle */}
-              <div className="flex items-center justify-between lg:justify-end gap-6 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800/60">
+              {/* Right Side: Native Balance & Expenses & Active Toggle */}
+              <div className="flex flex-wrap items-center justify-between lg:justify-end gap-5 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800/60">
                 <div className="text-left lg:text-right">
                   <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                    Нативный баланс банка
+                    Баланс банка
                   </div>
                   <div className="text-sm font-extrabold font-mono text-emerald-400 mt-0.5">
-                    0.00 {chain.coin || chain.name}
+                    0.00 {chain.coin}
+                  </div>
+                </div>
+
+                <div className="text-left lg:text-right pl-4 border-l border-slate-800/60">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                    Расходы (комиссии)
+                  </div>
+                  <div className="text-sm font-extrabold font-mono text-amber-400 mt-0.5">
+                    {`${chain.expenses.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 })} ${chain.coin}`}
                   </div>
                 </div>
 

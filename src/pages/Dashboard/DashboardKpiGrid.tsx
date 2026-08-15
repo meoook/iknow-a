@@ -10,10 +10,10 @@ export const DashboardKpiGrid: React.FC = () => {
   const requests = useAppSelector(requestsSelectors.selectAll);
   const allPredictions = useAppSelector(predictionsSelectors.selectAll);
   const activePredictions = allPredictions.filter((p) => p.state === 'ACTIVE');
-  const bankInfo = useAppSelector((state) => state.finance.bankInfo);
   const withdrawals = useAppSelector(withdrawalsSelectors.selectAll);
   const hasUnreadWithdrawals = useAppSelector((state) => state.finance.hasUnreadWithdrawals);
 
+  const bankInfo = { balance: 100000, reserveRatio: 80 }  // TODO: Connect to real data
 
   const totalActiveVolume = activePredictions.reduce((acc, p) => acc + (p.volume || 0), 0);
 
@@ -35,7 +35,7 @@ export const DashboardKpiGrid: React.FC = () => {
           </div>
         </div>
         <div className="text-2xl font-extrabold text-white font-mono">
-          ${bankInfo.bankTotalBalanceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          ${bankInfo.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </div>
         <div className="mt-2 text-xs text-slate-400 flex items-center justify-between">
           <span>Резерв: {bankInfo.reserveRatio}%</span>

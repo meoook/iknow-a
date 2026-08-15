@@ -45,9 +45,9 @@ export const WithdrawalApprovalModal: React.FC<WithdrawalApprovalModalProps> = (
           <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
             <div className="text-slate-400 mb-1">Получатель и сумма:</div>
             <div className="text-base font-extrabold text-white font-mono">
-              ${selectedWithdrawal.amount.toLocaleString()} {selectedWithdrawal.token?.currency ?? ''}
+              ${selectedWithdrawal.amount.toLocaleString()} {selectedWithdrawal.token.currency}
             </div>
-            <div className="text-slate-300 mt-1">@{selectedWithdrawal.user?.username ?? 'Пользователь'}</div>
+            <div className="text-slate-300 mt-1">@{selectedWithdrawal.user.username}</div>
           </div>
 
           <div>
