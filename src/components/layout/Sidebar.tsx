@@ -197,23 +197,6 @@ export const Sidebar: React.FC = () => {
           title="Финансы"
           icon={<Coins size={14} className="text-emerald-400" />}
         >
-          {/* Инфо */}
-          <NavLink
-            to="/finances/info"
-            className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-slate-800 text-emerald-400 font-medium'
-                  : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
-              }`
-            }
-          >
-            <div className="flex items-center gap-2.5">
-              <Wallet size={16} />
-              <span>Инфо</span>
-            </div>
-          </NavLink>
-
           {/* Блокчейн сети */}
           <NavLink
             to="/finances/chains"

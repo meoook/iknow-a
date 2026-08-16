@@ -12,7 +12,6 @@ import { WinnerSelectionPage } from './pages/predictions/WinnerSelection';
 import { FinishPredictionsPage } from './pages/predictions/FinishPredictions';
 import { PredictionDetailPage } from './pages/predictions/PredictionDetail';
 import { ArchivePredictionsPage } from './pages/predictions/ArchivePredictions';
-import { FinanceInfoPage } from './pages/finance/FinanceInfo';
 import { FinanceChainsPage } from './pages/finance/FinanceChains';
 import { TransactionsPage } from './pages/finance/Transactions';
 import { WithdrawalsPage } from './pages/finance/Withdrawals';
@@ -51,7 +50,7 @@ const ProtectedLayout: React.FC = () => {
             <Route path="/predictions/archive" element={<ArchivePredictionsPage />} />
 
             {/* Finances Group */}
-            <Route path="/finances/info" element={<FinanceInfoPage />} />
+            <Route path="/finances/info" element={<Navigate to="/" replace />} />
             <Route path="/finances/chains" element={<FinanceChainsPage />} />
             <Route path="/finances/transactions" element={<TransactionsPage />} />
             <Route path="/finances/withdrawals" element={<WithdrawalsPage />} />
