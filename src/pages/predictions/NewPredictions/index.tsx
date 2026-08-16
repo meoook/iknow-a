@@ -4,7 +4,6 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store';
 import { clearNewRequestsBadge, requestsSelectors } from '../../../store/slices/predictionsSlice';
 import { useGetRequestsQuery } from '../../../services/adminApi';
-import { NewPredictionsHeader } from './NewPredictionsHeader';
 import { NewPredictionCard } from './NewPredictionCard';
 
 export const NewPredictionsPage: React.FC = () => {
@@ -36,8 +35,6 @@ export const NewPredictionsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      <NewPredictionsHeader queueCount={requests.length} />
-
       {requests.length === 0 ? (
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center gap-3">
           <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />

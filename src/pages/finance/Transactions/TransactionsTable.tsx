@@ -71,7 +71,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({ filteredTx
                   <td className="py-3.5 px-4 font-mono text-slate-400">{tx.token.chain}</td>
 
                   <td className="py-3.5 px-4 font-mono text-slate-400">
-                    <div className="flex items-center gap-1 max-w-[180px] truncate" title={tx.tx_id}>
+                    <div className="flex items-center gap-1 max-w-[180px] truncate" title={tx.tx_id || undefined}>
                       {tx.url ? (
                         <a
                           href={tx.url}

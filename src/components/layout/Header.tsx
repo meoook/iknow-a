@@ -10,6 +10,8 @@ import {
   Archive,
   Wallet,
   Activity,
+  Award,
+  Flag,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { logout } from '../../store/slices/authSlice';
@@ -21,6 +23,8 @@ const routeConfig: Record<string, { title: string; icon: React.ElementType; colo
   '/users': { title: 'Пользователи', icon: Users, color: 'text-indigo-400' },
   '/predictions/new': { title: 'Новые предсказания', icon: Sparkles, color: 'text-cyan-400' },
   '/predictions/active': { title: 'Активные предсказания', icon: Clock, color: 'text-emerald-400' },
+  '/predictions/dispute': { title: 'Выбор победителя', icon: Award, color: 'text-amber-400' },
+  '/predictions/finish': { title: 'Завершение предсказаний', icon: Flag, color: 'text-emerald-400' },
   '/predictions/archive': { title: 'Архив предсказаний', icon: Archive, color: 'text-slate-400' },
   '/finances/info': { title: 'Состояние банка', icon: Wallet, color: 'text-emerald-400' },
   '/finances/transactions': { title: 'Транзакции', icon: Activity, color: 'text-blue-400' },
@@ -53,6 +57,12 @@ export const Header: React.FC = () => {
   const getRouteInfo = (pathname: string) => {
     if (pathname.startsWith('/predictions/new/')) {
       return { title: 'Модерация предсказания', icon: Sparkles, color: 'text-cyan-400' };
+    }
+    if (pathname.startsWith('/predictions/detail/')) {
+      return { title: 'Детали предсказания', icon: Award, color: 'text-cyan-400' };
+    }
+    if (pathname.startsWith('/users/')) {
+      return { title: 'Профиль пользователя', icon: Users, color: 'text-indigo-400' };
     }
     return routeConfig[pathname] || {
       title: 'Панель управления',
