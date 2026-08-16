@@ -182,6 +182,7 @@ export interface IFinanceChain {
   chain_id: number | null;
   coin: string;
   active: boolean;
+  rpc_url: string;
   scan_url: string;
   address: string;
   expenses: number;
@@ -204,10 +205,12 @@ interface IFinanceBetsSummary {
 export interface IFinanceDashboard {
   bank_balance: number;
   bank_fee_balance: number;
+  bank_fee_today?: number;
   users_balance: number;
   active_bets_amount: number;
   txs_today: IFinanceTxsSummary;
   txs_total: IFinanceTxsSummary;
   bets_today: IFinanceBetsSummary;
 }
+
 

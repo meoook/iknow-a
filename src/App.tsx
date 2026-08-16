@@ -13,6 +13,7 @@ import { FinishPredictionsPage } from './pages/predictions/FinishPredictions';
 import { PredictionDetailPage } from './pages/predictions/PredictionDetail';
 import { ArchivePredictionsPage } from './pages/predictions/ArchivePredictions';
 import { FinanceInfoPage } from './pages/finance/FinanceInfo';
+import { FinanceChainsPage } from './pages/finance/FinanceChains';
 import { TransactionsPage } from './pages/finance/Transactions';
 import { WithdrawalsPage } from './pages/finance/Withdrawals';
 import { useAppSelector } from './store';
@@ -51,8 +52,10 @@ const ProtectedLayout: React.FC = () => {
 
             {/* Finances Group */}
             <Route path="/finances/info" element={<FinanceInfoPage />} />
+            <Route path="/finances/chains" element={<FinanceChainsPage />} />
             <Route path="/finances/transactions" element={<TransactionsPage />} />
             <Route path="/finances/withdrawals" element={<WithdrawalsPage />} />
+
 
             {/* Fallback to Dashboard */}
             <Route path="*" element={<Navigate to="/" replace />} />

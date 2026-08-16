@@ -39,7 +39,7 @@ export const predictionsSlice = createSlice({
 
     // Predictions Adapter Reducers
     setPredictions: (state, action: PayloadAction<IPredictionItem[]>) => {
-      predictionsAdapter.setAll(state.predictions, action.payload);
+      predictionsAdapter.upsertMany(state.predictions, action.payload);
     },
     upsertPrediction: (state, action: PayloadAction<IPredictionItem>) => {
       predictionsAdapter.upsertOne(state.predictions, action.payload);

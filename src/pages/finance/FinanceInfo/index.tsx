@@ -1,47 +1,23 @@
 import React from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useAppSelector } from '../../../store';
-import {
-  useGetFinanceInfoQuery,
-  useGetFinanceChainsQuery,
-  useUpdateFinanceChainMutation,
-  useUpdateFinanceTokenMutation,
-} from '../../../services/adminApi';
+import { useGetFinanceInfoQuery } from '../../../services/adminApi';
 import { FinanceKpiCards } from './FinanceKpiCards';
-import { FinanceChainsList } from './FinanceChainsList';
 
 export const FinanceInfoPage: React.FC = () => {
-  const currentUser = useAppSelector((state) => state.auth.user);
-  const isSuperuser = currentUser?.is_superuser === true;
+  const { data: dashboardData, isLoading, error } = useGetFinanceInfoQuery();
 
-  const { data: dashboardData, isLoading: isDashboardLoading, error: dashboardError } = useGetFinanceInfoQuery();
-  const { data: chainsData, isLoading: isChainsLoading, error: chainsError } = useGetFinanceChainsQuery();
-
-  const [updateChain] = useUpdateFinanceChainMutation();
-  const [updateToken] = useUpdateFinanceTokenMutation();
-
-  const handleToggleChain = (chainId: number, active: boolean) => {
-    if (!isSuperuser) return;
-    updateChain({ id: chainId, active }).unwrap().catch(() => { });
-  };
-
-  const handleToggleToken = (tokenId: number, active: boolean) => {
-    if (!isSuperuser) return;
-    updateToken({ id: tokenId, active }).unwrap().catch(() => { });
-  };
-
-  if ((isDashboardLoading && !dashboardData) || (isChainsLoading && !chainsData)) {
+  if (isLoading && !dashboardData) {
     return (
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-16 text-center flex flex-col items-center justify-center gap-4 min-h-[350px]">
         <Loader2 className="w-10 h-10 text-cyan-400 animate-spin mx-auto" />
         <span className="text-sm font-semibold text-slate-400">
-          Загрузка финансовых показателей и сетей...
+          Загрузка финансовых показателей...
         </span>
       </div>
     );
   }
 
-  if (dashboardError || chainsError || !dashboardData) {
+  if (error || !dashboardData) {
     return (
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
         <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
@@ -56,12 +32,6 @@ export const FinanceInfoPage: React.FC = () => {
   return (
     <div className="space-y-4 font-sans">
       <FinanceKpiCards data={dashboardData} />
-      <FinanceChainsList
-        chains={chainsData || []}
-        isSuperuser={isSuperuser}
-        onToggleChain={handleToggleChain}
-        onToggleToken={handleToggleToken}
-      />
     </div>
   );
 };

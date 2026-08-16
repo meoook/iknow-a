@@ -75,10 +75,7 @@ export const WithdrawalsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <WithdrawalsHeader
-        queueCount={withdrawals.length}
-        isSuperuser={isSuperuser}
-      />
+      <WithdrawalsHeader queueCount={withdrawals.length} isSuperuser={isSuperuser} />
       <WithdrawalsTable
         withdrawals={withdrawals}
         isSuperuser={isSuperuser}

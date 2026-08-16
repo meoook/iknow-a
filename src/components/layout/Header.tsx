@@ -12,6 +12,7 @@ import {
   Activity,
   Award,
   Flag,
+  Network,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { logout } from '../../store/slices/authSlice';
@@ -27,9 +28,11 @@ const routeConfig: Record<string, { title: string; icon: React.ElementType; colo
   '/predictions/finish': { title: 'Завершение предсказаний', icon: Flag, color: 'text-emerald-400' },
   '/predictions/archive': { title: 'Архив предсказаний', icon: Archive, color: 'text-slate-400' },
   '/finances/info': { title: 'Состояние банка', icon: Wallet, color: 'text-emerald-400' },
+  '/finances/chains': { title: 'Блокчейн сети', icon: Network, color: 'text-cyan-400' },
   '/finances/transactions': { title: 'Транзакции', icon: Activity, color: 'text-blue-400' },
   '/finances/withdrawals': { title: 'Запросы на вывод средств', icon: Send, color: 'text-rose-400' },
 };
+
 
 export const Header: React.FC = () => {
   const dispatch = useAppDispatch();
