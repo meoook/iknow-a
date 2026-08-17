@@ -36,7 +36,7 @@ export const EarnedFeeCard: React.FC<EarnedFeeCardProps> = ({
                 <span>Заработанные средства</span>
               </h3>
               <span className="text-xs text-slate-400">
-                Комиссионный доход платформы (BANK_FEE)
+                Комиссионный доход платформы
               </span>
             </div>
           </div>
@@ -58,7 +58,7 @@ export const EarnedFeeCard: React.FC<EarnedFeeCardProps> = ({
               </div>
               <div className="text-xl font-black text-emerald-400 font-mono mt-0.5 flex items-center gap-1">
                 <TrendingUp size={16} className="text-emerald-400" />
-                <span>+${bankFeeToday.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span>${bankFeeToday.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>

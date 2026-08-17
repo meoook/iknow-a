@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetUsersInfoQuery, useGetUsersListQuery } from '../../services/adminApi';
+import { useGetUsersListQuery } from '../../services/adminApi';
 import { IUserItem } from '../../types';
 import { UsersSummaryCards } from './UsersSummaryCards';
 import { UsersSearchToolbar } from './UsersSearchToolbar';
@@ -29,15 +29,10 @@ export const UsersPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const { data: infoData } = useGetUsersInfoQuery();
   const { data: apiUsersList } = useGetUsersListQuery({
     search: debouncedSearchQuery,
     is_staff: roleFilter === 'admin' ? 1 : 0,
   });
-
-  const totalUsers = infoData?.total_users ?? 0;
-  const newUsersCount = infoData?.new_users ?? 0;
-  const totalBalance = infoData?.total_balance ?? 0;
 
   const displayUsers: IUserItem[] = (apiUsersList || []).map((u: any) => ({
     id: u.id,
@@ -64,11 +59,7 @@ export const UsersPage: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      <UsersSummaryCards
-        totalUsers={totalUsers}
-        newUsersCount={newUsersCount}
-        totalBalance={totalBalance}
-      />
+      <UsersSummaryCards />
       <UsersSearchToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

@@ -16,11 +16,10 @@ export const BankBalanceCoverageCard: React.FC<BankBalanceCoverageCardProps> = (
 
   return (
     <div
-      className={`bg-slate-900/80 border rounded-2xl p-5 glass-panel relative flex flex-col justify-between shadow-xl transition-all ${
-        isHighDiscrepancy
+      className={`bg-slate-900/80 border rounded-2xl p-5 glass-panel relative flex flex-col justify-between shadow-xl transition-all ${isHighDiscrepancy
           ? 'border-amber-500/40 bg-gradient-to-br from-amber-500/5 via-slate-900/90 to-slate-900/80'
           : 'border-slate-800'
-      }`}
+        }`}
     >
       <div>
         <div className="flex items-center justify-between">
@@ -57,11 +56,10 @@ export const BankBalanceCoverageCard: React.FC<BankBalanceCoverageCardProps> = (
         {/* Compact 3-line panel */}
         <div className="pt-3.5">
           <div
-            className={`p-3.5 rounded-xl border flex flex-col justify-between space-y-2.5 transition-colors ${
-              isHighDiscrepancy
+            className={`p-3.5 rounded-xl border flex flex-col justify-between space-y-2.5 transition-colors ${isHighDiscrepancy
                 ? 'bg-slate-950/80 border-amber-500/30'
                 : 'bg-slate-950/70 border-slate-800'
-            }`}
+              }`}
           >
             <div className="space-y-2">
               {/* Line 1: Bank Balance */}
@@ -82,7 +80,7 @@ export const BankBalanceCoverageCard: React.FC<BankBalanceCoverageCardProps> = (
                   <span>Сумма ставок</span>
                 </span>
                 <span className="font-bold text-blue-400">
-                  -${activeBetsAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${activeBetsAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
@@ -100,8 +98,8 @@ export const BankBalanceCoverageCard: React.FC<BankBalanceCoverageCardProps> = (
                   isHighDiscrepancy
                     ? 'text-amber-400 font-extrabold text-base'
                     : bankDiff >= 0
-                    ? 'text-emerald-400 text-base'
-                    : 'text-rose-400 text-base'
+                      ? 'text-emerald-400 text-base'
+                      : 'text-rose-400 text-base'
                 }
               >
                 ${Math.abs(bankDiff).toLocaleString('en-US', { minimumFractionDigits: 2 })}

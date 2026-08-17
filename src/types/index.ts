@@ -29,7 +29,9 @@ export interface IUserAuthed extends IUser {
 export interface IUsersInfo {
   total_users: number;
   new_users: number;
-  total_balance: number;
+  active: number;
+  blocked: number;
+  withdraw: number;
 }
 
 export interface IUserIpLog {

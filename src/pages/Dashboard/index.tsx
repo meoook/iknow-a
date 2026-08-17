@@ -2,9 +2,15 @@ import React from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useGetFinanceInfoQuery } from '../../services/adminApi';
 import { DashboardKpiCards } from './DashboardKpiCards';
+import { DashboardProgressBar } from './DashboardProgressBar';
 
 export const DashboardPage: React.FC = () => {
-  const { data: dashboardData, isLoading, error } = useGetFinanceInfoQuery();
+  const {
+    data: dashboardData,
+    isLoading,
+    error,
+    refetch,
+  } = useGetFinanceInfoQuery();
 
   if (isLoading && !dashboardData) {
     return (
@@ -30,7 +36,8 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 font-sans">
+    <div className="font-sans">
+      <DashboardProgressBar onRefresh={refetch} intervalSeconds={60} />
       <DashboardKpiCards data={dashboardData} />
     </div>
   );
