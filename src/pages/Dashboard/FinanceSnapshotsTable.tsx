@@ -20,7 +20,7 @@ export const FinanceSnapshotsTable: React.FC<FinanceSnapshotsTableProps> = ({ sn
   }
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glass-panel space-y-1 shadow-xl font-sans">
+    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glass-panel shadow-xl font-sans relative">
       {/* Table Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
         <div className="flex items-center gap-3">
@@ -38,17 +38,17 @@ export const FinanceSnapshotsTable: React.FC<FinanceSnapshotsTableProps> = ({ sn
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead>
+      {/* Table with Sticky Header */}
+      <div className="relative">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead className="sticky top-16 z-10 shadow-sm">
             <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-bold text-[10px]">
-              <th className="py-3 px-4">Дата</th>
-              <th className="py-3 px-4 text-right">Доход (Fee)</th>
-              <th className="py-3 px-4 text-right">Объем ставок</th>
-              <th className="py-3 px-4 text-right">Ввод средств</th>
-              <th className="py-3 px-4 text-right">Вывод средств</th>
-              <th className="py-3 px-4 text-right">Чистый поток (Net)</th>
+              <th className="py-3 px-4 bg-slate-900/95 backdrop-blur-md">Дата</th>
+              <th className="py-3 px-4 bg-slate-900/95 backdrop-blur-md text-right">Доход (Fee)</th>
+              <th className="py-3 px-4 bg-slate-900/95 backdrop-blur-md text-right">Объем ставок</th>
+              <th className="py-3 px-4 bg-slate-900/95 backdrop-blur-md text-right">Ввод средств</th>
+              <th className="py-3 px-4 bg-slate-900/95 backdrop-blur-md text-right">Вывод средств</th>
+              <th className="py-3 px-4 bg-slate-900/95 backdrop-blur-md text-right">Чистый поток (Net)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60">
