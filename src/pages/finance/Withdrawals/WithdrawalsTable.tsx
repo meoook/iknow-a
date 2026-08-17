@@ -25,7 +25,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
             <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               <th className="py-3.5 px-4">Сумма</th>
               <th className="py-3.5 px-4">Пользователь</th>
-              <th className="py-3.5 px-4">Сеть / Валюта</th>
+              <th className="py-3.5 px-4">Сеть</th>
               <th className="py-3.5 px-4">Адрес</th>
               <th className="py-3.5 px-4">Время создания</th>
               <th className="py-3.5 px-4 text-right">Действия</th>
@@ -60,7 +60,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
 
                   {/* Сеть */}
                   <td className="py-3.5 px-4 font-mono text-slate-300">
-                    {wreq.token.chain} ({wreq.token.currency})
+                    {wreq.token.chain}
                   </td>
 
                   {/* Адрес */}

@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
+  X,
 } from 'lucide-react';
 import { useAppSelector } from '../../../store';
 import { predictionsSelectors } from '../../../store/slices/predictionsSlice';
@@ -148,9 +149,9 @@ export const PredictionDetailPage: React.FC = () => {
               </h3>
               <button
                 onClick={() => setIsWinnerModalOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors"
               >
-                &times;
+                <X size={20} />
               </button>
             </div>
 
@@ -170,11 +171,10 @@ export const PredictionDetailPage: React.FC = () => {
                     <label
                       key={choice.id}
                       onClick={() => setSelectedChoiceId(choice.id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                        selectedChoiceId === choice.id
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedChoiceId === choice.id
                           ? 'bg-amber-500/10 border-amber-500/50 text-white'
                           : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <input

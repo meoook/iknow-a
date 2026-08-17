@@ -33,14 +33,14 @@ export const PredictionDetailStickyHeader: React.FC<PredictionDetailStickyHeader
   const isArchived = prediction.state === 'ENDED' || prediction.state === 'CANCEL';
 
   let backUrl = '/predictions/dispute';
-  let backLabel = 'Назад к выбору победителя';
+  let backLabel = 'К выбору победителя';
 
   if (isArchived) {
     backUrl = '/predictions/archive';
     backLabel = 'Назад к архиву';
   } else if (hasWinner) {
     backUrl = '/predictions/finish';
-    backLabel = 'Назад к списку завершающих';
+    backLabel = 'К списку завершающих';
   }
 
   return (

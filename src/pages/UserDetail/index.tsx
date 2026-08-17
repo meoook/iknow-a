@@ -125,7 +125,7 @@ export const UserDetailPage: React.FC = () => {
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs font-semibold"
         >
           <ArrowLeft size={16} />
-          <span>Назад к списку</span>
+          <span>К списку пользователей</span>
         </Link>
 
         <div className="flex items-center gap-2.5">
@@ -135,8 +135,8 @@ export const UserDetailPage: React.FC = () => {
             onClick={() => setIsUsernameModalOpen(true)}
             title={!isSuperuserLogged ? 'Только суперпользователь может менять username' : ''}
             className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${!isSuperuserLogged
-                ? 'opacity-40 cursor-not-allowed'
-                : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
+              ? 'opacity-40 cursor-not-allowed'
+              : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
               }`}
           >
             <UserCheck size={14} />
@@ -149,8 +149,8 @@ export const UserDetailPage: React.FC = () => {
             onClick={() => setIsPasswordModalOpen(true)}
             title={!isSuperuserLogged ? 'Только суперпользователь может менять пароль' : ''}
             className={`inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md transition-all ${!isSuperuserLogged
-                ? 'opacity-40 cursor-not-allowed'
-                : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
+              ? 'opacity-40 cursor-not-allowed'
+              : 'hover:border-cyan-500/50 hover:bg-slate-800 cursor-pointer'
               }`}
           >
             <KeyRound size={14} />
