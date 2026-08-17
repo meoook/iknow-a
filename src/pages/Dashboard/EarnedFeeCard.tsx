@@ -1,26 +1,58 @@
 import React from 'react';
 import { PiggyBank, TrendingUp } from 'lucide-react';
+import { IFinanceSnapshot } from '../../types';
 import { EarningsLineChart } from './EarningsLineChart';
 
 interface EarnedFeeCardProps {
   bankFeeBalance: number;
   bankFeeToday: number;
+  snapshots?: IFinanceSnapshot[];
 }
+
+const formatShortDate = (dateStr: string) => {
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[2], 10);
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+      return `${day} ${months[monthIdx] || ''}`;
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
+};
 
 export const EarnedFeeCard: React.FC<EarnedFeeCardProps> = ({
   bankFeeBalance,
   bankFeeToday,
+  snapshots = [],
 }) => {
-  // Mock daily earnings data for the chart
-  const earningsHistory = [
-    { date: '10 авг', amount: 142.5 },
-    { date: '11 авг', amount: 215.0 },
-    { date: '12 авг', amount: 189.2 },
-    { date: '13 авг', amount: 310.8 },
-    { date: '14 авг', amount: 275.4 },
-    { date: '15 авг', amount: 420.1 },
-    { date: 'Сегодня', amount: bankFeeToday > 0 ? bankFeeToday : 365.0 },
-  ];
+  // Dynamically build earnings history for the chart from all FinanceSnapshots + today
+  const earningsHistory = React.useMemo(() => {
+    if (!snapshots || snapshots.length === 0) {
+      return [
+        { date: 'Вчера', amount: 0 },
+        { date: 'Сегодня', amount: Number(bankFeeToday || 0) },
+      ];
+    }
+
+    // Convert all snapshots to chronological order (API returns newest first)
+    const chronological = [...snapshots].reverse();
+    const items = chronological.map((s) => ({
+      date: formatShortDate(s.created),
+      amount: Number(s.fee || 0),
+    }));
+
+    // Add current day at the end
+    items.push({
+      date: 'Сегодня',
+      amount: Number(bankFeeToday || 0),
+    });
+
+    return items;
+  }, [snapshots, bankFeeToday]);
 
   return (
     <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 glass-panel shadow-xl flex flex-col justify-between space-y-4 font-sans">
@@ -64,7 +96,7 @@ export const EarnedFeeCard: React.FC<EarnedFeeCardProps> = ({
           </div>
         </div>
 
-        {/* Earnings History Chart */}
+        {/* Earnings History Chart with all data */}
         <EarningsLineChart history={earningsHistory} />
       </div>
     </div>

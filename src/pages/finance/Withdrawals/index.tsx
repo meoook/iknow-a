@@ -7,7 +7,6 @@ import {
   useRejectWithdrawalMutation,
 } from '../../../services/adminApi';
 import { IExternalTxItem } from '../../../types';
-import { WithdrawalsHeader } from './WithdrawalsHeader';
 import { WithdrawalsTable } from './WithdrawalsTable';
 import { WithdrawalApprovalModal } from './WithdrawalApprovalModal';
 

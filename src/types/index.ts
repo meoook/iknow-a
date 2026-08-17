@@ -204,6 +204,18 @@ interface IFinanceBetsSummary {
   total_count: number;
 }
 
+export interface IFinanceSnapshot {
+  id: number;
+  fee: number;
+  in_amount: number;
+  in_count: number;
+  out_amount: number;
+  out_count: number;
+  bets_amount: number;
+  bets_count: number;
+  created: string;
+}
+
 export interface IFinanceDashboard {
   bank_balance: number;
   bank_fee_balance: number;

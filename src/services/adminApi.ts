@@ -15,6 +15,7 @@ import {
   IExternalTxItem,
   IFinanceDashboard,
   IFinanceChain,
+  IFinanceSnapshot,
 } from '../types';
 import {
   setPredictionRequests,
@@ -56,7 +57,7 @@ const baseQueryWithReauth: typeof rawBaseQuery = async (args, api, extraOptions)
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['UsersList', 'Withdraw', 'FinanceDashboard', 'FinanceChains'],
+  tagTypes: ['UsersList', 'Withdraw', 'FinanceDashboard', 'FinanceChains', 'FinanceSnapshots'],
   endpoints: (builder) => ({
     getAuthUser: builder.query<IUserAuthed, void>({
       query: () => 'auth/user',
@@ -332,6 +333,10 @@ export const adminApi = createApi({
       query: () => 'admin/finance/chains',
       providesTags: ['FinanceChains'],
     }),
+    getFinanceSnapshots: builder.query<IFinanceSnapshot[], void>({
+      query: () => 'admin/finance/snapshots',
+      providesTags: ['FinanceSnapshots'],
+    }),
     updateFinanceChain: builder.mutation<void, { id: number; active: boolean }>({
       query: ({ id, ...patch }) => ({
         url: `admin/finance/chains/${id}`,
@@ -381,6 +386,7 @@ export const {
   useRejectWithdrawalMutation,
   useGetFinanceInfoQuery,
   useGetFinanceChainsQuery,
+  useGetFinanceSnapshotsQuery,
   useUpdateFinanceChainMutation,
   useUpdateFinanceTokenMutation,
 } = adminApi;

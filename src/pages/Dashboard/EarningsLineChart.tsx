@@ -14,13 +14,16 @@ export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history })
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const maxAmount = Math.max(...history.map((d) => d.amount), 1);
+  const totalCount = history.length;
+  // Step for showing x-axis date labels cleanly when there are many points
+  const labelStep = totalCount > 10 ? Math.ceil(totalCount / 7) : 1;
 
   return (
     <div className="pt-4 font-sans">
       <div className="flex items-center justify-between mb-3 text-xs">
         <span className="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
           <Calendar size={13} className="text-cyan-400" />
-          <span>Динамика комиссии за последние 7 дней</span>
+          <span>Динамика комиссии</span>
         </span>
         <span className="text-[11px] font-mono text-slate-400">
           {hoveredIdx !== null ? (
@@ -65,7 +68,7 @@ export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history })
             {/* Area & Line */}
             {(() => {
               const pts = history.map((item, idx) => {
-                const x = 30 + (idx / (history.length - 1)) * 440;
+                const x = 30 + (idx / Math.max(history.length - 1, 1)) * 440;
                 const y = 95 - (item.amount / maxAmount) * 75;
                 return { x, y };
               });
@@ -127,7 +130,7 @@ export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history })
                         <circle
                           cx={pt.x}
                           cy={pt.y}
-                          r={isHovered ? 5 : 3.5}
+                          r={isHovered ? 5 : totalCount > 15 ? 2.5 : 3.5}
                           fill={isToday ? '#10b981' : isHovered ? '#22d3ee' : '#06b6d4'}
                           stroke="#0f172a"
                           strokeWidth="2"
@@ -152,7 +155,7 @@ export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history })
               >
                 {hoveredIdx === idx && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full bg-slate-900 border border-cyan-500/40 text-cyan-300 font-mono text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-xl pointer-events-none whitespace-nowrap z-10">
-                    ${item.amount.toFixed(2)}
+                    {item.date}: ${item.amount.toFixed(2)}
                   </div>
                 )}
               </div>
@@ -165,25 +168,31 @@ export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history })
           {history.map((item, idx) => {
             const isHovered = hoveredIdx === idx;
             const isToday = idx === history.length - 1;
+            const isFirst = idx === 0;
+            const shouldShowLabel = isFirst || isToday || idx % labelStep === 0;
 
             return (
               <div
                 key={idx}
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
-                className="text-center cursor-pointer"
+                className="text-center cursor-pointer flex-1"
               >
-                <span
-                  className={`text-[11px] font-mono transition-colors block ${
-                    isToday
-                      ? 'font-bold text-emerald-400'
-                      : isHovered
-                      ? 'font-bold text-cyan-300'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {item.date}
-                </span>
+                {shouldShowLabel ? (
+                  <span
+                    className={`text-[11px] font-mono transition-colors block ${
+                      isToday
+                        ? 'font-bold text-emerald-400'
+                        : isHovered
+                        ? 'font-bold text-cyan-300'
+                        : 'text-slate-400'
+                    }`}
+                  >
+                    {item.date}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-transparent block select-none">·</span>
+                )}
               </div>
             );
           })}

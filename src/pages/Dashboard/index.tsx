@@ -1,16 +1,21 @@
 import React from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useGetFinanceInfoQuery } from '../../services/adminApi';
+import { useGetFinanceInfoQuery, useGetFinanceSnapshotsQuery } from '../../services/adminApi';
 import { DashboardKpiCards } from './DashboardKpiCards';
 import { DashboardProgressBar } from './DashboardProgressBar';
+import { FinanceSnapshotsTable } from './FinanceSnapshotsTable';
 
 export const DashboardPage: React.FC = () => {
+  // Polled every 60s
   const {
     data: dashboardData,
     isLoading,
     error,
     refetch,
   } = useGetFinanceInfoQuery();
+
+  // Fetched once on mount
+  const { data: snapshotsData } = useGetFinanceSnapshotsQuery();
 
   if (isLoading && !dashboardData) {
     return (
@@ -36,9 +41,10 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="font-sans">
+    <div className="space-y-6 font-sans">
       <DashboardProgressBar onRefresh={refetch} intervalSeconds={60} />
-      <DashboardKpiCards data={dashboardData} />
+      <DashboardKpiCards data={dashboardData} snapshots={snapshotsData} />
+      <FinanceSnapshotsTable snapshots={snapshotsData} />
     </div>
   );
 };

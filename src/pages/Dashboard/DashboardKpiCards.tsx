@@ -1,5 +1,5 @@
 import React from 'react';
-import { IFinanceDashboard } from '../../types';
+import { IFinanceDashboard, IFinanceSnapshot } from '../../types';
 import { BankBalanceCoverageCard } from './BankBalanceCoverageCard';
 import { TransactionsInOutCard } from './TransactionsInOutCard';
 import { EarnedFeeCard } from './EarnedFeeCard';
@@ -8,9 +8,10 @@ import { BetsTodayCard } from './BetsTodayCard';
 
 interface DashboardKpiCardsProps {
   data: IFinanceDashboard;
+  snapshots?: IFinanceSnapshot[];
 }
 
-export const DashboardKpiCards: React.FC<DashboardKpiCardsProps> = ({ data }) => {
+export const DashboardKpiCards: React.FC<DashboardKpiCardsProps> = ({ data, snapshots }) => {
   return (
     <div className="space-y-4 font-sans">
       {/* Row 1: Bank Balance vs Active Bets Coverage & In/Out Transactions */}
@@ -30,6 +31,7 @@ export const DashboardKpiCards: React.FC<DashboardKpiCardsProps> = ({ data }) =>
         <EarnedFeeCard
           bankFeeBalance={data.bank_fee_balance}
           bankFeeToday={data.bank_fee_today || 0}
+          snapshots={snapshots}
         />
 
         <div className="flex flex-col gap-4 justify-between">
