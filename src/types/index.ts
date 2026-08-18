@@ -141,7 +141,7 @@ interface ITokenInfo {
 //   | 'REJECTED'
 //   | 'FAILED';
 
-export const ExternalTxStatus = {
+export const TExternalTxStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   PROCESSING: 'PROCESSING',
@@ -151,7 +151,7 @@ export const ExternalTxStatus = {
   FAILED: 'FAILED',
 } as const
 
-export type ExternalTxStatus = (typeof ExternalTxStatus)[keyof typeof ExternalTxStatus]
+export type TExternalTxStatus = (typeof TExternalTxStatus)[keyof typeof TExternalTxStatus]
 
 
 export interface IExternalTxItem {
@@ -160,7 +160,7 @@ export interface IExternalTxItem {
   token: ITokenInfo;
   direction: 'IN' | 'OUT';
   amount: number;
-  status: ExternalTxStatus;
+  status: TExternalTxStatus;
   tx_id: string | null;
   url: string;
   address?: string;
@@ -177,10 +177,19 @@ export interface IFinanceToken {
   minimum: number;
 }
 
+export const TChainType = {
+  EVM: 'EVM',
+  TVM: 'TVM',
+  SVM: 'SVM',
+} as const
+
+export type TChainType = (typeof TChainType)[keyof typeof TChainType]
+
+
 export interface IFinanceChain {
   id: number;
   name: string;
-  chain_type: string;
+  chain_type: TChainType;
   chain_id: number | null;
   coin: string;
   decimals?: number;

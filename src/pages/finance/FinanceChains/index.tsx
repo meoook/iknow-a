@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useAppSelector } from '../../../store';
 import {
@@ -16,15 +16,21 @@ export const FinanceChainsPage: React.FC = () => {
   const [updateChain] = useUpdateFinanceChainMutation();
   const [updateToken] = useUpdateFinanceTokenMutation();
 
-  const handleToggleChain = (chainId: number, active: boolean) => {
-    if (!isSuperuser) return;
-    updateChain({ id: chainId, active }).unwrap().catch(() => { });
-  };
+  const handleToggleChain = useCallback(
+    (chainId: number, active: boolean) => {
+      if (!isSuperuser) return;
+      updateChain({ id: chainId, active }).unwrap().catch(() => {});
+    },
+    [isSuperuser, updateChain]
+  );
 
-  const handleToggleToken = (tokenId: number, active: boolean) => {
-    if (!isSuperuser) return;
-    updateToken({ id: tokenId, active }).unwrap().catch(() => { });
-  };
+  const handleToggleToken = useCallback(
+    (tokenId: number, active: boolean) => {
+      if (!isSuperuser) return;
+      updateToken({ id: tokenId, active }).unwrap().catch(() => {});
+    },
+    [isSuperuser, updateToken]
+  );
 
   if (isLoading && !chainsData) {
     return (

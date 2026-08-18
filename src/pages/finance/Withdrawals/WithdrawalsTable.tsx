@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { ExternalTxStatus, IExternalTxItem } from '../../../types';
+import { TExternalTxStatus, IExternalTxItem } from '../../../types';
 import { formatDisplayDate } from '../../../utils/dates';
 
 interface WithdrawalsTableProps {
@@ -77,7 +77,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        disabled={!isSuperuser || wreq.status !== ExternalTxStatus.PENDING}
+                        disabled={!isSuperuser || wreq.status !== TExternalTxStatus.PENDING}
                         onClick={() => onConfirmReject(wreq.id)}
                         className="py-1.5 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         title={!isSuperuser ? 'Требуются права Superuser' : ''}

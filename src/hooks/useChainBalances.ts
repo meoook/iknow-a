@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { IFinanceChain, IFinanceToken } from '../types';
-import {
-  fetchChainNativeBalance,
-  fetchSingleTokenBalance,
-  isSupportedChain,
-} from '../services/chainBalanceService';
+import { ChainBalanceService } from '../services/chainBalanceService';
 
 export interface TokenBalanceState {
   balance: string | null;
@@ -38,7 +34,7 @@ export function useChainBalances(chains: IFinanceChain[] | undefined) {
    * Refreshes native coin balance for a specific chain
    */
   const refreshChainNative = useCallback(async (chain: IFinanceChain) => {
-    if (!isSupportedChain(chain)) return;
+    if (!ChainBalanceService.isSupported(chain)) return;
 
     setBalances((prev) => ({
       ...prev,
@@ -51,7 +47,7 @@ export function useChainBalances(chains: IFinanceChain[] | undefined) {
     }));
 
     try {
-      const balance = await fetchChainNativeBalance(chain);
+      const balance = await ChainBalanceService.getNativeBalance(chain);
       if (!isMountedRef.current) return;
 
       setBalances((prev) => ({
@@ -81,7 +77,7 @@ export function useChainBalances(chains: IFinanceChain[] | undefined) {
    * Refreshes balance for a specific token contract
    */
   const refreshToken = useCallback(async (chain: IFinanceChain, token: IFinanceToken) => {
-    if (!isSupportedChain(chain)) return;
+    if (!ChainBalanceService.isSupported(chain)) return;
 
     setBalances((prev) => {
       const currentChain = prev[chain.id] || {
@@ -107,7 +103,7 @@ export function useChainBalances(chains: IFinanceChain[] | undefined) {
     });
 
     try {
-      const balance = await fetchSingleTokenBalance(chain, token);
+      const balance = await ChainBalanceService.getTokenBalance(chain, token);
       if (!isMountedRef.current) return;
 
       setBalances((prev) => {
@@ -165,7 +161,7 @@ export function useChainBalances(chains: IFinanceChain[] | undefined) {
    */
   const refetchAll = useCallback(async () => {
     if (!chains || chains.length === 0) return;
-    const supported = chains.filter(isSupportedChain);
+    const supported = chains.filter((c) => ChainBalanceService.isSupported(c));
     if (supported.length === 0) return;
 
     setIsGlobalFetching(true);
@@ -191,7 +187,7 @@ export function useChainBalances(chains: IFinanceChain[] | undefined) {
   useEffect(() => {
     if (!chains || chains.length === 0) return;
 
-    const supported = chains.filter(isSupportedChain);
+    const supported = chains.filter((c) => ChainBalanceService.isSupported(c));
 
     supported.forEach((chain) => {
       const nativeKey = `chain-native-${chain.id}`;
