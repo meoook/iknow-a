@@ -127,12 +127,15 @@ export const adminApi = createApi({
       }),
     }),
 
-    getPredictions: builder.query<IPredictionItem[], { phase?: string } | void>({
+    getPredictions: builder.query<IPredictionItem[], { phase?: string; search?: string } | void>({
       query: (params) => {
-        if (params && typeof params === 'object' && params.phase) {
-          return `admin/predictions?phase=${encodeURIComponent(params.phase)}`;
+        const searchParams = new URLSearchParams();
+        if (params && typeof params === 'object') {
+          if (params.phase) searchParams.append('phase', params.phase);
+          if (params.search) searchParams.append('search', params.search);
         }
-        return 'admin/predictions';
+        const qs = searchParams.toString();
+        return qs ? `admin/predictions?${qs}` : 'admin/predictions';
       },
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {

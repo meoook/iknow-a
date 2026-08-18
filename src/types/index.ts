@@ -168,7 +168,7 @@ export interface IExternalTxItem {
   moderators?: string[];
 }
 
-interface IFinanceToken {
+export interface IFinanceToken {
   id: number;
   currency: string;
   address: string;
@@ -183,6 +183,7 @@ export interface IFinanceChain {
   chain_type: string;
   chain_id: number | null;
   coin: string;
+  decimals?: number;
   active: boolean;
   rpc_url: string;
   scan_url: string;
