@@ -8,6 +8,7 @@ import {
   useGetUserCommentsQuery,
   useGetUserBetsQuery,
   useGetUserWalletsQuery,
+  useGetUserBalanceHistoryQuery,
   useUpdateUserMutation,
 } from '../../services/adminApi';
 import { IUserItem } from '../../types';
@@ -24,12 +25,17 @@ export const UserDetailPage: React.FC = () => {
   const userId = Number(id);
 
   const currentUser = useAppSelector((state) => state.auth.user);
+  const [balancePeriod, setBalancePeriod] = useState('1m');
 
   const { data: apiDetailUser, isLoading: isDetailLoading } = useGetUserByIdQuery(userId, { skip: !userId });
   const { data: apiIps, isLoading: isIpsLoading } = useGetUserIpsQuery(userId, { skip: !userId });
   const { data: apiComments, isLoading: isCommentsLoading } = useGetUserCommentsQuery(userId, { skip: !userId });
   const { data: apiBets, isLoading: isBetsLoading } = useGetUserBetsQuery(userId, { skip: !userId });
   const { data: apiWallets, isLoading: isWalletsLoading } = useGetUserWalletsQuery(userId, { skip: !userId });
+  const { data: balanceHistoryData, isLoading: isHistoryLoading } = useGetUserBalanceHistoryQuery(
+    { userId, period: balancePeriod },
+    { skip: !userId }
+  );
   const [updateUser] = useUpdateUserMutation();
   const isSuperuserLogged = currentUser?.is_superuser === true;
 
@@ -111,11 +117,6 @@ export const UserDetailPage: React.FC = () => {
     }
   };
 
-  const chartData = [
-    { time: '2026-08-01', value: user.balance * 0.9 },
-    { time: '2026-08-04', value: user.balance },
-  ];
-
   return (
     <div className="flex flex-col gap-6 font-sans">
       {/* Navigation Top Bar */}
@@ -178,7 +179,13 @@ export const UserDetailPage: React.FC = () => {
 
       {/* Middle Block Grid: Balance Chart & Deposit Wallets */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <UserBalanceCard balance={user.balance} chartData={chartData} />
+        <UserBalanceCard
+          balance={user.balance}
+          chartData={balanceHistoryData || []}
+          period={balancePeriod}
+          onPeriodChange={setBalancePeriod}
+          isLoading={isHistoryLoading}
+        />
         <UserDepositWallets
           isLoading={isWalletsLoading}
           walletsList={walletsList}

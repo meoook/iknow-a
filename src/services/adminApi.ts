@@ -228,6 +228,12 @@ export const adminApi = createApi({
     getUserWallets: builder.query<IUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
     }),
+    getUserBalanceHistory: builder.query<{ time: string; value: number }[], { userId: number; period?: string }>({
+      query: ({ userId, period }) => {
+        const qs = period ? `?period=${period}` : '';
+        return `admin/users/${userId}/balance-history${qs}`;
+      },
+    }),
     updateUser: builder.mutation<IUserItem, IUserUpdatePayload>({
       query: ({ id, ...body }) => ({
         url: `admin/users/${id}`,
@@ -382,6 +388,7 @@ export const {
   useGetUserCommentsQuery,
   useGetUserBetsQuery,
   useGetUserWalletsQuery,
+  useGetUserBalanceHistoryQuery,
   useUpdateUserMutation,
   useGetAdminTxsQuery,
   useGetAdminTxByIdQuery,
