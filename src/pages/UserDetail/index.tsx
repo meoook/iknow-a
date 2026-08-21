@@ -43,7 +43,8 @@ export const UserDetailPage: React.FC = () => {
 
   const ipLogs = apiIps || [];
   const commentsList = apiComments || [];
-  const betsList = apiBets || [];
+  const betsList = apiBets?.data || [];
+  const totalBetsCount = apiBets?.total ?? 0;
   const walletsList = apiWallets || [];
 
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -202,6 +203,7 @@ export const UserDetailPage: React.FC = () => {
         commentsList={commentsList}
         isBetsLoading={isBetsLoading}
         betsList={betsList}
+        totalBetsCount={totalBetsCount}
       />
 
       {/* Username Change Modal */}

@@ -47,16 +47,28 @@ export interface IUserComment {
   created: number;
 }
 
+export interface IPaginatedResponse<T> {
+  total: number;
+  data: T[];
+}
+
+export interface IUserBetPrediction {
+  id: number;
+  title: string;
+  icon?: string;
+}
+
 export interface IUserBet {
   id: number;
-  prediction: string;
+  prediction: IUserBetPrediction;
   choice: string;
   amount: number;
-  multiplier: number;
-  payout: number;
-  state: string;
+  multiplier?: number;
+  payout?: number;
+  state?: string;
   created: number;
 }
+
 
 export interface IUserDepositWallet {
   id: number;

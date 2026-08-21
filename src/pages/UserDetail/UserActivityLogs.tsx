@@ -10,6 +10,7 @@ interface UserActivityLogsProps {
   commentsList: IUserComment[];
   isBetsLoading: boolean;
   betsList: IUserBet[];
+  totalBetsCount?: number;
 }
 
 export const UserActivityLogs: React.FC<UserActivityLogsProps> = ({
@@ -19,6 +20,7 @@ export const UserActivityLogs: React.FC<UserActivityLogsProps> = ({
   commentsList,
   isBetsLoading,
   betsList,
+  totalBetsCount,
 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -92,7 +94,12 @@ export const UserActivityLogs: React.FC<UserActivityLogsProps> = ({
             <TrendingUp className="w-4 h-4 text-amber-400" />
             <span>Активность ставок</span>
           </h3>
-          <span className="text-[10px] font-mono text-slate-500">{betsList.length} ставок</span>
+          <span className="text-[10px] font-mono text-slate-500">
+            {totalBetsCount && totalBetsCount > betsList.length
+              ? `${betsList.length} из ${totalBetsCount}`
+              : betsList.length}{' '}
+            ставок
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -102,25 +109,30 @@ export const UserActivityLogs: React.FC<UserActivityLogsProps> = ({
               <span className="text-[11px]">Загрузка ставок...</span>
             </div>
           ) : betsList.length > 0 ? (
-            betsList.map((bet: any) => (
-              <div key={bet.id} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1.5">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-slate-200 truncate max-w-[180px]">{bet.prediction}</span>
-                  {bet.state === 'WIN' ? (
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">WIN</span>
-                  ) : bet.state === 'LOSS' ? (
-                    <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded">LOSS</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">{bet.state || 'ACTIVE'}</span>
-                  )}
+            betsList.map((bet) => {
+              const predictionTitle = typeof bet.prediction === 'object' ? bet.prediction?.title : bet.prediction;
+              return (
+                <div key={bet.id} className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-slate-200 truncate max-w-[180px]" title={predictionTitle}>
+                      {predictionTitle}
+                    </span>
+                    {bet.state === 'WIN' ? (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">WIN</span>
+                    ) : bet.state === 'LOSE' || bet.state === 'LOSS' ? (
+                      <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded">LOSE</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">{bet.state || 'ACTIVE'}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">{bet.choice}</span>
+                    <span className="font-bold text-slate-100">${bet.amount} {bet.multiplier && <span className="text-slate-500 text-[10px]">({bet.multiplier}x)</span>}</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 text-right font-mono">{formatDisplayDate(bet.created)}</div>
                 </div>
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">{bet.choice}</span>
-                  <span className="font-bold text-slate-100">${bet.amount} {bet.multiplier && <span className="text-slate-500 text-[10px]">({bet.multiplier}x)</span>}</span>
-                </div>
-                <div className="text-[10px] text-slate-500 text-right font-mono">{formatDisplayDate(bet.created)}</div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="text-xs text-slate-500 py-6 text-center">История ставок пуста</div>
           )}

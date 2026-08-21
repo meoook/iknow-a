@@ -11,6 +11,7 @@ import {
   IUserIpLog,
   IUserComment,
   IUserBet,
+  IPaginatedResponse,
   IUserDepositWallet,
   IExternalTxItem,
   IFinanceDashboard,
@@ -222,8 +223,8 @@ export const adminApi = createApi({
     getUserComments: builder.query<IUserComment[], number>({
       query: (id) => `admin/users/${id}/comments`,
     }),
-    getUserBets: builder.query<IUserBet[], number>({
-      query: (id) => `admin/users/${id}/bets`,
+    getUserBets: builder.query<IPaginatedResponse<IUserBet>, number>({
+      query: (id) => `user/${id}/bets?limit=5`,
     }),
     getUserWallets: builder.query<IUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
@@ -231,7 +232,7 @@ export const adminApi = createApi({
     getUserBalanceHistory: builder.query<{ time: string; value: number }[], { userId: number; period?: string }>({
       query: ({ userId, period }) => {
         const qs = period ? `?period=${period}` : '';
-        return `admin/users/${userId}/balance-history${qs}`;
+        return `balance/${userId}/history${qs}`;
       },
     }),
     updateUser: builder.mutation<IUserItem, IUserUpdatePayload>({

@@ -12,6 +12,7 @@ export interface LineAreaChartProps {
   colorScheme?: 'emerald' | 'cyan' | 'purple' | 'amber';
   valuePrefix?: string;
   valueSuffix?: string;
+  period?: '1d' | '1w' | '1m' | '1y' | 'all' | string;
   formatValue?: (val: number) => string;
   formatTimeLabel?: (time: string) => string;
   emptyText?: string;
@@ -72,6 +73,7 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
   colorScheme = 'emerald',
   valuePrefix = '$',
   valueSuffix = '',
+  period,
   formatValue,
   formatTimeLabel,
   emptyText = 'Нет данных за выбранный период',
@@ -94,10 +96,45 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
     return data;
   }, [data]);
 
+  // Up to 5 distributed labels
+  const labelIndices = useMemo(() => {
+    const n = normalizedData.length;
+    if (n === 0) return [];
+    if (n <= 1) return [0];
+    if (n <= 5) return Array.from({ length: n }, (_, i) => i);
+    return [
+      0,
+      Math.round((n - 1) * 0.25),
+      Math.round((n - 1) * 0.5),
+      Math.round((n - 1) * 0.75),
+      n - 1,
+    ];
+  }, [normalizedData]);
+
   const defaultFormatValue = (val: number) => {
     if (formatValue) return formatValue(val);
     return `${valuePrefix}${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${valueSuffix}`;
   };
+
+  const defaultFormatTimeLabel = (timeStr: string) => {
+    if (formatTimeLabel) return formatTimeLabel(timeStr);
+    if (!timeStr) return '';
+
+    const parts = timeStr.includes('T') ? timeStr.split('T') : timeStr.split(' ');
+
+    // Only perform date/time splitting if it is actually a timestamp with a time component (contains ':')
+    if (parts.length > 1 && parts[1].includes(':')) {
+      if (period === '1d') {
+        // 1D: show only time HH:MM
+        return parts[1].slice(0, 5);
+      }
+      // Other periods: show only date YYYY-MM-DD
+      return parts[0];
+    }
+
+    return timeStr;
+  };
+
 
   if (!normalizedData || normalizedData.length === 0) {
     return (
@@ -150,16 +187,36 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
 
   const areaPath = `${linePath} L ${pts[pts.length - 1].x.toFixed(1)},${baselineY} L ${pts[0].x.toFixed(1)},${baselineY} Z`;
 
-  // X-axis label step calculation (aim for ~5-7 labels max)
+
   const totalCount = normalizedData.length;
-  const labelStep = totalCount > 7 ? Math.ceil(totalCount / 6) : 1;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const mouseX = e.clientX - rect.left;
+    const padRatio = paddingX / svgWidth;
+    const usableRatio = 1 - 2 * padRatio;
+    const currentRatio = (mouseX / rect.width - padRatio) / usableRatio;
+    const clampedRatio = Math.max(0, Math.min(1, currentRatio));
+    const idx = Math.round(clampedRatio * (normalizedData.length - 1));
+    setHoveredIdx(idx);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIdx(null);
+  };
 
   return (
     <div className={`w-full select-none font-sans flex flex-col justify-between ${className}`}>
       {/* SVG Canvas Area */}
-      <div style={{ height: height - 28 }} className="w-full relative">
+      <div
+        style={{ height: height - 28 }}
+        className="w-full relative cursor-crosshair"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         <svg
-          className="w-full h-full overflow-visible"
+          className="w-full h-full overflow-visible pointer-events-none"
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           preserveAspectRatio="none"
         >
@@ -275,60 +332,50 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
           )}
         </svg>
 
-        {/* Hover Tooltip Overlay (Split into interactive column slices) */}
-        <div className="absolute inset-0 flex items-stretch">
-          {normalizedData.map((item, idx) => (
-            <div
-              key={idx}
-              onMouseEnter={() => setHoveredIdx(idx)}
-              onMouseLeave={() => setHoveredIdx(null)}
-              className="flex-1 cursor-crosshair relative"
-            >
-              {hoveredIdx === idx && (
-                <div
-                  className={`absolute -top-1.5 left-1/2 -translate-x-1/2 -translate-y-full bg-slate-900/95 border ${colors.badgeBorder} ${colors.badgeText} font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-2xl pointer-events-none whitespace-nowrap z-20 backdrop-blur-xs flex items-center gap-1.5`}
-                >
-                  <span className="text-slate-400 text-[10px] font-normal">{item.time}</span>
-                  <span>{defaultFormatValue(Number(item.value || 0))}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {/* Hover Tooltip Overlay positioned accurately by percent */}
+        {hoveredIdx !== null && pts[hoveredIdx] && (
+          <div
+            style={{ left: `${(pts[hoveredIdx].x / svgWidth) * 100}%` }}
+            className={`absolute -top-1.5 -translate-x-1/2 -translate-y-full bg-slate-900/95 border ${colors.badgeBorder} ${colors.badgeText} font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-2xl pointer-events-none whitespace-nowrap z-20 backdrop-blur-xs flex items-center gap-1.5`}
+          >
+            <span className="text-slate-400 text-[10px] font-normal">
+              {defaultFormatTimeLabel(pts[hoveredIdx].data.time)}
+            </span>
+            <span>{defaultFormatValue(Number(pts[hoveredIdx].data.value || 0))}</span>
+          </div>
+        )}
       </div>
 
       {/* X-Axis Timeline Labels */}
-      <div className="flex items-center justify-between px-2 pt-1 border-t border-slate-800/60">
-        {normalizedData.map((item, idx) => {
-          const isHovered = hoveredIdx === idx;
-          const isLast = idx === normalizedData.length - 1;
-          const isFirst = idx === 0;
-          const shouldShow = isFirst || isLast || idx % labelStep === 0;
-
-          const labelText = formatTimeLabel ? formatTimeLabel(item.time) : item.time;
+      <div className="relative w-full h-5 pt-1 border-t border-slate-800/60 select-none">
+        {labelIndices.map((dataIdx, i) => {
+          const pt = pts[dataIdx];
+          if (!pt) return null;
+          const isFirst = i === 0;
+          const isLast = i === labelIndices.length - 1;
+          const leftPercent = (pt.x / svgWidth) * 100;
+          const labelText = defaultFormatTimeLabel(pt.data.time);
 
           return (
             <div
-              key={idx}
-              onMouseEnter={() => setHoveredIdx(idx)}
-              onMouseLeave={() => setHoveredIdx(null)}
-              className="text-center cursor-pointer flex-1"
+              key={dataIdx}
+              style={{
+                left: `${leftPercent}%`,
+                transform: isFirst ? 'translateX(0%)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)',
+              }}
+              className="absolute top-1 cursor-default pointer-events-none"
             >
-              {shouldShow ? (
-                <span
-                  className={`text-[10px] font-mono transition-colors block truncate px-0.5 ${
-                    isHovered
-                      ? `font-bold ${colors.badgeText}`
-                      : isLast
-                      ? 'text-slate-300 font-semibold'
-                      : 'text-slate-500'
-                  }`}
-                >
-                  {labelText}
-                </span>
-              ) : (
-                <span className="text-[10px] text-transparent block select-none">·</span>
-              )}
+              <span
+                className={`text-[10px] font-mono whitespace-nowrap transition-colors block ${
+                  hoveredIdx === dataIdx
+                    ? `font-bold ${colors.badgeText}`
+                    : isLast
+                    ? 'text-slate-300 font-semibold'
+                    : 'text-slate-500'
+                }`}
+              >
+                {labelText}
+              </span>
             </div>
           );
         })}
@@ -336,3 +383,4 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
     </div>
   );
 };
+

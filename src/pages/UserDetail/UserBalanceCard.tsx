@@ -65,7 +65,7 @@ export const UserBalanceCard: React.FC<UserBalanceCardProps> = ({
             <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
           </div>
         ) : null}
-        <BalanceChart data={chartData} showDots={false} />
+        <BalanceChart data={chartData} period={period} showDots={false} />
       </div>
     </div>
   );
