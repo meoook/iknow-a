@@ -17,6 +17,7 @@ import {
   IFinanceDashboard,
   IFinanceChain,
   IFinanceSnapshot,
+  IHistoryPoint,
 } from '../types';
 import {
   setPredictionRequests,
@@ -229,7 +230,7 @@ export const adminApi = createApi({
     getUserWallets: builder.query<IUserDepositWallet[], number>({
       query: (id) => `admin/users/${id}/wallets`,
     }),
-    getUserBalanceHistory: builder.query<{ time: string; value: number }[], { userId: number; period?: string }>({
+    getUserBalanceHistory: builder.query<IHistoryPoint[], { userId: number; period?: string }>({
       query: ({ userId, period }) => {
         const qs = period ? `?period=${period}` : '';
         return `balance/${userId}/history${qs}`;

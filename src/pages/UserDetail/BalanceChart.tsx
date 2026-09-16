@@ -1,8 +1,9 @@
 import React from 'react';
-import { LineAreaChart, LineAreaChartPoint } from '../../components/ui/LineAreaChart';
+import { LineAreaChart } from '../../components/ui/LineAreaChart';
+import { IHistoryPoint } from '../../types';
 
 interface BalanceChartProps {
-  data: LineAreaChartPoint[];
+  data: IHistoryPoint[];
   period?: string;
   showDots?: boolean;
 }

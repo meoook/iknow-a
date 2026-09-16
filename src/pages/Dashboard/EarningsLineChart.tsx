@@ -1,25 +1,14 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import { LineAreaChart } from '../../components/ui/LineAreaChart';
-
-interface EarningsHistoryItem {
-  date: string;
-  amount: number;
-}
+import { IHistoryPoint } from '../../types';
 
 interface EarningsLineChartProps {
-  history: EarningsHistoryItem[];
+  history: IHistoryPoint[];
   showDots?: boolean;
 }
 
 export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history, showDots = true }) => {
-  const chartData = React.useMemo(() => {
-    return history.map((item) => ({
-      time: item.date,
-      value: item.amount,
-    }));
-  }, [history]);
-
   return (
     <div className="pt-4 font-sans">
       <div className="flex items-center justify-between mb-3 text-xs">
@@ -34,7 +23,7 @@ export const EarningsLineChart: React.FC<EarningsLineChartProps> = ({ history, s
 
       <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800/80">
         <LineAreaChart
-          data={chartData}
+          data={history}
           height={160}
           colorScheme="cyan"
           showDots={showDots}

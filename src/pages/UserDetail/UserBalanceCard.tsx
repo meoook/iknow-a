@@ -1,6 +1,7 @@
 import React from 'react';
 import { Wallet, Loader2 } from 'lucide-react';
 import { BalanceChart } from './BalanceChart';
+import { IHistoryPoint } from '../../types';
 
 const PERIODS = [
   { label: '1Д', value: '1d' },
@@ -12,7 +13,7 @@ const PERIODS = [
 
 interface UserBalanceCardProps {
   balance: number;
-  chartData: { time: string; value: number }[];
+  chartData: IHistoryPoint[];
   period: string;
   onPeriodChange: (period: string) => void;
   isLoading?: boolean;
@@ -25,6 +26,10 @@ export const UserBalanceCard: React.FC<UserBalanceCardProps> = ({
   onPeriodChange,
   isLoading,
 }) => {
+  const startBalance = chartData && chartData.length > 0 ? chartData[0].v : balance;
+  const endBalance = chartData && chartData.length > 0 ? chartData[chartData.length - 1].v : balance;
+  const periodDiff = endBalance - startBalance;
+
   return (
     <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel space-y-4 shadow-xl flex flex-col justify-between">
       <div className="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -33,8 +38,19 @@ export const UserBalanceCard: React.FC<UserBalanceCardProps> = ({
             <Wallet className="w-4 h-4 text-emerald-400" />
             <span>Текущий баланс пользователя</span>
           </div>
-          <div className="text-3xl font-extrabold text-emerald-400 mt-1 font-mono">
-            ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="text-3xl font-extrabold text-emerald-400 font-mono">
+              ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </span>
+            {chartData && chartData.length > 1 && (
+              <span
+                className={`text-xs font-semibold font-mono ${
+                  periodDiff >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {periodDiff >= 0 ? '+' : ''}${periodDiff.toFixed(2)}
+              </span>
+            )}
           </div>
         </div>
 

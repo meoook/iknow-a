@@ -52,6 +52,11 @@ export interface IPaginatedResponse<T> {
   data: T[];
 }
 
+export interface IHistoryPoint<V = number> {
+  t: number;
+  v: V;
+}
+
 export interface IUserBetPrediction {
   id: number;
   title: string;

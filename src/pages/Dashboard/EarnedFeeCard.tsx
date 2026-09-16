@@ -1,6 +1,6 @@
 import React from 'react';
 import { PiggyBank, TrendingUp } from 'lucide-react';
-import { IFinanceSnapshot } from '../../types';
+import { IFinanceSnapshot, IHistoryPoint } from '../../types';
 import { EarningsLineChart } from './EarningsLineChart';
 
 interface EarnedFeeCardProps {
@@ -9,46 +9,32 @@ interface EarnedFeeCardProps {
   snapshots?: IFinanceSnapshot[];
 }
 
-const formatShortDate = (dateStr: string) => {
-  try {
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      const day = parseInt(parts[2], 10);
-      const monthIdx = parseInt(parts[1], 10) - 1;
-      const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-      return `${day} ${months[monthIdx] || ''}`;
-    }
-    return dateStr;
-  } catch {
-    return dateStr;
-  }
-};
-
 export const EarnedFeeCard: React.FC<EarnedFeeCardProps> = ({
   bankFeeBalance,
   bankFeeToday,
   snapshots = [],
 }) => {
   // Dynamically build earnings history for the chart from all FinanceSnapshots + today
-  const earningsHistory = React.useMemo(() => {
+  const earningsHistory = React.useMemo<IHistoryPoint[]>(() => {
     if (!snapshots || snapshots.length === 0) {
+      const now = Date.now();
       return [
-        { date: 'Вчера', amount: 0 },
-        { date: 'Сегодня', amount: Number(bankFeeToday || 0) },
+        { t: now - 86400000, v: 0 },
+        { t: now, v: bankFeeToday },
       ];
     }
 
     // Convert all snapshots to chronological order (API returns newest first)
     const chronological = [...snapshots].reverse();
-    const items = chronological.map((s) => ({
-      date: formatShortDate(s.created),
-      amount: Number(s.fee || 0),
+    const items: IHistoryPoint[] = chronological.map((s) => ({
+      t: new Date(s.created).getTime(),
+      v: s.fee,
     }));
 
     // Add current day at the end
     items.push({
-      date: 'Сегодня',
-      amount: Number(bankFeeToday || 0),
+      t: Date.now(),
+      v: bankFeeToday,
     });
 
     return items;

@@ -1,12 +1,8 @@
 import React, { useState, useId, useMemo } from 'react';
-
-export interface LineAreaChartPoint {
-  time: string;
-  value: number;
-}
+import { IHistoryPoint } from '../../types';
 
 export interface LineAreaChartProps {
-  data: LineAreaChartPoint[];
+  data: IHistoryPoint[];
   height?: number;
   showDots?: boolean;
   colorScheme?: 'emerald' | 'cyan' | 'purple' | 'amber';
@@ -14,10 +10,15 @@ export interface LineAreaChartProps {
   valueSuffix?: string;
   period?: '1d' | '1w' | '1m' | '1y' | 'all' | string;
   formatValue?: (val: number) => string;
-  formatTimeLabel?: (time: string) => string;
+  formatTimeLabel?: (timestamp: number) => string;
   emptyText?: string;
   className?: string;
 }
+
+const MONTH_NAMES = [
+  'янв.', 'февр.', 'марта', 'апр.', 'мая', 'июня',
+  'июля', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.',
+];
 
 const COLOR_CONFIGS = {
   emerald: {
@@ -84,21 +85,18 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
   const chartId = useMemo(() => rawId.replace(/[^a-zA-Z0-9_-]/g, '_'), [rawId]);
   const colors = COLOR_CONFIGS[colorScheme] || COLOR_CONFIGS.emerald;
 
-  // Normalize points (ensure at least 2 points for line drawing)
-  const normalizedData = useMemo(() => {
+  // Ensure at least 2 points for SVG path drawing
+  const points = useMemo(() => {
     if (!data || data.length === 0) return [];
     if (data.length === 1) {
-      return [
-        { time: data[0].time, value: data[0].value },
-        { time: data[0].time, value: data[0].value },
-      ];
+      return [data[0], data[0]];
     }
     return data;
   }, [data]);
 
   // Up to 5 distributed labels
   const labelIndices = useMemo(() => {
-    const n = normalizedData.length;
+    const n = points.length;
     if (n === 0) return [];
     if (n <= 1) return [0];
     if (n <= 5) return Array.from({ length: n }, (_, i) => i);
@@ -109,34 +107,40 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
       Math.round((n - 1) * 0.75),
       n - 1,
     ];
-  }, [normalizedData]);
+  }, [points]);
 
   const defaultFormatValue = (val: number) => {
     if (formatValue) return formatValue(val);
     return `${valuePrefix}${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${valueSuffix}`;
   };
 
-  const defaultFormatTimeLabel = (timeStr: string) => {
-    if (formatTimeLabel) return formatTimeLabel(timeStr);
-    if (!timeStr) return '';
-
-    const parts = timeStr.includes('T') ? timeStr.split('T') : timeStr.split(' ');
-
-    // Only perform date/time splitting if it is actually a timestamp with a time component (contains ':')
-    if (parts.length > 1 && parts[1].includes(':')) {
-      if (period === '1d') {
-        // 1D: show only time HH:MM
-        return parts[1].slice(0, 5);
-      }
-      // Other periods: show only date YYYY-MM-DD
-      return parts[0];
+  const defaultFormatTimeLabel = (timestamp: number) => {
+    if (formatTimeLabel) return formatTimeLabel(timestamp);
+    const date = new Date(timestamp);
+    if (period === '1d') {
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
     }
-
-    return timeStr;
+    const day = date.getDate();
+    const month = MONTH_NAMES[date.getMonth()];
+    const currentYear = new Date().getFullYear();
+    if (date.getFullYear() !== currentYear) {
+      return `${day} ${month} ${date.getFullYear()}`;
+    }
+    return `${day} ${month}`;
   };
 
+  const defaultFormatTooltipTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const day = date.getDate();
+    const month = MONTH_NAMES[date.getMonth()];
+    return `${day} ${month}, ${hours}:${minutes}`;
+  };
 
-  if (!normalizedData || normalizedData.length === 0) {
+  if (points.length === 0) {
     return (
       <div
         style={{ height }}
@@ -148,7 +152,7 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
   }
 
   // Value bounds
-  const values = normalizedData.map((d) => Number(d.value || 0));
+  const values = points.map((d) => d.v);
   const rawMin = Math.min(...values);
   const rawMax = Math.max(...values);
 
@@ -167,9 +171,9 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
   const usableHeight = svgHeight - paddingTop - paddingBottom;
   const baselineY = svgHeight - paddingBottom;
 
-  const pts = normalizedData.map((item, idx) => {
-    const x = paddingX + (idx / Math.max(normalizedData.length - 1, 1)) * usableWidth;
-    const norm = (Number(item.value || 0) - minVal) / valRange;
+  const pts = points.map((item, idx) => {
+    const x = paddingX + (idx / Math.max(points.length - 1, 1)) * usableWidth;
+    const norm = (item.v - minVal) / valRange;
     const y = baselineY - norm * usableHeight;
     return { x, y, data: item };
   });
@@ -187,8 +191,7 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
 
   const areaPath = `${linePath} L ${pts[pts.length - 1].x.toFixed(1)},${baselineY} L ${pts[0].x.toFixed(1)},${baselineY} Z`;
 
-
-  const totalCount = normalizedData.length;
+  const totalCount = points.length;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -198,7 +201,7 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
     const usableRatio = 1 - 2 * padRatio;
     const currentRatio = (mouseX / rect.width - padRatio) / usableRatio;
     const clampedRatio = Math.max(0, Math.min(1, currentRatio));
-    const idx = Math.round(clampedRatio * (normalizedData.length - 1));
+    const idx = Math.round(clampedRatio * (points.length - 1));
     setHoveredIdx(idx);
   };
 
@@ -229,7 +232,14 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
             </linearGradient>
 
             {/* Line Stroke Gradient */}
-            <linearGradient id={`lineGrad_${chartId}`} x1="0" y1="0" x2="1" y2="0">
+            <linearGradient
+              id={`lineGrad_${chartId}`}
+              gradientUnits="userSpaceOnUse"
+              x1={paddingX}
+              y1="0"
+              x2={svgWidth - paddingX}
+              y2="0"
+            >
               <stop offset="0%" stopColor={colors.strokeGradient[0]} />
               <stop offset="50%" stopColor={colors.strokeGradient[1]} />
               <stop offset="100%" stopColor={colors.strokeGradient[2]} />
@@ -339,9 +349,9 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
             className={`absolute -top-1.5 -translate-x-1/2 -translate-y-full bg-slate-900/95 border ${colors.badgeBorder} ${colors.badgeText} font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-2xl pointer-events-none whitespace-nowrap z-20 backdrop-blur-xs flex items-center gap-1.5`}
           >
             <span className="text-slate-400 text-[10px] font-normal">
-              {defaultFormatTimeLabel(pts[hoveredIdx].data.time)}
+              {defaultFormatTooltipTime(pts[hoveredIdx].data.t)}
             </span>
-            <span>{defaultFormatValue(Number(pts[hoveredIdx].data.value || 0))}</span>
+            <span>{defaultFormatValue(pts[hoveredIdx].data.v)}</span>
           </div>
         )}
       </div>
@@ -354,7 +364,7 @@ export const LineAreaChart: React.FC<LineAreaChartProps> = ({
           const isFirst = i === 0;
           const isLast = i === labelIndices.length - 1;
           const leftPercent = (pt.x / svgWidth) * 100;
-          const labelText = defaultFormatTimeLabel(pt.data.time);
+          const labelText = defaultFormatTimeLabel(pt.data.t);
 
           return (
             <div
