@@ -62,7 +62,7 @@ export const adminApi = createApi({
   tagTypes: ['UsersList', 'Withdraw', 'FinanceDashboard', 'FinanceChains', 'FinanceSnapshots'],
   endpoints: (builder) => ({
     getAuthUser: builder.query<IUserAuthed, void>({
-      query: () => 'auth/user',
+      query: () => 'admin/user',
     }),
     adminLogin: builder.mutation<{ ok: boolean }, { username: string; password: string }>({
       query: (body) => ({
