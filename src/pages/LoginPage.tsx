@@ -143,7 +143,7 @@ export const LoginPage: React.FC = () => {
 
         <div className="mt-6 pt-6 border-t border-slate-800 flex items-center justify-center gap-2 text-xs text-slate-500">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Авторизация по authMiddleware и сессиям бэкенда</span>
+          <span>Авторизация в панель администратора</span>
         </div>
       </div>
     </div>

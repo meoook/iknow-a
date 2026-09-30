@@ -92,12 +92,8 @@ export class TronBalanceService {
   private static normalizeRpcUrl(rpcUrl: string): string {
     if (!rpcUrl) return 'https://api.trongrid.io';
     const trimmed = rpcUrl.trim();
-    if (trimmed.startsWith('wss://')) {
-      return trimmed.replace(/^wss:\/\//, 'https://');
-    }
-    if (trimmed.startsWith('ws://')) {
-      return trimmed.replace(/^ws:\/\//, 'http://');
-    }
+    if (trimmed.startsWith('wss://')) return trimmed.replace(/^wss:\/\//, 'https://');
+    if (trimmed.startsWith('ws://')) return trimmed.replace(/^ws:\/\//, 'http://');
     return trimmed.replace(/\/+$/, '');
   }
 
