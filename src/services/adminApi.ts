@@ -18,6 +18,8 @@ import {
   IFinanceChain,
   IFinanceSnapshot,
   IHistoryPoint,
+  IIconBankItem,
+  IIconStyleItem,
 } from '../types';
 import {
   setPredictionRequests,
@@ -128,6 +130,56 @@ export const adminApi = createApi({
         body: { icon: true },
       }),
     }),
+    getIcons: builder.query<IIconBankItem[], { search?: string; style?: string } | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params && typeof params === 'object') {
+          if (params.search) searchParams.append('search', params.search);
+          if (params.style) searchParams.append('style', params.style);
+        }
+        const qs = searchParams.toString();
+        return qs ? `admin/icons?${qs}` : 'admin/icons';
+      },
+      providesTags: ['Icons' as any],
+    }),
+    getIconStyles: builder.query<IIconStyleItem[], void>({
+      query: () => 'admin/icons/styles',
+    }),
+    generateIcon: builder.mutation<
+      { id: number; status: string },
+      { prompt: string; style: string; keywords?: string; icon_id?: number }
+    >({
+      query: (body) => ({
+        url: 'admin/icons/generate',
+        method: 'POST',
+        body,
+      }),
+    }),
+    attachRequestIcon: builder.mutation<{ id: number; icon: string }, { requestId: number; iconId: number }>({
+      query: ({ requestId, iconId }) => ({
+        url: `admin/requests/${requestId}/icon`,
+        method: 'POST',
+        body: { icon_id: iconId },
+      }),
+      invalidatesTags: ['Icons' as any],
+    }),
+    attachPredictionIcon: builder.mutation<{ id: number; icon: string }, { predictionId: number; iconId: number }>({
+      query: ({ predictionId, iconId }) => ({
+        url: `admin/predictions/${predictionId}/icon`,
+        method: 'POST',
+        body: { icon_id: iconId },
+      }),
+      invalidatesTags: ['Icons' as any],
+    }),
+    attachChoiceIcon: builder.mutation<{ id: number; icon: string }, { choiceId: number; iconId: number }>({
+      query: ({ choiceId, iconId }) => ({
+        url: `admin/choices/${choiceId}/icon`,
+        method: 'POST',
+        body: { icon_id: iconId },
+      }),
+      invalidatesTags: ['Icons' as any],
+    }),
+
 
     getPredictions: builder.query<IPredictionItem[], { phase?: string; search?: string } | void>({
       query: (params) => {
@@ -375,6 +427,13 @@ export const {
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,
+  useGetIconsQuery,
+  useLazyGetIconsQuery,
+  useGetIconStylesQuery,
+  useGenerateIconMutation,
+  useAttachRequestIconMutation,
+  useAttachPredictionIconMutation,
+  useAttachChoiceIconMutation,
   useGetPredictionsQuery,
   useGetPredictionByIdQuery,
   useSetPredictionWinnerMutation,

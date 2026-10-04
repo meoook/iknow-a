@@ -1,26 +1,47 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Calendar, Clock, CheckCircle2, FileText, ExternalLink, Tag, BarChart2 } from 'lucide-react';
+import { User, Calendar, Clock, CheckCircle2, FileText, ExternalLink, Tag, RefreshCw, BarChart2 } from 'lucide-react';
 import { IPredictionItem } from '../../../types';
 import { formatDisplayDate } from '../../../utils/dates';
 import { formatIconUrl } from '../../../utils/images';
 
 interface PredictionDetailMainCardProps {
   prediction: IPredictionItem;
+  onChangeIcon?: () => void;
 }
 
-export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> = ({ prediction }) => {
+export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> = ({
+  prediction,
+  onChangeIcon,
+}) => {
   return (
     <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel flex flex-col gap-6">
       {/* Icon, Title & Tags Header */}
       <div className="flex flex-col md:flex-row items-start gap-5">
-        <div className="relative shrink-0">
+        <div
+          onClick={onChangeIcon}
+          className={`relative group shrink-0 ${onChangeIcon ? 'cursor-pointer' : ''}`}
+          title={onChangeIcon ? 'Выбрать или сгенерировать иконку' : undefined}
+        >
           <img
             src={formatIconUrl(prediction.icon)}
             alt={prediction.title}
-            className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl"
+            className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl transition-all group-hover:border-cyan-400 group-hover:scale-105"
           />
+          {onChangeIcon && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onChangeIcon();
+              }}
+              className="absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-all cursor-pointer hover:scale-110"
+              title="Выбрать или сгенерировать иконку"
+            >
+              <RefreshCw size={14} className="font-bold" />
+            </button>
+          )}
         </div>
+
 
         <div className="flex-1 flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">

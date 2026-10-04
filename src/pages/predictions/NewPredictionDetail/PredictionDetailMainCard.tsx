@@ -20,26 +20,34 @@ export const PredictionDetailMainCard: React.FC<PredictionDetailMainCardProps> =
     <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel flex flex-col gap-6">
       <div className="flex flex-col md:flex-row items-start gap-5">
         {/* Main Prediction Icon with Regenerate Button */}
-        <div className="relative group shrink-0">
+        <div
+          onClick={onChangeIcon}
+          className="relative group shrink-0 cursor-pointer"
+          title="Выбрать или сгенерировать иконку"
+        >
           <img
             src={formatIconUrl(req.icon)}
             alt="Icon"
-            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl transition-all ${isGeneratingIcon ? 'opacity-60 ring-2 ring-cyan-500/50' : ''
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-cyan-500/40 shadow-xl transition-all group-hover:border-cyan-400 group-hover:scale-105 ${isGeneratingIcon ? 'opacity-60 ring-2 ring-cyan-500/50' : ''
               }`}
           />
 
           <button
             disabled={isGeneratingIcon}
-            onClick={onChangeIcon}
+            onClick={(e) => {
+              e.stopPropagation();
+              onChangeIcon();
+            }}
             className={`absolute -bottom-2 -right-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full shadow-lg transition-all cursor-pointer ${isGeneratingIcon
               ? 'opacity-60 cursor-not-allowed'
               : 'hover:scale-110'
               }`}
-            title={isGeneratingIcon ? 'Генерация новой иконки...' : 'Сгенерировать другую иконку'}
+            title="Выбрать или сгенерировать иконку"
           >
             <RefreshCw size={14} className={`font-bold ${isGeneratingIcon ? 'animate-spin' : ''}`} />
           </button>
         </div>
+
 
 
         {/* Title & Tags */}

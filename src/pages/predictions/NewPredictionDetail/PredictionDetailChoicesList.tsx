@@ -55,22 +55,29 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
             >
               {/* Choice Icon with Round Refresh Button & Title */}
               <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                <div className="relative group/choice shrink-0">
+                <div
+                  className="relative group/choice shrink-0 cursor-pointer"
+                  onClick={() => onRegenerateChoiceIcon(idx)}
+                >
                   <img
                     src={currentChoiceIcon}
                     alt={choiceTitle}
-                    className="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md group-hover:border-cyan-500/40 transition-colors"
+                    className="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md group-hover/choice:border-cyan-400 group-hover/choice:scale-105 transition-all"
                   />
                   <button
                     disabled={isGeneratingIcon}
-                    onClick={() => onRegenerateChoiceIcon(idx)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRegenerateChoiceIcon(idx);
+                    }}
                     className={`absolute -bottom-1.5 -right-1.5 bg-slate-900 hover:bg-cyan-500 text-slate-300 hover:text-slate-950 p-1.5 rounded-full shadow-lg border border-slate-700 transition-transform cursor-pointer ${isGeneratingIcon ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
                       }`}
-                    title="Сгенерировать другую картинку для этого варианта"
+                    title="Выбрать или сгенерировать иконку для этого варианта"
                   >
                     <RefreshCw size={12} className={`font-bold ${isGeneratingIcon ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
+
 
 
                 <div className="min-w-0 flex-1">

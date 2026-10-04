@@ -16,11 +16,15 @@ import {
   useSetPredictionWinnerMutation,
   useFinishPredictionMutation,
   useExtendPredictionDisputeMutation,
+  useAttachPredictionIconMutation,
+  useAttachChoiceIconMutation,
 } from '../../../services/adminApi';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 import { PredictionDetailStickyHeader } from './PredictionDetailStickyHeader';
 import { PredictionDetailMainCard } from './PredictionDetailMainCard';
 import { PredictionDetailChoicesList } from './PredictionDetailChoicesList';
+import { IconPickerModal } from '../../../components/predictions/IconPickerModal';
+
 
 export const PredictionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,13 +46,63 @@ export const PredictionDetailPage: React.FC = () => {
   const [setWinnerApi, { isLoading: isSettingWinner }] = useSetPredictionWinnerMutation();
   const [finishApi, { isLoading: isFinishing }] = useFinishPredictionMutation();
   const [extendDisputeApi, { isLoading: isExtending }] = useExtendPredictionDisputeMutation();
+  const [attachPredictionIconApi] = useAttachPredictionIconMutation();
+  const [attachChoiceIconApi] = useAttachChoiceIconMutation();
 
   const [isWinnerModalOpen, setIsWinnerModalOpen] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
   const [winnerSuccess, setWinnerSuccess] = useState(false);
 
+  const [isIconModalOpen, setIsIconModalOpen] = useState(false);
+  const [iconModalTarget, setIconModalTarget] = useState<{
+    type: 'prediction' | 'choice';
+    choiceId?: number;
+    initialPrompt: string;
+    title: string;
+  }>({
+    type: 'prediction',
+    initialPrompt: '',
+    title: 'Выбор иконки',
+  });
+
   const winnerModalRef = useRef<HTMLDivElement>(null);
   useClickOutside(winnerModalRef, () => setIsWinnerModalOpen(false), isWinnerModalOpen);
+
+  const handleOpenPredictionIconModal = () => {
+    if (!prediction) return;
+    setIconModalTarget({
+      type: 'prediction',
+      initialPrompt: prediction.title,
+      title: `Иконка предсказания #${prediction.id}`,
+    });
+    setIsIconModalOpen(true);
+  };
+
+  const handleOpenChoiceIconModal = (choiceId: number, choiceTitle: string) => {
+    if (!prediction) return;
+    setIconModalTarget({
+      type: 'choice',
+      choiceId,
+      initialPrompt: `${prediction.title} - ${choiceTitle}`,
+      title: `Иконка для исхода: "${choiceTitle}"`,
+    });
+    setIsIconModalOpen(true);
+  };
+
+  const handleConfirmIcon = async (iconId: number) => {
+    if (!prediction) return;
+    try {
+      if (iconModalTarget.type === 'prediction') {
+        await attachPredictionIconApi({ predictionId: prediction.id, iconId }).unwrap();
+      } else if (iconModalTarget.type === 'choice' && iconModalTarget.choiceId) {
+        await attachChoiceIconApi({ choiceId: iconModalTarget.choiceId, iconId }).unwrap();
+      }
+    } catch (e) {
+      console.error('Failed to attach icon:', e);
+      alert('Ошибка при сохранении иконки');
+    }
+  };
+
 
   const handleExtendDispute = async () => {
     if (!prediction) return;
@@ -131,9 +185,23 @@ export const PredictionDetailPage: React.FC = () => {
         onFinishPrediction={handleFinishPrediction}
       />
 
-      <PredictionDetailMainCard prediction={prediction} />
+      <PredictionDetailMainCard
+        prediction={prediction}
+        onChangeIcon={handleOpenPredictionIconModal}
+      />
 
-      <PredictionDetailChoicesList prediction={prediction} />
+      <PredictionDetailChoicesList
+        prediction={prediction}
+        onChangeChoiceIcon={handleOpenChoiceIconModal}
+      />
+
+      <IconPickerModal
+        isOpen={isIconModalOpen}
+        onClose={() => setIsIconModalOpen(false)}
+        onConfirm={handleConfirmIcon}
+        initialPrompt={iconModalTarget.initialPrompt}
+        title={iconModalTarget.title}
+      />
 
       {/* Winner Selection Modal */}
       {isWinnerModalOpen && (

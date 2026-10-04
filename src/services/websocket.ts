@@ -42,6 +42,7 @@ const WsInEvent = {
   withdraw_verdict: 'withdraw.verdict',
   tx_created: 'tx.created',
   tx_updated: 'tx.updated',
+  icon_generated: 'icon.generated',
 } as const
 type WsInEvent = (typeof WsInEvent)[keyof typeof WsInEvent]
 
@@ -54,6 +55,8 @@ class WebSocketManager {
   private ws: WebSocket | null = null
   private reconnectTimer: NodeJS.Timeout | null = null
   private queue: { type: WsOutEvent; value: any }[] = []
+  private iconGeneratedListeners: ((data: any) => void)[] = []
+
 
   connect() {
     if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) return
@@ -174,8 +177,27 @@ class WebSocketManager {
         if (msg.value.direction === 'OUT') store.dispatch(upsertWithdrawal(msg.value));
       }
     }
+    else if (msg.type === WsInEvent.icon_generated) {
+      if (msg.value) {
+        this.iconGeneratedListeners.forEach((listener) => {
+          try {
+            listener(msg.value);
+          } catch (e) {
+            console.error('[WS] Error in iconGeneratedListener', e);
+          }
+        });
+      }
+    }
     else console.log('[WS] Unknown message type', msg.type)
   }
+
+  onIconGenerated(listener: (data: any) => void) {
+    this.iconGeneratedListeners.push(listener);
+    return () => {
+      this.iconGeneratedListeners = this.iconGeneratedListeners.filter((l) => l !== listener);
+    };
+  }
+
 
 
   private send(type: WsOutEvent, value: any) {

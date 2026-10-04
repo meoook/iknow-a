@@ -8,10 +8,13 @@ import {
   useApprovePredictionRequestMutation,
   useRejectPredictionRequestMutation,
   useChangeRequestIconMutation,
+  useAttachRequestIconMutation,
 } from '../../../services/adminApi';
 import { PredictionDetailStickyHeader } from './PredictionDetailStickyHeader';
 import { PredictionDetailMainCard } from './PredictionDetailMainCard';
 import { PredictionDetailChoicesList } from './PredictionDetailChoicesList';
+import { IconPickerModal } from '../../../components/predictions/IconPickerModal';
+
 
 import { requestsSelectors } from '../../../store/slices/predictionsSlice';
 
@@ -28,10 +31,24 @@ export const NewPredictionDetailPage: React.FC = () => {
   const [rejectApi] = useRejectPredictionRequestMutation();
   const [changeIconApi] = useChangeRequestIconMutation();
 
+  const [attachRequestIconApi] = useAttachRequestIconMutation();
+
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
   const [isRejecting, setIsRejecting] = useState<boolean>(false);
   const [isGeneratingIcon, setIsGeneratingIcon] = useState<boolean>(false);
+  const [isIconModalOpen, setIsIconModalOpen] = useState<boolean>(false);
+  const [modalTarget, setModalTarget] = useState<{
+    type: 'request' | 'choice';
+    choiceIndex?: number;
+    initialPrompt: string;
+    title: string;
+  }>({
+    type: 'request',
+    initialPrompt: '',
+    title: 'Выбор иконки',
+  });
+
   const prevIconRef = React.useRef(req?.icon);
 
   useEffect(() => {
@@ -101,14 +118,37 @@ export const NewPredictionDetailPage: React.FC = () => {
       });
   };
 
-  const handleChangeIcon = async () => {
-    if (isGeneratingIcon || !req) return;
-    setIsGeneratingIcon(true);
+  const handleOpenRequestIconModal = () => {
+    if (!req) return;
+    setModalTarget({
+      type: 'request',
+      initialPrompt: req.title,
+      title: `Иконка для заявки #${req.id}`,
+    });
+    setIsIconModalOpen(true);
+  };
+
+  const handleOpenChoiceIconModal = (idx: number) => {
+    if (!req) return;
+    const choiceTitle = req.choices[idx] || `Исход #${idx + 1}`;
+    setModalTarget({
+      type: 'choice',
+      choiceIndex: idx,
+      initialPrompt: `${req.title} - ${choiceTitle}`,
+      title: `Иконка для исхода: "${choiceTitle}"`,
+    });
+    setIsIconModalOpen(true);
+  };
+
+  const handleConfirmIcon = async (iconId: number) => {
+    if (!req) return;
     try {
-      await changeIconApi(req.id).unwrap();
+      if (modalTarget.type === 'request') {
+        await attachRequestIconApi({ requestId: req.id, iconId }).unwrap();
+      }
     } catch (e) {
-      console.warn('API change-icon error', e);
-      setIsGeneratingIcon(false);
+      console.error('Failed to attach icon to request:', e);
+      alert('Ошибка при сохранении выбранной иконки');
     }
   };
 
@@ -133,15 +173,24 @@ export const NewPredictionDetailPage: React.FC = () => {
       <PredictionDetailMainCard
         req={req}
         isGeneratingIcon={isGeneratingIcon}
-        onChangeIcon={handleChangeIcon}
+        onChangeIcon={handleOpenRequestIconModal}
       />
       <PredictionDetailChoicesList
         req={req}
         isGeneratingIcon={isGeneratingIcon}
-        onRegenerateChoiceIcon={() => handleChangeIcon()}
-        onRegenerateAllChoiceIcons={() => handleChangeIcon()}
+        onRegenerateChoiceIcon={handleOpenChoiceIconModal}
+        onRegenerateAllChoiceIcons={handleOpenRequestIconModal}
+      />
+
+      <IconPickerModal
+        isOpen={isIconModalOpen}
+        onClose={() => setIsIconModalOpen(false)}
+        onConfirm={handleConfirmIcon}
+        initialPrompt={modalTarget.initialPrompt}
+        title={modalTarget.title}
       />
     </div>
   );
+
 
 };

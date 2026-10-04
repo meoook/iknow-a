@@ -254,4 +254,21 @@ export interface IFinanceDashboard {
   bets_today: IFinanceBetsSummary;
 }
 
+export interface IIconBankItem {
+  id: number;
+  image: string;
+  prompt: string;
+  style: string;
+  keywords: string;
+  usage_count: number;
+  is_tmp: boolean;
+  created: number;
+}
+
+export interface IIconStyleItem {
+  id: string;
+  name: string;
+}
+
+
 

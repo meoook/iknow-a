@@ -1,13 +1,17 @@
 import React from 'react';
-import { Award, CheckCircle2 } from 'lucide-react';
+import { Award, CheckCircle2, RefreshCw } from 'lucide-react';
 import { IPredictionItem } from '../../../types';
 import { formatIconUrl } from '../../../utils/images';
 
 interface PredictionDetailChoicesListProps {
   prediction: IPredictionItem;
+  onChangeChoiceIcon?: (choiceId: number, choiceTitle: string) => void;
 }
 
-export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListProps> = ({ prediction }) => {
+export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListProps> = ({
+  prediction,
+  onChangeChoiceIcon,
+}) => {
   return (
     <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl glass-panel flex flex-col gap-5">
       {/* Choices Header */}
@@ -40,15 +44,30 @@ export const PredictionDetailChoicesList: React.FC<PredictionDetailChoicesListPr
             >
               {/* Choice Icon & Title & Stats */}
               <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                {choice.icon && (
-                  <div className="shrink-0">
-                    <img
-                      src={formatIconUrl(choice.icon)}
-                      alt={choice.title}
-                      className="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md"
-                    />
-                  </div>
-                )}
+                <div
+                  className={`shrink-0 relative group/choice ${onChangeChoiceIcon ? 'cursor-pointer' : ''}`}
+                  onClick={() => onChangeChoiceIcon?.(choice.id, choice.title)}
+                  title={onChangeChoiceIcon ? 'Выбрать или сгенерировать иконку для исхода' : undefined}
+                >
+                  <img
+                    src={formatIconUrl(choice.icon)}
+                    alt={choice.title}
+                    className="w-14 h-14 rounded-xl object-cover border border-slate-700 shadow-md group-hover/choice:border-cyan-400 group-hover/choice:scale-105 transition-all"
+                  />
+                  {onChangeChoiceIcon && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onChangeChoiceIcon(choice.id, choice.title);
+                      }}
+                      className="absolute -bottom-1 -right-1 bg-slate-900 hover:bg-cyan-500 text-slate-300 hover:text-slate-950 p-1 rounded-full shadow-md border border-slate-700 transition-all cursor-pointer hover:scale-110"
+                      title="Выбрать или сгенерировать иконку"
+                    >
+                      <RefreshCw size={11} className="font-bold" />
+                    </button>
+                  )}
+                </div>
+
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
