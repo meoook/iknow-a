@@ -28,6 +28,8 @@ import {
   setPredictions,
   upsertPrediction,
   removePrediction,
+  updatePrediction,
+  predictionsSelectors,
 } from '../store/slices/predictionsSlice';
 import {
   setTransactions,
@@ -213,10 +215,18 @@ export const adminApi = createApi({
         method: 'POST',
         body: { choice_id: choiceId },
       }),
-      async onQueryStarted({ predictionId }, { dispatch, queryFulfilled }) {
-        dispatch(removePrediction(predictionId));
+      async onQueryStarted({ predictionId, choiceId }, { dispatch, getState, queryFulfilled }) {
         try {
           await queryFulfilled;
+          const state = getState() as any;
+          const pred = predictionsSelectors.selectById(state, predictionId);
+          if (pred && pred.choices) {
+            const updatedChoices = pred.choices.map((c) => ({
+              ...c,
+              win: c.id === choiceId,
+            }));
+            dispatch(updatePrediction({ id: predictionId, changes: { choices: updatedChoices } }));
+          }
         } catch { }
       },
     }),
@@ -226,9 +236,9 @@ export const adminApi = createApi({
         method: 'POST',
       }),
       async onQueryStarted(predictionId, { dispatch, queryFulfilled }) {
-        dispatch(removePrediction(predictionId));
         try {
           await queryFulfilled;
+          dispatch(removePrediction(predictionId));
         } catch { }
       },
     }),
@@ -239,9 +249,9 @@ export const adminApi = createApi({
         body: { days },
       }),
       async onQueryStarted({ predictionId }, { dispatch, queryFulfilled }) {
-        dispatch(removePrediction(predictionId));
         try {
           await queryFulfilled;
+          dispatch(removePrediction(predictionId));
         } catch { }
       },
     }),
