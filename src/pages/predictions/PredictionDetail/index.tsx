@@ -91,15 +91,10 @@ export const PredictionDetailPage: React.FC = () => {
 
   const handleConfirmIcon = async (iconId: number) => {
     if (!prediction) return;
-    try {
-      if (iconModalTarget.type === 'prediction') {
-        await attachPredictionIconApi({ predictionId: prediction.id, iconId }).unwrap();
-      } else if (iconModalTarget.type === 'choice' && iconModalTarget.choiceId) {
-        await attachChoiceIconApi({ choiceId: iconModalTarget.choiceId, iconId }).unwrap();
-      }
-    } catch (e) {
-      console.error('Failed to attach icon:', e);
-      alert('Ошибка при сохранении иконки');
+    if (iconModalTarget.type === 'prediction') {
+      await attachPredictionIconApi({ predictionId: prediction.id, iconId }).unwrap();
+    } else if (iconModalTarget.type === 'choice' && iconModalTarget.choiceId) {
+      await attachChoiceIconApi({ choiceId: iconModalTarget.choiceId, iconId }).unwrap();
     }
   };
 

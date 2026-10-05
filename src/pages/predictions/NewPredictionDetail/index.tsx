@@ -142,13 +142,8 @@ export const NewPredictionDetailPage: React.FC = () => {
 
   const handleConfirmIcon = async (iconId: number) => {
     if (!req) return;
-    try {
-      if (modalTarget.type === 'request') {
-        await attachRequestIconApi({ requestId: req.id, iconId }).unwrap();
-      }
-    } catch (e) {
-      console.error('Failed to attach icon to request:', e);
-      alert('Ошибка при сохранении выбранной иконки');
+    if (modalTarget.type === 'request') {
+      await attachRequestIconApi({ requestId: req.id, iconId }).unwrap();
     }
   };
 

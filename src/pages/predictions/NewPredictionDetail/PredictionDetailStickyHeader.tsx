@@ -115,6 +115,7 @@ export const PredictionDetailStickyHeader: React.FC<PredictionDetailStickyHeader
                 onChange={(e) => onCustomReasonChange(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500"
                 placeholder="Подробное объяснение причины..."
+                spellCheck={true}
               />
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   Loader2,
   Layers,
   Palette,
+  AlertCircle,
 } from 'lucide-react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import {
@@ -62,6 +63,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   const [keywords, setKeywords] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [tmpIcon, setTmpIcon] = useState<{
     id: number;
     url: string;
@@ -100,6 +102,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setPrompt(initialPrompt);
+      setErrorMsg(null);
       // Pre-fill search if empty
       if (!searchQuery && initialPrompt) {
         setSearchQuery(initialPrompt);
@@ -109,6 +112,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
       setTmpIcon(null);
       setIsGenerating(false);
       setIsSubmitting(false);
+      setErrorMsg(null);
     }
   }, [isOpen, initialPrompt]);
 
@@ -125,9 +129,10 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
           style: data.style,
         });
         setIsGenerating(false);
+        setErrorMsg(null);
       } else if (data && !data.success) {
         setIsGenerating(false);
-        alert(data.error || 'Не удалось сгенерировать иконку. Попробуйте еще раз.');
+        setErrorMsg('Не удалось сгенерировать иконку. Попробуйте еще раз.');
       }
     });
 
@@ -139,8 +144,13 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   // Handle generation start
   const handleGenerate = async () => {
     const finalPrompt = prompt.trim();
-    if (!finalPrompt || !style || isGenerating) return;
+    if (!finalPrompt) {
+      setErrorMsg('Укажите промпт для генерации');
+      return;
+    }
+    if (!style || isGenerating) return;
 
+    setErrorMsg(null);
     setIsGenerating(true);
     try {
       await generateApi({
@@ -153,19 +163,21 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
     } catch (e: any) {
       console.error('Failed to trigger generation:', e);
       setIsGenerating(false);
-      alert(e?.data?.detail || 'Ошибка запуска генерации');
+      setErrorMsg('Ошибка запуска генерации');
     }
   };
 
   // Handle confirm selected icon from bank
   const handleConfirmSelect = async () => {
     if (!selectedIcon || isSubmitting) return;
+    setErrorMsg(null);
     setIsSubmitting(true);
     try {
       await onConfirm(selectedIcon.id);
       onClose();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to attach icon:', e);
+      setErrorMsg('Ошибка при сохранении выбранной иконки');
     } finally {
       setIsSubmitting(false);
     }
@@ -174,12 +186,14 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   // Handle confirm newly generated icon
   const handleConfirmGenerated = async () => {
     if (!tmpIcon || isSubmitting) return;
+    setErrorMsg(null);
     setIsSubmitting(true);
     try {
       await onConfirm(tmpIcon.id);
       onClose();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to attach generated icon:', e);
+      setErrorMsg('Ошибка при сохранении сгенерированной иконки');
     } finally {
       setIsSubmitting(false);
     }
@@ -215,24 +229,28 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
         {/* Tabs Bar */}
         <div className="flex items-center gap-2 px-6 pt-3 pb-2 border-b border-slate-800/80 bg-slate-950/40 shrink-0">
           <button
-            onClick={() => setActiveTab('select')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'select'
-                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
+            onClick={() => {
+              setActiveTab('select');
+              setErrorMsg(null);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'select'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
           >
             <Layers size={14} />
             <span>Выбрать из банка</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('generate')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'generate'
-                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
+            onClick={() => {
+              setActiveTab('generate');
+              setErrorMsg(null);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'generate'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
           >
             <Sparkles size={14} />
             <span>Сгенерировать</span>
@@ -324,11 +342,10 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                           setSelectedIcon(item);
                           handleConfirmSelect();
                         }}
-                        className={`group relative bg-slate-950/60 border rounded-xl p-2.5 flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'border-cyan-400 ring-2 ring-cyan-500/40 bg-slate-900/90'
-                            : 'border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
-                        }`}
+                        className={`group relative bg-slate-950/60 border rounded-xl p-2.5 flex flex-col items-center gap-2 cursor-pointer transition-all ${isSelected
+                          ? 'border-cyan-400 ring-2 ring-cyan-500/40 bg-slate-900/90'
+                          : 'border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
+                          }`}
                       >
                         <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-900 flex items-center justify-center border border-slate-800/60">
                           <img
@@ -366,6 +383,21 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Error Banner for Select Tab */}
+            {errorMsg && (
+              <div className="mx-4 sm:mx-6 mb-3 bg-rose-500/10 border border-rose-500/40 p-3 rounded-xl flex items-center gap-2.5 text-xs text-rose-300 animate-in fade-in shrink-0">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span className="flex-1">{errorMsg}</span>
+                <button
+                  type="button"
+                  onClick={() => setErrorMsg(null)}
+                  className="text-rose-400/80 hover:text-rose-200 transition-colors p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
 
             {/* Bottom Bar: Action buttons for "Выбрать" */}
             <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between gap-3 shrink-0">
@@ -414,6 +446,21 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
         {/* Tab 2: Сгенерировать */}
         {activeTab === 'generate' && (
           <div className="flex flex-col flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-5">
+            {/* Error Banner for Generate Tab */}
+            {errorMsg && (
+              <div className="bg-rose-500/10 border border-rose-500/40 p-3 rounded-xl flex items-center gap-2.5 text-xs text-rose-300 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span className="flex-1">{errorMsg}</span>
+                <button
+                  type="button"
+                  onClick={() => setErrorMsg(null)}
+                  className="text-rose-400/80 hover:text-rose-200 transition-colors p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
               {/* Left Column: Form Controls (7 cols) */}
               <div className="md:col-span-7 space-y-4">
@@ -446,7 +493,10 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                     </span>
                     <button
                       type="button"
-                      onClick={() => setPrompt(initialPrompt)}
+                      onClick={() => {
+                        setPrompt(initialPrompt);
+                        if (errorMsg) setErrorMsg(null);
+                      }}
                       className="text-[11px] text-cyan-400 hover:underline font-normal cursor-pointer"
                     >
                       Сбросить к исходному title
@@ -455,10 +505,17 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                   <textarea
                     rows={3}
                     value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                      if (errorMsg) setErrorMsg(null);
+                    }}
                     disabled={isGenerating}
                     placeholder="Например: Золотая монета Bitcoin с неоновым свечением..."
-                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-500 rounded-xl p-3 text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors resize-none leading-relaxed"
+                    spellCheck={true}
+                    className={`w-full bg-slate-950/80 border rounded-xl p-3 text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors resize-none leading-relaxed ${errorMsg
+                      ? 'border-rose-500/80 focus:border-rose-400 focus:ring-1 focus:ring-rose-400/50'
+                      : 'border-slate-800 focus:border-cyan-500'
+                      }`}
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
                     Совет: укажите суть объекта без конкретных дат и временных интервалов.
@@ -484,7 +541,12 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
 
               {/* Right Column: Preview Area (5 cols) */}
               <div className="md:col-span-5 flex flex-col items-center">
-                <div className="w-full max-w-[240px] aspect-square rounded-2xl bg-slate-950/90 border border-slate-800 flex items-center justify-center p-3 relative overflow-hidden shadow-inner">
+                <div
+                  className={`w-full max-w-[240px] aspect-square rounded-2xl bg-slate-950/90 border flex items-center justify-center p-3 relative overflow-hidden shadow-inner transition-colors ${errorMsg && !tmpIcon && !isGenerating
+                    ? 'border-rose-500/50'
+                    : 'border-slate-800'
+                    }`}
+                >
                   {isGenerating ? (
                     <div className="flex flex-col items-center justify-center text-center p-4 gap-3 animate-pulse">
                       <div className="p-3 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 animate-spin">
@@ -506,6 +568,14 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                       />
                       <div className="absolute top-2 left-2 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
                         tmp
+                      </div>
+                    </div>
+                  ) : errorMsg ? (
+                    <div className="flex flex-col items-center justify-center text-center p-4 text-rose-400 gap-2">
+                      <AlertCircle size={28} className="text-rose-400" />
+                      <div className="text-xs font-semibold">Ошибка генерации</div>
+                      <div className="text-[10px] text-slate-400">
+                        Попробуйте изменить промпт или стиль
                       </div>
                     </div>
                   ) : (
@@ -530,19 +600,18 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                 type="button"
                 onClick={handleGenerate}
                 disabled={!prompt.trim() || isGenerating}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${
-                  isGenerating
-                    ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                }`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${isGenerating
+                  ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                  }`}
               >
                 <RefreshCw size={14} className={isGenerating ? 'animate-spin' : ''} />
                 <span>
                   {isGenerating
                     ? 'Генерация...'
                     : tmpIcon
-                    ? 'Сгенерировать заново'
-                    : 'Сгенерировать'}
+                      ? 'Сгенерировать заново'
+                      : 'Сгенерировать'}
                 </span>
               </button>
 
