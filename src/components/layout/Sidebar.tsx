@@ -13,7 +13,9 @@ import {
   Coins,
   Users,
   Network,
+  Activity,
 } from 'lucide-react';
+
 import { useAppSelector } from '../../store';
 
 interface NavGroupProps {
@@ -131,7 +133,25 @@ export const Sidebar: React.FC = () => {
             )}
           </NavLink>
 
+          {/* Активные */}
+          <NavLink
+            to="/predictions/active"
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-slate-800 text-cyan-400 font-medium'
+                  : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+              }`
+            }
+          >
+            <div className="flex items-center gap-2.5">
+              <Activity size={16} />
+              <span>Активные</span>
+            </div>
+          </NavLink>
+
           {/* Выбор победителя */}
+
           <NavLink
             to="/predictions/dispute"
             className={({ isActive }) =>

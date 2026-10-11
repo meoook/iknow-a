@@ -18,12 +18,15 @@ import {
   useExtendPredictionDisputeMutation,
   useAttachPredictionIconMutation,
   useAttachChoiceIconMutation,
+  useToggleChoiceActiveMutation,
 } from '../../../services/adminApi';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 import { PredictionDetailStickyHeader } from './PredictionDetailStickyHeader';
 import { PredictionDetailMainCard } from './PredictionDetailMainCard';
 import { PredictionDetailChoicesList } from './PredictionDetailChoicesList';
 import { IconPickerModal } from '../../../components/predictions/IconPickerModal';
+import { UpdateDatesModal } from '../../../components/predictions/UpdateDatesModal';
+import { EarlyEventModal } from '../../../components/predictions/EarlyEventModal';
 
 
 export const PredictionDetailPage: React.FC = () => {
@@ -48,10 +51,15 @@ export const PredictionDetailPage: React.FC = () => {
   const [extendDisputeApi, { isLoading: isExtending }] = useExtendPredictionDisputeMutation();
   const [attachPredictionIconApi] = useAttachPredictionIconMutation();
   const [attachChoiceIconApi] = useAttachChoiceIconMutation();
+  const [toggleChoiceActiveApi, { isLoading: isTogglingActive }] = useToggleChoiceActiveMutation();
+
+  const [isUpdateDatesModalOpen, setIsUpdateDatesModalOpen] = useState(false);
+  const [isEarlyEventModalOpen, setIsEarlyEventModalOpen] = useState(false);
 
   const [isWinnerModalOpen, setIsWinnerModalOpen] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
   const [winnerSuccess, setWinnerSuccess] = useState(false);
+
 
   const [isIconModalOpen, setIsIconModalOpen] = useState(false);
   const [iconModalTarget, setIconModalTarget] = useState<{
@@ -98,6 +106,14 @@ export const PredictionDetailPage: React.FC = () => {
     }
   };
 
+  const handleToggleChoiceActive = async (choiceId: number) => {
+    if (!prediction) return;
+    try {
+      await toggleChoiceActiveApi({ choiceId, predictionId: prediction.id }).unwrap();
+    } catch (err) {
+      console.warn('Toggle choice active failed', err);
+    }
+  };
 
   const handleExtendDispute = async () => {
     if (!prediction) return;
@@ -178,6 +194,8 @@ export const PredictionDetailPage: React.FC = () => {
         onOpenWinnerModal={handleOpenWinnerModal}
         onExtendDispute={handleExtendDispute}
         onFinishPrediction={handleFinishPrediction}
+        onOpenUpdateDatesModal={() => setIsUpdateDatesModalOpen(true)}
+        onOpenEarlyEventModal={() => setIsEarlyEventModalOpen(true)}
       />
 
       <PredictionDetailMainCard
@@ -188,6 +206,8 @@ export const PredictionDetailPage: React.FC = () => {
       <PredictionDetailChoicesList
         prediction={prediction}
         onChangeChoiceIcon={handleOpenChoiceIconModal}
+        onToggleChoiceActive={handleToggleChoiceActive}
+        isTogglingActive={isTogglingActive}
       />
 
       <IconPickerModal
@@ -197,6 +217,19 @@ export const PredictionDetailPage: React.FC = () => {
         initialPrompt={iconModalTarget.initialPrompt}
         title={iconModalTarget.title}
       />
+
+      <UpdateDatesModal
+        isOpen={isUpdateDatesModalOpen}
+        onClose={() => setIsUpdateDatesModalOpen(false)}
+        prediction={prediction}
+      />
+
+      <EarlyEventModal
+        isOpen={isEarlyEventModalOpen}
+        onClose={() => setIsEarlyEventModalOpen(false)}
+        prediction={prediction}
+      />
+
 
       {/* Winner Selection Modal */}
       {isWinnerModalOpen && (
@@ -235,8 +268,8 @@ export const PredictionDetailPage: React.FC = () => {
                       key={choice.id}
                       onClick={() => setSelectedChoiceId(choice.id)}
                       className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedChoiceId === choice.id
-                          ? 'bg-amber-500/10 border-amber-500/50 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? 'bg-amber-500/10 border-amber-500/50 text-white'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
                         }`}
                     >
                       <div className="flex items-center gap-3">

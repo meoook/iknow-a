@@ -6,6 +6,7 @@ import {
   Coins,
   RotateCcw,
   Clock,
+  Calendar,
   Loader2,
   UserCheck,
 } from 'lucide-react';
@@ -19,6 +20,8 @@ interface PredictionDetailStickyHeaderProps {
   onOpenWinnerModal: () => void;
   onExtendDispute: () => void;
   onFinishPrediction: () => void;
+  onOpenUpdateDatesModal: () => void;
+  onOpenEarlyEventModal: () => void;
 }
 
 export const PredictionDetailStickyHeader: React.FC<PredictionDetailStickyHeaderProps> = ({
@@ -29,8 +32,11 @@ export const PredictionDetailStickyHeader: React.FC<PredictionDetailStickyHeader
   onOpenWinnerModal,
   onExtendDispute,
   onFinishPrediction,
+  onOpenUpdateDatesModal,
+  onOpenEarlyEventModal,
 }) => {
   const isArchived = prediction.state === 'ENDED' || prediction.state === 'CANCEL';
+  const isActive = prediction.state === 'ACTIVE';
 
   let backUrl = '/predictions/dispute';
   let backLabel = 'К выбору победителя';
@@ -38,6 +44,9 @@ export const PredictionDetailStickyHeader: React.FC<PredictionDetailStickyHeader
   if (isArchived) {
     backUrl = '/predictions/archive';
     backLabel = 'Назад к архиву';
+  } else if (isActive) {
+    backUrl = '/predictions/active';
+    backLabel = 'К активным предсказаниям';
   } else if (hasWinner) {
     backUrl = '/predictions/finish';
     backLabel = 'К списку завершающих';
@@ -65,7 +74,32 @@ export const PredictionDetailStickyHeader: React.FC<PredictionDetailStickyHeader
         </div>
 
         {/* Right Side: Action Buttons depending on State */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Universal Admin Actions for non-archived predictions */}
+          {!isArchived && (
+            <>
+              <button
+                type="button"
+                onClick={onOpenUpdateDatesModal}
+                className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                title="Изменить дату окончания ставок или дату завершения"
+              >
+                <Calendar size={14} className="text-cyan-400" />
+                <span>Изменить даты</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenEarlyEventModal}
+                className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                title="Зафиксировать досрочное завершение события и отменить последующие ставки"
+              >
+                <Clock size={14} className="text-amber-400" />
+                <span>Событие раньше</span>
+              </button>
+            </>
+          )}
+
           {isArchived ? (
             <div className="bg-slate-800/90 text-slate-300 font-mono text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700">
               Статус: {prediction.state}

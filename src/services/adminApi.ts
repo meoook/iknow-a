@@ -255,6 +255,55 @@ export const adminApi = createApi({
         } catch { }
       },
     }),
+    updatePredictionDates: builder.mutation<
+      IPredictionItem,
+      { predictionId: number; end_date: string; bet_date?: string }
+    >({
+      query: ({ predictionId, ...body }) => ({
+        url: `admin/predictions/${predictionId}/update-dates`,
+        method: 'POST',
+        body,
+      }),
+      async onQueryStarted({ predictionId }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data) dispatch(upsertPrediction(data));
+        } catch { }
+      },
+    }),
+    earlyEventFinish: builder.mutation<
+      { count: number; amount: number },
+      { predictionId: number; event_time: string }
+    >({
+      query: ({ predictionId, event_time }) => ({
+        url: `admin/predictions/${predictionId}/early-event`,
+        method: 'POST',
+        body: { event_time },
+      }),
+    }),
+    toggleChoiceActive: builder.mutation<
+      { id: number; active: boolean },
+      { choiceId: number; predictionId: number }
+    >({
+      query: ({ choiceId }) => ({
+        url: `admin/choices/${choiceId}/toggle-active`,
+        method: 'POST',
+      }),
+      async onQueryStarted({ choiceId, predictionId }, { dispatch, getState, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const state = getState() as any;
+          const pred = predictionsSelectors.selectById(state, predictionId);
+          if (pred && pred.choices) {
+            const updatedChoices = pred.choices.map((c) =>
+              c.id === choiceId ? { ...c, active: data.active } : c
+            );
+            dispatch(updatePrediction({ id: predictionId, changes: { choices: updatedChoices } }));
+          }
+        } catch { }
+      },
+    }),
+
     getUsersInfo: builder.query<IUsersInfo, void>({
       query: () => 'admin/users/info',
     }),
@@ -449,6 +498,9 @@ export const {
   useSetPredictionWinnerMutation,
   useFinishPredictionMutation,
   useExtendPredictionDisputeMutation,
+  useUpdatePredictionDatesMutation,
+  useEarlyEventFinishMutation,
+  useToggleChoiceActiveMutation,
   useGetUsersInfoQuery,
   useGetUsersListQuery,
   useCheckUsernameQuery,

@@ -11,7 +11,7 @@ export type GroupTag =
   | 'WORLD'
   | 'ECONOMY'
   | 'ELECTIONS'
-  | 'MENTIONS'
+  | 'WEATHER'
   | 'OTHER';
 
 export type PredictionState = 'ACTIVE' | 'END_BET' | 'DISPUTE' | 'ENDED' | 'CANCEL';
@@ -135,6 +135,7 @@ interface IChoiceItem {
   volume: number;
   multiplier: number;
   win: boolean | null;
+  active: boolean;
 }
 
 export interface IPredictionItem extends IPredictionBase {

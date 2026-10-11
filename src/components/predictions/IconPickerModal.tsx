@@ -220,10 +220,11 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
+
         </div>
 
         {/* Tabs Bar */}
