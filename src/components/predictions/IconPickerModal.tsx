@@ -11,12 +11,14 @@ import {
   Layers,
   Palette,
   AlertCircle,
+  Upload,
 } from 'lucide-react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import {
   useGetIconsQuery,
   useGetIconStylesQuery,
   useGenerateIconMutation,
+  useUploadIconMutation,
 } from '../../services/adminApi';
 import { IIconBankItem, IIconStyleItem } from '../../types';
 import { formatIconUrl } from '../../utils/images';
@@ -47,9 +49,10 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   title = 'Выбор иконки',
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   useClickOutside(modalRef, onClose, isOpen);
 
-  const [activeTab, setActiveTab] = useState<'select' | 'generate'>('select');
+  const [activeTab, setActiveTab] = useState<'select' | 'generate' | 'upload'>('select');
 
   // Search & Filter state for "Выбрать" tab
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -71,6 +74,13 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
     style: string;
   } | null>(null);
 
+  // State for "Загрузить" tab
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
+  const [uploadPrompt, setUploadPrompt] = useState<string>('');
+  const [uploadStyle, setUploadStyle] = useState<string>('photo');
+  const [uploadKeywords, setUploadKeywords] = useState<string>('');
+
   // Queries & Mutations
   const { data: iconStyles = DEFAULT_STYLES } = useGetIconStylesQuery(undefined, {
     skip: !isOpen,
@@ -79,7 +89,6 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   const {
     data: icons = [],
     isLoading: isIconsLoading,
-    refetch: refetchIcons,
   } = useGetIconsQuery(
     {
       search: debouncedSearch.trim() || undefined,
@@ -89,6 +98,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   );
 
   const [generateApi] = useGenerateIconMutation();
+  const [uploadIconApi] = useUploadIconMutation();
 
   // Debounce search query
   useEffect(() => {
@@ -102,6 +112,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setPrompt(initialPrompt);
+      setUploadPrompt(initialPrompt);
       setErrorMsg(null);
       // Pre-fill search if empty
       if (!searchQuery && initialPrompt) {
@@ -113,6 +124,10 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
       setIsGenerating(false);
       setIsSubmitting(false);
       setErrorMsg(null);
+      setUploadFile(null);
+      if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
+      setUploadPreviewUrl(null);
+      setUploadKeywords('');
     }
   }, [isOpen, initialPrompt]);
 
@@ -199,6 +214,52 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
     }
   };
 
+  // Handle file selection for upload
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('Файл слишком большой (максимум 5 МБ)');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg('Выберите корректный файл изображения');
+      return;
+    }
+
+    setErrorMsg(null);
+    setUploadFile(file);
+    if (uploadPreviewUrl) {
+      URL.revokeObjectURL(uploadPreviewUrl);
+    }
+    setUploadPreviewUrl(URL.createObjectURL(file));
+  };
+
+  // Handle upload and confirm icon
+  const handleUploadAndConfirm = async () => {
+    if (!uploadFile || isSubmitting) return;
+    setErrorMsg(null);
+    setIsSubmitting(true);
+    try {
+      const uploadedIcon = await uploadIconApi({
+        image: uploadFile,
+        prompt: uploadPrompt.trim() || undefined,
+        style: uploadStyle,
+        keywords: uploadKeywords.trim() || undefined,
+      }).unwrap();
+      await onConfirm(uploadedIcon.id);
+      onClose();
+    } catch (e: any) {
+      console.error('Failed to upload and attach icon:', e);
+      const msg = e?.data?.image?.[0] || e?.data?.detail || 'Ошибка при загрузке изображения';
+      setErrorMsg(String(msg));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
       <div
@@ -214,7 +275,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
             <div>
               <h2 className="text-base font-bold text-white leading-tight">{title}</h2>
               <p className="text-xs text-slate-400">
-                Банк иконок с поиском по тегам и генерацией через Gemini
+                Банк иконок с поиском по тегам, генерацией через Gemini и загрузкой файла
               </p>
             </div>
           </div>
@@ -256,6 +317,23 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
             <Sparkles size={14} />
             <span>Сгенерировать</span>
             {tmpIcon && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('upload');
+              setErrorMsg(null);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === 'upload'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+          >
+            <Upload size={14} />
+            <span>Загрузить</span>
+            {uploadFile && (
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
             )}
           </button>
@@ -639,6 +717,183 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                     <>
                       <Check size={14} />
                       <span>Ок</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Загрузить */}
+        {activeTab === 'upload' && (
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-5">
+            {errorMsg && (
+              <div className="bg-rose-500/10 border border-rose-500/40 p-3 rounded-xl flex items-center gap-2.5 text-xs text-rose-300 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span className="flex-1">{errorMsg}</span>
+                <button
+                  type="button"
+                  onClick={() => setErrorMsg(null)}
+                  className="text-rose-400/80 hover:text-rose-200 transition-colors p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              {/* Left Column: Metadata Controls (7 cols) */}
+              <div className="md:col-span-7 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <Palette size={13} className="text-cyan-400" />
+                    <span>Стиль для банка иконок:</span>
+                  </label>
+                  <select
+                    value={uploadStyle}
+                    onChange={(e) => setUploadStyle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none cursor-pointer transition-colors"
+                  >
+                    {iconStyles.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <ImageIcon size={13} className="text-cyan-400" />
+                      <span>Описание / название (необязательно):</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setUploadPrompt(initialPrompt)}
+                      className="text-[11px] text-cyan-400 hover:underline font-normal cursor-pointer"
+                    >
+                      Сбросить к исходному title
+                    </button>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={uploadPrompt}
+                    onChange={(e) => setUploadPrompt(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Например: Илон Маск, портрет..."
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-500 rounded-xl p-3 text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors resize-none leading-relaxed"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Поможет находить эту иконку в банке при повторном использовании.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <Tag size={13} className="text-cyan-400" />
+                    <span>Ключевые слова / теги (необязательно):</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={uploadKeywords}
+                    onChange={(e) => setUploadKeywords(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="маск musk тесла tesla"
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column: File Drop / Preview Area (5 cols) */}
+              <div className="md:col-span-5 flex flex-col items-center">
+                <div
+                  onClick={() => !isSubmitting && fileInputRef.current?.click()}
+                  className={`w-full max-w-[240px] aspect-square rounded-2xl bg-slate-950/90 border-2 border-dashed flex items-center justify-center p-3 relative overflow-hidden shadow-inner transition-all cursor-pointer ${uploadPreviewUrl
+                    ? 'border-cyan-500/50 hover:border-cyan-400'
+                    : 'border-slate-700 hover:border-cyan-500/60 hover:bg-slate-900/60'
+                    }`}
+                >
+                  {uploadPreviewUrl ? (
+                    <div className="relative w-full h-full flex items-center justify-center group">
+                      <img
+                        src={uploadPreviewUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 rounded-xl text-white text-xs font-semibold">
+                        <Upload size={20} className="text-cyan-400" />
+                        <span>Заменить файл</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center p-4 text-slate-400 gap-2.5">
+                      <div className="p-3 rounded-full bg-slate-900 border border-slate-800 text-cyan-400">
+                        <Upload size={24} />
+                      </div>
+                      <div className="text-xs font-semibold text-slate-200">
+                        Нажмите для выбора файла
+                      </div>
+                      <div className="text-[10px] text-slate-500 leading-tight">
+                        PNG, JPG, WEBP до 5 МБ (автоматически обрежется по центру до 400×400)
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {uploadFile && (
+                  <div className="mt-2 text-center text-[11px] text-emerald-400 font-medium truncate max-w-[240px]">
+                    ✓ {uploadFile.name}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Actions for "Загрузить" */}
+            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Upload size={14} className="text-cyan-400" />
+                <span>{uploadFile ? 'Выбрать другой файл' : 'Выбрать файл'}</span>
+              </button>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  disabled={!uploadFile || isSubmitting}
+                  onClick={handleUploadAndConfirm}
+                  className="flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Загрузка...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} />
+                      <span>Загрузить и применить</span>
                     </>
                   )}
                 </button>

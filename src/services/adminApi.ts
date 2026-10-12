@@ -157,6 +157,24 @@ export const adminApi = createApi({
         body,
       }),
     }),
+    uploadIcon: builder.mutation<
+      IIconBankItem,
+      { image: File; prompt?: string; style?: string; keywords?: string }
+    >({
+      query: ({ image, prompt, style, keywords }) => {
+        const formData = new FormData();
+        formData.append('image', image);
+        if (prompt) formData.append('prompt', prompt);
+        if (style) formData.append('style', style);
+        if (keywords) formData.append('keywords', keywords);
+        return {
+          url: 'admin/icons/upload',
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: ['Icons' as any],
+    }),
     attachRequestIcon: builder.mutation<{ id: number; icon: string }, { requestId: number; iconId: number }>({
       query: ({ requestId, iconId }) => ({
         url: `admin/requests/${requestId}/icon`,
@@ -490,6 +508,7 @@ export const {
   useLazyGetIconsQuery,
   useGetIconStylesQuery,
   useGenerateIconMutation,
+  useUploadIconMutation,
   useAttachRequestIconMutation,
   useAttachPredictionIconMutation,
   useAttachChoiceIconMutation,
