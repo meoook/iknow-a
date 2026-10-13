@@ -132,12 +132,13 @@ export const adminApi = createApi({
         body: { icon: true },
       }),
     }),
-    getIcons: builder.query<IIconBankItem[], { search?: string; style?: string } | void>({
+    getIcons: builder.query<IIconBankItem[], { search?: string; style?: string; tmp_only?: boolean } | void>({
       query: (params) => {
         const searchParams = new URLSearchParams();
         if (params && typeof params === 'object') {
           if (params.search) searchParams.append('search', params.search);
           if (params.style) searchParams.append('style', params.style);
+          if (params.tmp_only) searchParams.append('tmp_only', '1');
         }
         const qs = searchParams.toString();
         return qs ? `admin/icons?${qs}` : 'admin/icons';
@@ -146,6 +147,21 @@ export const adminApi = createApi({
     }),
     getIconStyles: builder.query<IIconStyleItem[], void>({
       query: () => 'admin/icons/styles',
+    }),
+    updateIcon: builder.mutation<IIconBankItem, { id: number; keywords: string }>({
+      query: ({ id, keywords }) => ({
+        url: `admin/icons/${id}`,
+        method: 'PATCH',
+        body: { keywords },
+      }),
+      invalidatesTags: ['Icons' as any],
+    }),
+    deleteIcon: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `admin/icons/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Icons' as any],
     }),
     generateIcon: builder.mutation<
       { id: number; status: string },
@@ -507,6 +523,8 @@ export const {
   useGetIconsQuery,
   useLazyGetIconsQuery,
   useGetIconStylesQuery,
+  useUpdateIconMutation,
+  useDeleteIconMutation,
   useGenerateIconMutation,
   useUploadIconMutation,
   useAttachRequestIconMutation,

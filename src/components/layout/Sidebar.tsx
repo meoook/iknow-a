@@ -14,6 +14,7 @@ import {
   Users,
   Network,
   Activity,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 import { useAppSelector } from '../../store';
@@ -105,6 +106,21 @@ export const Sidebar: React.FC = () => {
         >
           <Users size={18} />
           <span>Пользователи</span>
+        </NavLink>
+
+        {/* Icons Bank */}
+        <NavLink
+          to="/icons"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+              isActive
+                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border-l-4 border-cyan-400 font-semibold'
+                : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+            }`
+          }
+        >
+          <ImageIcon size={18} />
+          <span>Иконки</span>
         </NavLink>
 
         {/* Group 1: Предсказания (Static Category Header) */}

@@ -12,6 +12,7 @@ import {
   Award,
   Flag,
   Network,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { logout } from '../../store/slices/authSlice';
@@ -21,6 +22,7 @@ import { useClickOutside } from '../../hooks/useClickOutside';
 const routeConfig: Record<string, { title: string; icon: React.ElementType; color: string }> = {
   '/': { title: 'Панель управления', icon: Sparkles, color: 'text-cyan-400' },
   '/users': { title: 'Пользователи', icon: Users, color: 'text-indigo-400' },
+  '/icons': { title: 'Банк иконок', icon: ImageIcon, color: 'text-cyan-400' },
   '/predictions/new': { title: 'Новые предсказания', icon: Sparkles, color: 'text-cyan-400' },
   '/predictions/active': { title: 'Активные предсказания', icon: Clock, color: 'text-emerald-400' },
   '/predictions/dispute': { title: 'Выбор победителя', icon: Award, color: 'text-amber-400' },

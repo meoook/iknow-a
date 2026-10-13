@@ -16,6 +16,7 @@ import { ArchivePredictionsPage } from './pages/predictions/ArchivePredictions';
 import { FinanceChainsPage } from './pages/finance/FinanceChains';
 import { TransactionsPage } from './pages/finance/Transactions';
 import { WithdrawalsPage } from './pages/finance/Withdrawals';
+import { IconsPage } from './pages/Icons';
 import { useAppSelector } from './store';
 import { Loader2 } from 'lucide-react';
 import { AuthNetworkErrorScreen } from './components/ui/AuthNetworkErrorScreen';
@@ -41,6 +42,7 @@ const ProtectedLayout: React.FC = () => {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:id" element={<UserDetailPage />} />
+            <Route path="/icons" element={<IconsPage />} />
 
             {/* Predictions Group */}
             <Route path="/predictions/new" element={<NewPredictionsPage />} />
