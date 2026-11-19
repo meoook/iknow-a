@@ -66,7 +66,7 @@ export const IconDetailModal: React.FC<IconDetailModalProps> = ({
     }
   };
 
-  const isOlderThanOneHour = Math.floor(Date.now() / 1000) >= icon.created + 3600;
+  const isOlderThanOneHour = Date.now() >= icon.created + 3600 * 1000;
   const canDelete = icon.is_tmp && isOlderThanOneHour;
 
   const handleDelete = async () => {

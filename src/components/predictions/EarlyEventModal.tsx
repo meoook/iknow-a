@@ -47,7 +47,7 @@ export const EarlyEventModal: React.FC<EarlyEventModalProps> = ({
   const now = new Date();
   const maxDateTime = formatDateTimeLocal(now);
 
-  const createdDate = prediction?.created ? new Date(prediction.created * 1000) : new Date();
+  const createdDate = prediction?.created ? new Date(prediction.created) : new Date();
   const minDateTime = formatDateTimeLocal(createdDate);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export const EarlyEventModal: React.FC<EarlyEventModalProps> = ({
       return;
     }
 
-    if (prediction.created && selectedDate < new Date(prediction.created * 1000)) {
+    if (prediction.created && selectedDate < new Date(prediction.created)) {
       setError('Время события не может быть раньше создания прогноза');
       return;
     }
